@@ -1,0 +1,49 @@
+#
+offraid.json
+ragfairRequest.json
+*copy.json
+out
+dumpTools
+## visual studio
+.vscode
+.vscode/sftp.json
+.vs
+.idea
+slnx.sqlite
+slnx-journal.sqlite
+
+## nodejs
+node_modules
+node.exe
+## if you dont want to push cache folders
+user/cache
+# ignore cache backup folder
+## windows
+desktop.ini
+db/profile/Developer
+user/profiles
+user/logs
+user/events/schedule.json
+user/configs/server.json
+user/configs/mods.json
+_startServer.cmd
+package-lock.json
+dumpTools/ProfileNameGetter/playerNames.json
+user/configs/mods.json
+
+# Paulov - You shouldn't be pushing profiles or mods to this repo?
+user/mods
+server.json*
+gameplay.json*
+quest.json*
+# user/profiles - profiles is already being done above
+
+AE-Server-*
+Server-*
+JustEmuTarkov-*
+*.exe
+dumpTools
+docs
+
+Build/
+pre-db/*
