@@ -5,6 +5,7 @@
  */
 
 const app = require('../app');
+const appHttps = require('../app');
 const debug = require('debug')('myexpressapp:server');
 const http = require('http');
 const https = require('https');
@@ -16,8 +17,10 @@ const { certificate } = require('./../certGenerator');
 console.log("ENVIRONMENT VARS");
 console.log(process.env);
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+// var portHttp = normalizePort(process.env.PORT || '8080');
+// var portHttps = normalizePort('3000');
+// app.set('port', portHttp);
+// appHttps.set('port', portHttps);
 
 /**
  * Create HTTP server.
@@ -29,7 +32,7 @@ var httpServer = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-httpServer.listen(port + 1);
+// httpServer.listen(portHttp);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 httpServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
@@ -37,16 +40,19 @@ httpServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', re
 var httpsServer = https.createServer({
   key: certs.key,
   cert: certs.cert
-}, app);
+}, appHttps);
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-httpsServer.listen(port);
+// httpsServer.listen(portHttps);
 httpsServer.on('error', onError);
 httpsServer.on('listening', onListening);
 httpsServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
+
+httpServer.listen(process.env.PORT || 80)
+httpsServer.listen(443)
 
 /**
  * Normalize a port into a number, string, or false.

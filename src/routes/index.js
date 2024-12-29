@@ -10,9 +10,23 @@ router.get('/', function(req, res, next) {
 
 /**
  * @swagger
+ * /client/game/mode:
+ *   post:
+ *     summary: Tarkov Call 2
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/client/game/mode', function(req, res, next) {
+  bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "Pve", backendUrl: req.host });
+  next();
+});
+
+/**
+ * @swagger
  * /client/game/start:
  *   post:
- *     summary: Call 1 by BSG.
+ *     summary: Tarkov Call 3
  *     responses:
  *       200:
  *         description: A successful response
@@ -20,7 +34,9 @@ router.get('/', function(req, res, next) {
 router.post('/client/game/start', function(req, res, next) {
   const today = new Date().toUTCString();
   const startTimeStampMS = Date.parse(today);
-  bsgHelper.addBSGBodyInResponseWithData(res, { utc_time: startTimeStampMS / 1000 })
+  bsgHelper.addBSGBodyInResponseWithData(res, { utc_time: startTimeStampMS / 1000 });
+  next();
+
 });
 
 /**
@@ -33,7 +49,9 @@ router.post('/client/game/start', function(req, res, next) {
  *         description: A successful response
  */
 router.post('/client/game/version/validate', function(req, res, next) {
-  bsgHelper.addBSGBodyInResponseWithData(res, null)
+  bsgHelper.addBSGBodyInResponseWithData(res, null);
+  next();
+
 });
 
 /**
@@ -48,7 +66,9 @@ router.post('/client/game/version/validate', function(req, res, next) {
  *         description: A successful response
  */
 router.post('/client/game/config', function(req, res, next) {
-  bsgHelper.addBSGBodyInResponseWithData(res, null)
+  bsgHelper.addBSGBodyInResponseWithData(res, null);
+  next();
+
 });
 
 module.exports = router;

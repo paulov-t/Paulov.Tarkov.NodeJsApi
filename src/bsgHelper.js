@@ -1,13 +1,14 @@
 var zlib = require('zlib');
+var Http = require('http');
+const { logger } = require('./classes/logger');
 
 /**
  * 
  * @param {import("express").Response} response 
- * @param {any} data 
+ * @param {object} data 
  */
 function addBSGBodyInResponseWithData(response, data) {
-    response.body = { errMsg: null, err: 0, body: data };
-    // response.json({ errMsg: null, err: 0, body: data })
+    response.body = { errmsg: null, err: 0, data: data };
 }
 
 function getBody(response, data) {
@@ -17,7 +18,7 @@ function getBody(response, data) {
 /**
  * Inflates the request object using Zlib but only when detected
  * @param {Http.IncomingMessage} req request object
- * @param {object} res response object
+ * @param {Http.OutgoingMessage} res response object
  * @param {function} next if you want to skip to next middleware
  * @param {function} done returns function with request body object parameter
  */
@@ -41,39 +42,10 @@ function inflateRequest(req, res, next, done) {
       && req.body["toJSON"] !== undefined)
       ) {
       
-      try {
-        zlib.inflate(req.body, function(err, result) { 
-  
-          if(!err && result !== undefined) {
-  
-            var asyncInflatedString = result.toString('utf-8');
-            if(asyncInflatedString.length > 0) {
-              req.body = JSON.parse(asyncInflatedString);
-            }
-            done(req.body);
-            return;
-  
-          }
-          else {
-            done(req.body);
-            return;
-  
-          }
-  
-  
-        });
-  
-      }
-      catch (error) { 
-        // console.error(error);
-        req.body = JSON.parse(req.body);
+        const asyncInflatedString = zlib.inflateSync(req.body).toString('utf-8');
+        req.body = asyncInflatedString;
         done(req.body);
-        return;
-  
-      }
-      // console.log("inflating data...");
-      // console.log(req.body);
-  
+
     }
     else  {
       if(typeof(req.body) !== "object")
@@ -82,28 +54,46 @@ function inflateRequest(req, res, next, done) {
     }
 }
 
-function deflateRequest(req, res, next, done) {
+/**
+ * Inflates the request object using Zlib but only when detected
+ * @param {Http.IncomingMessage} req request object
+ * @param {Http.OutgoingMessage} res response object
+ * @param {function} next if you want to skip to next middleware
+ * @param {function} done returns function with request body object parameter
+ */
+function deflateRequest(req, res) {
 
-    let data = res.body;
-    if (typeof(data === 'object'))
-        data = Buffer.from(JSON.stringify(data));
+  if(res.body === undefined || res.body === null)
+  {
+    return false;
+  }
 
-    zlib.deflate(data, (err, deflateData) => {
-        // HACK
-        // BSG apparently do not understand headers and content-encoding 
-        // so we can only add this as a workaround when using literally anything else!
-        if(req.headers["postman-token"] !== undefined)
-            res.setHeader("content-encoding", "deflate");
+  let data = res.body;
+  // This will handle if the previous steps have not stringify the data before
+  if (typeof(data === 'object') && data.length === undefined) {
+    const stringified = JSON.stringify(data, null, "\t");
+    data = Buffer.from(stringified);
+  }
+  else
+    data = Buffer.from(data);
 
-        if(req.headers["user-agent"] !== undefined 
-            && (req.headers["user-agent"].startsWith("Mozilla")))
-            res.setHeader("content-encoding", "deflate");
+  const deflateData = zlib.deflateSync(data, { chunkSize: 1024 });
 
-        res.setHeader("content-type", "application/json");
+  // HACK
+  // BSG apparently do not understand headers and content-encoding 
+  // so we can only add this as a workaround when using literally anything else!
+  if(req.headers["postman-token"] !== undefined)
+      res.setHeader("content-encoding", "deflate");
 
-        res.send(deflateData);
+  if(req.headers["user-agent"] !== undefined && !(req.headers["user-agent"].startsWith("Unity")))
+      res.setHeader("content-encoding", "deflate");
 
-    });
+  res.setHeader("content-type", "application/json");
+
+  res.body = null;
+  res.send(deflateData);
+     
+  return true;
 }
 
 /**
@@ -124,8 +114,40 @@ function extractSessionId(req, res, next, done) {
     done(req.body);
 }
 
+global.mongoIdCounter = 0;
+
+function toHexString(byteArray) {
+  let hexString = "";
+  for (let i = 0; i < byteArray.length; i++) {
+      hexString += `0${(byteArray[i] & 0xff).toString(16)}`.slice(-2);
+  }
+  return hexString;
+}
+
+function generateMongoId() {
+    const time = Math.floor(new Date().getTime() / 1000);
+    const counter = (global.mongoIdCounter + 1) % 0xffffff;
+    const objectIdBinary = Buffer.alloc(12);
+
+    objectIdBinary[3] = time & 0xff;
+    objectIdBinary[2] = (time >> 8) & 0xff;
+    objectIdBinary[1] = (time >> 16) & 0xff;
+    objectIdBinary[0] = (time >> 24) & 0xff;
+    objectIdBinary[4] = 0;
+    objectIdBinary[5] = 0;
+    objectIdBinary[6] = 0;
+    objectIdBinary[7] = 0;
+    objectIdBinary[8] = 0;
+    objectIdBinary[9] = (counter >> 16) & 0xff;
+    objectIdBinary[10] = (counter >> 8) & 0xff;
+    objectIdBinary[11] = counter & 0xff;
+
+    return toHexString(objectIdBinary);
+}
+
 exports.addBSGBodyInResponseWithData = addBSGBodyInResponseWithData;
 exports.getBody = getBody;
 exports.inflateRequest = inflateRequest;
 exports.deflateRequest = deflateRequest;
 exports.extractSessionId = extractSessionId;
+exports.generateMongoId = generateMongoId;

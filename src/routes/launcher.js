@@ -12,7 +12,7 @@ var tarkovSend =  require('./../tarkovSend');
  *       200:
  *         description: A successful response
  */
-router.post('/launcher/server/connect', function(req, res, next) {
+router.post('/server/connect', function(req, res, next) {
     bsgHelper.addBSGBodyInResponseWithData(res, null)
     next();
 });
@@ -26,7 +26,7 @@ router.post('/launcher/server/connect', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/launcher/ping', function(req, res, next) {
+router.post('/ping', function(req, res, next) {
     bsgHelper.addBSGBodyInResponseWithData(res, null)
     next();
 });
@@ -40,11 +40,12 @@ router.post('/launcher/ping', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/launcher/profile/login', function(req, res, next) {
+router.post('/profile/login', function(req, res, next) {
 
     // tarkovSend.TarkovSend.zlibJson(res, "", null, req)
     // res.json("INVALID_PASSWORD");
-    bsgHelper.addBSGBodyInResponseWithData(res, "INVALID_PASSWORD");
+    // bsgHelper.addBSGBodyInResponseWithData(res, "INVALID_PASSWORD");
+    res.body = bsgHelper.generateMongoId();
     next();
 });
 
