@@ -8,7 +8,7 @@ var zlib =  require('zlib');
  * @swagger
  * /client/menu/locale/{lang}:
  *   post:
- *     summary: Tarkov Call 1
+ *     summary: Load Tarkov Call 1
  *     parameters:
  *      - name: lang
  *        in: path

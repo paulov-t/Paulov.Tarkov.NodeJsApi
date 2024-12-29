@@ -42,11 +42,11 @@ app.use(function(req, res, next) {
 
 /** Middleware: Extracts the SessionId into the Request object
  *  so that future middleware can use Request.SessionId */
-// app.use(function(req, res, next) {
-//   bsgHelper.extractSessionId(req, res, next, () => {
-//     next();
-//   });
-// });
+app.use(function(req, res, next) {
+  bsgHelper.extractSessionId(req, res, next, () => {
+    next();
+  });
+});
 
 /** Middleware: If required, inflates the Request Body using Zlib */
 app.use(function(req, res, next) {
@@ -62,7 +62,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/', indexRouter);
 // app.use('/users', usersRouter);
 app.use('/launcher', launcherRouter);
-// app.use('/client', require('./routes/client/client'));
+app.use('/client', require('./routes/client/client'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
 
 /** Middleware: Deflates the Response Body using Zlib to a standard BSG expects */

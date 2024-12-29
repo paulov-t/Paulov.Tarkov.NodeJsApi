@@ -27,32 +27,42 @@ class Database {
 global._database = new Database();
 
 async function readZipArchive(filepath) {
-    try {
-      const zip = new AdmZip(filepath);
-  
-      for (const zipEntry of zip.getEntries()) {
-        // console.log(zipEntry.toString());
+  try {
+    const zip = new AdmZip(filepath);
 
-        if(zipEntry.name.length > 0) {
-            // Remove "database"
-            let dbPath = zipEntry.entryName.replace("database", "");
-            dbPath = dbPath.substring(1, dbPath.length);
-            const lastIndexOfSlash = dbPath.lastIndexOf('/');
+    const entries = zip.getEntries();
+    for (const zipEntry of entries) {
+
+      if (zipEntry.name.includes("globals.json")) {
+        console.log("");
+      }
+
+      if(zipEntry.name.length > 0) {
+          // Remove "database"
+          let dbPath = zipEntry.entryName.replace("database", "");
+          dbPath = dbPath.substring(1, dbPath.length);
+          const lastIndexOfSlash = dbPath.lastIndexOf('/');
+          if(lastIndexOfSlash !== -1)
             dbPath = dbPath.substring(0, lastIndexOfSlash);
 
-            if(global._database[dbPath] === undefined)
-                global._database[dbPath] = {};
+          dbPath = dbPath.replace(".json", "");
 
-            const decodedJsonObject = zipEntry.getData().toString('utf8')
+          if(global._database[dbPath] === undefined)
+              global._database[dbPath] = {};
 
-            const dbEntryName = zipEntry.name.replace(".json", "");
+          const decodedJsonObject = zipEntry.getData().toString('utf8')
+
+          const dbEntryName = zipEntry.name.replace(".json", "");
+          if(dbEntryName !== dbPath)
             global._database[dbPath][dbEntryName] = decodedJsonObject.startsWith("{") || decodedJsonObject.startsWith("[") ? JSON.parse(decodedJsonObject) : null;
+          else
+            global._database[dbPath] = decodedJsonObject.startsWith("{") || decodedJsonObject.startsWith("[") ? JSON.parse(decodedJsonObject) : null;
         }
-      }
-    } catch (e) {
-      console.log(`Something went wrong. ${e}`);
     }
+  } catch (e) {
+    console.log(`Something went wrong. ${e}`);
   }
+}
 
 async function loadCompressedDatabase() {
     let dbFilePath = path.resolve(process.cwd(), "./data/database.zip");
