@@ -8,11 +8,25 @@ const { logger } = require('./classes/logger');
  * @param {object} data 
  */
 function addBSGBodyInResponseWithData(response, data) {
-    response.body = { errmsg: null, err: 0, data: data };
+  response.body = { errmsg: null, err: 0, data: data };
 }
 
 function getBody(response, data) {
-    addBSGBodyInResponseWithData(response, data);
+  response.body = 
+    JSON.stringify({ errmsg: null, err: 0, data: data }, undefined, "\t")
+    .replace(/[\b]/g, "")
+    .replace(/[\f]/g, "")
+    .replace(/[\n]/g, "")
+    .replace(/[\r]/g, "")
+    .replace(/[\t]/g, "");
+}
+
+function nullResponse(response) {
+  addBSGBodyInResponseWithData(response, null);
+}
+
+function getUnclearedBody(response, data) {
+  response.body = JSON.stringify({ errmsg: null, err: 0, data: data });
 }
 
 /**
@@ -71,7 +85,12 @@ function deflateRequest(req, res) {
   let data = res.body;
   // This will handle if the previous steps have not stringify the data before
   if (typeof(data === 'object') && data.length === undefined) {
-    const stringified = JSON.stringify(data, null, "\t");
+    const stringified = JSON.stringify(data, null, "\t") 
+                        .replace(/[\b]/g, "")
+                        .replace(/[\f]/g, "")
+                        .replace(/[\n]/g, "")
+                        .replace(/[\r]/g, "")
+                        .replace(/[\t]/g, "");
     data = Buffer.from(stringified);
   }
   else
@@ -151,3 +170,5 @@ exports.inflateRequest = inflateRequest;
 exports.deflateRequest = deflateRequest;
 exports.extractSessionId = extractSessionId;
 exports.generateMongoId = generateMongoId;
+exports.nullResponse = nullResponse;
+exports.getUnclearedBody = getUnclearedBody;
