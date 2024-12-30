@@ -1,3 +1,14 @@
+/**
+ * This is where most of the routing and magic happens
+ * This contains:
+ * Express Routing
+ * Express View Handling
+ * Swagger UI generation
+ * SessionId extraction
+ * Zlib Inflate and Deflate and web requests and responses
+ * Handling of loose files
+ */
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -5,6 +16,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const { specs, swaggerUi } = require('./swagger');
 var zlib = require('zlib');
+var fs = require('fs');
 var bsgHelper =  require('./bsgHelper');
 const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
@@ -27,17 +39,38 @@ app.use(express.raw({ type: "application/json", limit: '50mb',
   extended: true  }));
 
 app.use(logger('dev'));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'files')));
-app.use(express.static(path.join(__dirname, 'res')));
 
 /** Middleware: Detects and logs Uri calls */
 app.use(function(req, res, next) {
   ownLogger.logger.logInfo(`${req.headers["host"] + req.url}`);
   next();
+});
+
+app.use(function(req, res, next) {
+
+  if(req.url.includes("files/")) {
+    let filePath = req.url.replace(req.host, "");
+    filePath = filePath.substring(1, filePath.length);
+    filePath = path.join(__dirname, 'public', filePath);
+
+    if(filePath.endsWith(".png")) {
+      res.setHeader("content-type", "image/png");
+    }
+
+    // console.log(`requested file: ${filePath}`);
+    if(fs.existsSync(filePath)) {
+      res.end(fs.readFileSync(filePath));
+    }
+    else {
+      ownLogger.logger.logError(`${filePath} doesn't exist`);
+      res.end(fs.readFileSync(path.join(__dirname, 'public', 'files', 'achievement', 'Standard_35.png')));
+    }
+
+  }
+  else
+    next();
 });
 
 /** Middleware: Extracts the SessionId into the Request object
