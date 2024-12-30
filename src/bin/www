@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
 /**
+ * The www is designed so that the app can be deployed to Containers like Azure Web Service
+ * The app will listen on both http (80) and https (443) with a self-signed generated certificate
+ */
+
+/**
  * Module dependencies.
  */
 
@@ -11,46 +16,30 @@ const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
 
-/**
- * Get port from environment and store in Express.
- */
-console.log("ENVIRONMENT VARS");
-console.log(process.env);
-
-// var portHttp = normalizePort(process.env.PORT || '8080');
-// var portHttps = normalizePort('3000');
-// app.set('port', portHttp);
-// appHttps.set('port', portHttps);
+const certs = certificate.generate(null);
 
 /**
  * Create HTTP server.
  */
-const certs = certificate.generate(null);
-
 var httpServer = http.createServer(app);
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-// httpServer.listen(portHttp);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 httpServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 
+/**
+ * Create HTTPS server.
+ */
 var httpsServer = https.createServer({
   key: certs.key,
   cert: certs.cert
 }, appHttps);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-// httpsServer.listen(portHttps);
 httpsServer.on('error', onError);
 httpsServer.on('listening', onListening);
 httpsServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 
+/**
+ * Servers Listen
+ */
 httpServer.listen(process.env.PORT || 80)
 httpsServer.listen(443)
 
