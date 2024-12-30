@@ -158,7 +158,7 @@ router.post('/customization/storage', function(req, res, next) {
         id, type, source
     }
     */
-   const storage = global._database["templates"]["customizationStorage"];
+   const storage = global._database["templates"]["customisationStorage"];
     bsgHelper.addBSGBodyInResponseWithData(res, storage);
     next();
 });

@@ -69,13 +69,13 @@ function inflateRequest(req, res, next, done) {
 }
 
 /**
- * Inflates the request object using Zlib but only when detected
+ * Deflates the response body using Zlib but only when detected
  * @param {Http.IncomingMessage} req request object
  * @param {Http.OutgoingMessage} res response object
  * @param {function} next if you want to skip to next middleware
  * @param {function} done returns function with request body object parameter
  */
-function deflateRequest(req, res) {
+function deflateResponse(req, res) {
 
   if(res.body === undefined || res.body === null)
   {
@@ -96,7 +96,7 @@ function deflateRequest(req, res) {
   else
     data = Buffer.from(data);
 
-  const deflateData = zlib.deflateSync(data, { chunkSize: 1024 });
+  const deflateData = zlib.deflateSync(data);
 
   // HACK
   // BSG apparently do not understand headers and content-encoding 
@@ -118,7 +118,7 @@ function deflateRequest(req, res) {
 /**
  * Finds and extracts the SessionId from the Cookies and adds a new Member to the Request called SessionId
  * @param {Http.IncomingMessage} req request object
- * @param {object} res response object
+ * @param {Http.OutgoingMessage} res response object
  * @param {function} next if you want to skip to next middleware
  * @param {function} done returns function with request body object parameter
  */
@@ -167,7 +167,7 @@ function generateMongoId() {
 exports.addBSGBodyInResponseWithData = addBSGBodyInResponseWithData;
 exports.getBody = getBody;
 exports.inflateRequest = inflateRequest;
-exports.deflateRequest = deflateRequest;
+exports.deflateRequest = deflateResponse;
 exports.extractSessionId = extractSessionId;
 exports.generateMongoId = generateMongoId;
 exports.nullResponse = nullResponse;
