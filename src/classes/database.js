@@ -41,6 +41,9 @@ async function readZipArchive(filepath) {
           // Remove "database"
           let dbPath = zipEntry.entryName.replace("database", "");
           dbPath = dbPath.substring(1, dbPath.length);
+
+          const dbEntryName = zipEntry.name.replace(".json", "");
+
           const lastIndexOfSlash = dbPath.lastIndexOf('/');
           if(lastIndexOfSlash !== -1)
             dbPath = dbPath.substring(0, lastIndexOfSlash);
@@ -52,7 +55,21 @@ async function readZipArchive(filepath) {
 
           const decodedJsonObject = zipEntry.getData().toString('utf8')
 
-          const dbEntryName = zipEntry.name.replace(".json", "");
+          if (dbPath.includes("/")) {
+
+            const dbPathSplit = dbPath.split('/');
+            if (dbPathSplit.length > 0) {
+              if (global._database[dbPathSplit[0]] === undefined)
+                global._database[dbPathSplit[0]] = {};
+
+              if (global._database[dbPathSplit[0]][dbPathSplit[1]] === undefined)
+                global._database[dbPathSplit[0]][dbPathSplit[1]] = {};
+
+              global._database[dbPathSplit[0]][dbPathSplit[1]][dbEntryName] = decodedJsonObject.startsWith("{") || decodedJsonObject.startsWith("[") ? JSON.parse(decodedJsonObject) : null;
+
+            }
+          }
+
           if(dbEntryName !== dbPath)
             global._database[dbPath][dbEntryName] = decodedJsonObject.startsWith("{") || decodedJsonObject.startsWith("[") ? JSON.parse(decodedJsonObject) : null;
           else
