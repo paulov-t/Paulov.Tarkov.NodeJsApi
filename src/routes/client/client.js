@@ -2,29 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
 
-/**
- * @swagger
- * /client/locale/{lang}:
- *   post:
- *     summary: Tarkov Call 1
- *     parameters:
- *      - name: lang
- *        in: path
- *        description: The language requested
- *        required: true
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/locale/:lang', function(req, res, next) {
 
-    let lang = req.params["lang"];
-    if(lang === undefined)
-        lang = "en";
-
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["locales/global"][lang]);
-    next();
-});
 
 /**
  * @swagger
@@ -124,6 +102,199 @@ router.post('/game/config', function(req, res, next) {
         });
     next();
 
+});
+
+/**
+ * @swagger
+ * /client/items:
+ *   post:
+ *     summary: Load Tarkov Call 7
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/items', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, global._database["templates"]["items"]);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/customization:
+ *   post:
+ *     summary: Load Tarkov Call 8
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/customization', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, global._database["templates"]["customization"]);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/customization/storage:
+ *   post:
+ *     summary: Load Tarkov Call 9
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/customization/storage', function(req, res, next) {
+
+    /*
+    expected list of object 
+    {
+        id, type, source
+    }
+    */
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/globals:
+ *   post:
+ *     summary: Load Tarkov Call 10
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/globals', function(req, res, next) {
+    const globals = global._database["globals"];
+    globals.time = Date.now() / 1000;
+
+    bsgHelper.addBSGBodyInResponseWithData(res, globals);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/settings:
+ *   post:
+ *     summary: Load Tarkov Call 11
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/settings', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, global._database["settings"]);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/prestige/list:
+ *   post:
+ *     summary: Load Tarkov Call 12
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/prestige/list', function(req, res, next) {
+
+     /*
+    expected object 
+    {
+        elements array
+    }
+    */
+    bsgHelper.addBSGBodyInResponseWithData(res, 
+        {
+            elements: []
+        });
+    next();
+});
+
+/**
+ * @swagger
+ * /client/trading/api/traderSettings:
+ *   post:
+ *     summary: Load Tarkov Call 13
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/trading/api/traderSettings', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/profile/list:
+ *   post:
+ *     summary: Load Tarkov Call 14
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/profile/list', function(req, res, next) {
+
+    // TODO: :)
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    next();
+});
+
+
+/**
+ * @swagger
+ * /client/locale/{lang}:
+ *   post:
+ *     summary: Tarkov Call 15
+ *     parameters:
+ *      - name: lang
+ *        in: path
+ *        description: The language requested
+ *        required: true
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/locale/:lang', function(req, res, next) {
+
+    let lang = req.params["lang"];
+    if(lang === undefined)
+        lang = "en";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, global._database["locales/global"][lang]);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/profile/nickname/reserved:
+ *   post:
+ *     summary: Tarkov Call 16
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/profile/nickname/reserved', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, "Hello");
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/profile/nickname/validate:
+ *   post:
+ *     summary: Tarkov Call 17
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/profile/nickname/validate', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, {});
+    next();
 });
 
 module.exports = router;
