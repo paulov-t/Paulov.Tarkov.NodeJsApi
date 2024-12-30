@@ -80,6 +80,34 @@ class accountService {
         profile.Customization.Head = data.headId;
         profile.Info.RegistrationDate = ~~(new Date() / 1000);
         profile.Health.UpdateTime = ~~(Date.now() / 1000);
+        profile.Stats = {
+            Eft: {
+                CarriedQuestItems: [],
+                DamageHistory: { LethalDamagePart: "Head", LethalDamage: undefined, BodyParts: [] },
+                DroppedItems: [],
+                ExperienceBonusMult: 0,
+                FoundInRaidItems: [],
+                LastPlayerState: undefined,
+                LastSessionDate: 0,
+                OverallCounters: { Items: [] },
+                SessionCounters: { Items: [] },
+                SessionExperienceMult: 0,
+                SurvivorClass: "Unknown",
+                TotalInGameTime: 0,
+                TotalSessionExperience: 0,
+                Victims: [],
+            }
+        };
+        profile.Info.NeedWipeOptions = [];
+        profile.Quests = [];
+        profile.RepeatableQuests = [];
+        profile.CarExtractCounts = {};
+        profile.CoopExtractCounts = {};
+        profile.Achievements = {};
+
+        // Update EquipmentId
+        this.updateInventoryEquipmentId(profile);
+
         account["pmc"] = profile;
         account["scav"] = JSON.parse(JSON.stringify(profile));
         account["scav"]._id = bsgHelper.generateMongoId();
@@ -87,25 +115,47 @@ class accountService {
         account["pmc"].savage = account["scav"].aid;
         account["scav"].savage = account["scav"].aid;
 
+
         account["pmc"].Inventory = this.replaceInventoryItemIds(account["pmc"].Inventory);
+        this.updateInventoryEquipmentId(account["scav"]);
         account["scav"].Inventory = this.replaceInventoryItemIds(account["scav"].Inventory);
+
+        account.friends = [];
 
         this.saveAccount(account);
         return account;
+    }
+
+     /**
+     * make profiles pmcData.Inventory.equipment unique
+     * @param pmcData Profile to update
+     */
+     updateInventoryEquipmentId(profile) {
+        const oldEquipmentId = profile.Inventory.equipment;
+        profile.Inventory.equipment = bsgHelper.generateMongoId();
+
+        for (const item of profile.Inventory.items) {
+            if (item.parentId === oldEquipmentId) {
+                item.parentId = profile.Inventory.equipment;
+                continue;
+            }
+
+            if (item._id === oldEquipmentId) {
+                item._id = profile.Inventory.equipment;
+            }
+        }
     }
 
     replaceInventoryItemIds (inventory) {
 
         const replacedIds = {};
 
-        const previousEquipmentId = inventory.equipment;
-        inventory.equipment = bsgHelper.generateMongoId();
+        const equipmentId = inventory.equipment;
 
         for(const item of inventory.items) {
 
-            if (item._id == previousEquipmentId) {
-                item._id = inventory.equipment;
-                replacedIds[item._id] = inventory.equipment;
+            // this has already been handled by updateInventoryEquipmentId
+            if (item._id == equipmentId) {
                 continue;
             }
 
