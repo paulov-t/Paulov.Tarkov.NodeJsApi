@@ -90,5 +90,5 @@ async function loadCompressedDatabase() {
 
 }
 
-module.exports.db
+module.exports.db = global._database;
 exports.loadCompressedDatabase = loadCompressedDatabase;
