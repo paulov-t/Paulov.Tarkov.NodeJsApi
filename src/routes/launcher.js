@@ -77,7 +77,8 @@ router.post('/profile/register', function(req, res, next) {
     generateLauncherLoginRequestBodyForSwagger(req);
 
     const account = accountService.createAccount(req.body, undefined, true);
-    return account.accountId;
+    res.body = account.accountId;
+    next();
 });
 
 function generateLauncherLoginRequestBodyForSwagger (req) {
