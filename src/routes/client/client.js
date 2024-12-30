@@ -14,7 +14,7 @@ var bsgHelper =  require('../../bsgHelper');
  *         description: A successful response
  */
 router.post('/game/mode', function(req, res, next) {
-    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "Pve", backendUrl: req.host });
+    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "pve", backendUrl: req.host });
     next();
   });
 
@@ -45,7 +45,7 @@ router.post('/game/start', function(req, res, next) {
    *         description: A successful response
    */
   router.post('/game/version/validate', function(req, res, next) {
-    bsgHelper.addBSGBodyInResponseWithData(res, null);
+    bsgHelper.nullResponse(res);
     next();
   
   });
@@ -75,6 +75,10 @@ router.post('/languages', function(req, res, next) {
    *         description: A successful response
    */
 router.post('/game/config', function(req, res, next) {
+
+    const sessionId = req.SessionId;
+
+
     const today = new Date().toUTCString();
     const startTimeStampMS = Date.parse(today);
     bsgHelper.addBSGBodyInResponseWithData(res, 
@@ -130,7 +134,10 @@ router.post('/items', function(req, res, next) {
  */
 router.post('/customization', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["templates"]["customization"]);
+    const templateCustomization = global._database["templates"]["customization"];
+    bsgHelper.getBody(res, templateCustomization);
+    // console.log(templateCustomization);
+    // console.log(res.body);
     next();
 });
 
@@ -151,7 +158,8 @@ router.post('/customization/storage', function(req, res, next) {
         id, type, source
     }
     */
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
+   const storage = global._database["templates"]["customizationStorage"];
+    bsgHelper.addBSGBodyInResponseWithData(res, storage);
     next();
 });
 
@@ -204,11 +212,9 @@ router.post('/prestige/list', function(req, res, next) {
         elements array
     }
     */
-    bsgHelper.addBSGBodyInResponseWithData(res, 
-        {
-            elements: []
-        });
-    next();
+   const prestige = global._database["templates"]["prestige"];
+   bsgHelper.addBSGBodyInResponseWithData(res, prestige);
+   next();
 });
 
 /**
@@ -222,7 +228,13 @@ router.post('/prestige/list', function(req, res, next) {
  */
 router.post('/trading/api/traderSettings', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    const traders = global._database["traders"];
+    const traderBases = [];
+    for (const traderId in traders) {
+        traderBases.push(traders[traderId].base);
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, traderBases);
     next();
 });
 
@@ -237,8 +249,13 @@ router.post('/trading/api/traderSettings', function(req, res, next) {
  */
 router.post('/game/profile/list', function(req, res, next) {
 
+    const sessionId = req.SessionId;
+    const output = [];
+    // if the account has been wiped, send back blank array
+    // TODO >>>
+
     // TODO: :)
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    bsgHelper.addBSGBodyInResponseWithData(res, output);
     next();
 });
 
@@ -255,7 +272,7 @@ router.post('/game/profile/list', function(req, res, next) {
  *        required: true
  *     responses:
  *       200:
- *         description: A successful response
+ *         description: An object with language result in data member
  */
 router.post('/locale/:lang', function(req, res, next) {
 
@@ -263,7 +280,10 @@ router.post('/locale/:lang', function(req, res, next) {
     if(lang === undefined)
         lang = "en";
 
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["locales/global"][lang]);
+    const locales = global._database["locales"];
+    const result = locales.global[lang];
+
+    bsgHelper.getUnclearedBody(res, result);
     next();
 });
 
@@ -293,7 +313,7 @@ router.post('/game/profile/nickname/reserved', function(req, res, next) {
  */
 router.post('/game/profile/nickname/validate', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, {});
+    bsgHelper.addBSGBodyInResponseWithData(res, { status: "ok" });
     next();
 });
 
