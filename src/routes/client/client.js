@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
+const { accountService } = require('../../services/accountService');
 
 
 
@@ -251,6 +252,14 @@ router.post('/game/profile/list', function(req, res, next) {
 
     const sessionId = req.SessionId;
     const output = [];
+    let account = accountService.getAccount(req.SessionId);
+    if (account.pmc !== undefined) {
+        output.push(account.pmc);
+        output.push(account.scav);
+        bsgHelper.addBSGBodyInResponseWithData(res, output);
+        next();
+        return;
+    }
     // if the account has been wiped, send back blank array
     // TODO >>>
 
@@ -314,6 +323,30 @@ router.post('/game/profile/nickname/reserved', function(req, res, next) {
 router.post('/game/profile/nickname/validate', function(req, res, next) {
 
     bsgHelper.addBSGBodyInResponseWithData(res, { status: "ok" });
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/profile/create:
+ *   post:
+ *     summary: Tarkov Call 18 (only run when Creating Character)
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/profile/create', function(req, res, next) {
+
+    // If we are running via Swagger UI, fake a SessionId / Account creation
+    if (req.SessionId === undefined)
+        req.SessionId = bsgHelper.generateMongoId();
+
+    let account = accountService.getAccount(req.SessionId);
+
+    accountService.createAccount(req.body, req.SessionId);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, req.SessionId);
+
     next();
 });
 

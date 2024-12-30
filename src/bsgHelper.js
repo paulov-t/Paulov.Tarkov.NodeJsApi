@@ -38,9 +38,14 @@ function getUnclearedBody(response, data) {
  */
 function inflateRequest(req, res, next, done) {
 
-    const stringifiedBody =
-      typeof(req.body) === "object" ? JSON.stringify(req.body) : null;
-  
+  const bodyType = typeof(req.body);
+
+    let stringifiedBody = '{}';
+
+    // If Buffer then convert
+    if (bodyType === "object" && req.body.byteLength !== undefined)
+      stringifiedBody = req.body.toString('utf-8');
+
     if(stringifiedBody == '{}') {
       done(req.body);
       return;
@@ -57,13 +62,15 @@ function inflateRequest(req, res, next, done) {
       ) {
       
         const asyncInflatedString = zlib.inflateSync(req.body).toString('utf-8');
-        req.body = asyncInflatedString;
+        if (asyncInflatedString.startsWith("{") || asyncInflatedString.startsWith("["))
+          req.body = JSON.parse(asyncInflatedString);
+        else
+          req.body = asyncInflatedString;
         done(req.body);
 
     }
     else  {
-      if(typeof(req.body) !== "object")
-        req.body = JSON.parse(req.body.toString('utf-8'));
+      req.body = JSON.parse(stringifiedBody);
       done(req.body);
     }
 }
@@ -145,7 +152,7 @@ function toHexString(byteArray) {
 
 function generateMongoId() {
     const time = Math.floor(new Date().getTime() / 1000);
-    const counter = (global.mongoIdCounter + 1) % 0xffffff;
+    const counter = (global.mongoIdCounter++) % 0xffffff;
     const objectIdBinary = Buffer.alloc(12);
 
     objectIdBinary[3] = time & 0xff;

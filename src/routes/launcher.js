@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 var tarkovSend =  require('./../tarkovSend');
+const { accountService } = require('../services/accountService');
 
 /**
  * @swagger
@@ -42,11 +43,51 @@ router.post('/ping', function(req, res, next) {
  */
 router.post('/profile/login', function(req, res, next) {
 
-    // tarkovSend.TarkovSend.zlibJson(res, "", null, req)
-    // res.json("INVALID_PASSWORD");
-    // bsgHelper.addBSGBodyInResponseWithData(res, "INVALID_PASSWORD");
-    res.body = bsgHelper.generateMongoId();
+    generateLauncherLoginRequestBodyForSwagger(req);
+
+    const account = accountService.getAccountByUsernamePassword(req.body.username, req.body.password);
+    // Account has not been found. Send back a "FAILED" notification.
+    if (account === undefined || account === null) {
+        res.body = "FAILED";
+        next();
+        return;
+    }
+
+    // Account has been found but the provided password is invalid. Send back a "INVALID_PASSWORD" notification.
+    if (account === "INVALID_PASSWORD") {
+        res.body = "INVALID_PASSWORD";
+        next();
+        return;
+    }
+
+    res.body = account.accountId;
     next();
 });
+
+/**
+ * @swagger
+ * /launcher/profile/register:
+ *   post:
+ *     summary: Launcher call 3. Attempt to Login to this Server.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/profile/register', function(req, res, next) {
+    generateLauncherLoginRequestBodyForSwagger(req);
+
+    const account = accountService.createAccount(req.body, undefined, true);
+    return account.accountId;
+});
+
+function generateLauncherLoginRequestBodyForSwagger (req) {
+    if (req.body.username === undefined) {
+        req.body.username = "testSwagger";
+    }
+
+    if (req.body.password === undefined) {
+        req.body.password = "testSwagger";
+    }
+}
 
 module.exports = router;
