@@ -1,6 +1,7 @@
 var zlib = require('zlib');
 var Http = require('http');
 const { logger } = require('./classes/logger');
+const { randomBytes } = require('crypto');
 
 /**
  * 
@@ -152,9 +153,10 @@ function toHexString(byteArray) {
 
 function generateMongoId() {
     const time = Math.floor(new Date().getTime() / 1000);
-    const counter = (global.mongoIdCounter++) % 0xffffff;
+    const counter = (++global.mongoIdCounter) % 0xffffff;
     const objectIdBinary = Buffer.alloc(12);
 
+    
     objectIdBinary[3] = time & 0xff;
     objectIdBinary[2] = (time >> 8) & 0xff;
     objectIdBinary[1] = (time >> 16) & 0xff;
@@ -163,7 +165,7 @@ function generateMongoId() {
     objectIdBinary[5] = 0;
     objectIdBinary[6] = 0;
     objectIdBinary[7] = 0;
-    objectIdBinary[8] = 0;
+    objectIdBinary[8] = new randomBytes(1).toString();
     objectIdBinary[9] = (counter >> 16) & 0xff;
     objectIdBinary[10] = (counter >> 8) & 0xff;
     objectIdBinary[11] = counter & 0xff;
