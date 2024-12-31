@@ -173,6 +173,23 @@ function generateMongoId() {
     return toHexString(objectIdBinary);
 }
 
+/**
+ * 
+ * @param {Number} timestamp 
+ * @returns {Date}
+ */
+function getInRaidTime(timestamp) {
+  // tarkov time = (real time * 7 % 24 hr) + 3 hour
+  const russiaOffsetMilliseconds = (3 * 60 * 60) * 1000;
+  const twentyFourHoursMilliseconds = (24 * 60 * 60) * 1000;
+  const currentTimestampMilliSeconds = timestamp ? timestamp : new Date().getTime();
+
+  return new Date(
+      (russiaOffsetMilliseconds + currentTimestampMilliSeconds * 1) %
+          twentyFourHoursMilliseconds,
+  );
+}
+
 exports.addBSGBodyInResponseWithData = addBSGBodyInResponseWithData;
 exports.getBody = getBody;
 exports.inflateRequest = inflateRequest;
@@ -181,3 +198,4 @@ exports.extractSessionId = extractSessionId;
 exports.generateMongoId = generateMongoId;
 exports.nullResponse = nullResponse;
 exports.getUnclearedBody = getUnclearedBody;
+exports.getInRaidTime = getInRaidTime;

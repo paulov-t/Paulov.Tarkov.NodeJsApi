@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
 const { accountService } = require('../../services/accountService');
+const { profileStatus } = require('../../models/profileStatus');
+const { profileStatusResponse } = require('../../models/profileStatusResponse');
 
 
 
@@ -252,11 +254,12 @@ router.post('/game/profile/list', function(req, res, next) {
 
     const sessionId = req.SessionId;
     const output = [];
-    let account = accountService.getAccount(req.SessionId);
+    // clone the account
+    let account = JSON.parse(JSON.stringify(accountService.getAccount(req.SessionId)));
     if (account.pmc !== undefined) {
         output.push(account.pmc);
         output.push(account.scav);
-        bsgHelper.addBSGBodyInResponseWithData(res, output);
+        bsgHelper.getBody(res, output);
         next();
         return;
     }
@@ -346,6 +349,493 @@ router.post('/game/profile/create', function(req, res, next) {
     accountService.createAccount(req.body, req.SessionId);
 
     bsgHelper.addBSGBodyInResponseWithData(res, req.SessionId);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/keepalive:
+ *   post:
+ *     summary: Keep Alive Command
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/keepalive', function(req, res, next) {
+
+    // If we are running via Swagger UI, fake a SessionId / Account creation
+    if (req.SessionId === undefined)
+        req.SessionId = bsgHelper.generateMongoId();
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { utc_time: Date.now() / 1000 });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/profile/select:
+ *   post:
+ *     summary: Tarkov Call 19
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/profile/select', function(req, res, next) {
+    bsgHelper.addBSGBodyInResponseWithData(res, { status: "ok" });
+    next();
+});
+
+/**
+ * @swagger
+ * /client/profile/status:
+ *   post:
+ *     summary: Tarkov Call 20
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/profile/status', function(req, res, next) {
+
+    let account = accountService.getAccount(req.SessionId);
+// if we are running via Swagger and SessionId is null. Get first account to test with.
+    if(!req.SessionId) {
+        account = accountService.getAllAccounts()[0];
+    }
+
+    if (!account["pmc"]) {
+        throw "PMC is missing!!";
+    }
+
+    const savageStatus = new profileStatus();
+    savageStatus.profileid = account["pmc"]["savage"];
+    const pmcStatus = new profileStatus();
+    savageStatus.profileid = req.SessionId;
+    const response = new profileStatusResponse(
+        false,
+        [
+            savageStatus,
+            pmcStatus
+        ]
+    );
+    bsgHelper.addBSGBodyInResponseWithData(res, response);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/weather:
+ *   post:
+ *     summary: Tarkov Call 21
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/weather', function(req, res, next) {
+
+    let result = { acceleration: 1, time: "", date: "", weather: undefined, season: 1 }; 
+    const year = new Date().getUTCFullYear();
+    result.date = `${year}-01-01`
+    result.time = bsgHelper.getInRaidTime(undefined);
+    result.time = `${result.date} 13:00:00`; 
+    result.weather = { 
+        cloud: 0,
+        wind_speed: 0,
+        wind_direction: 1,
+        wind_gustiness: 0,
+        rain: 0,
+        rain_intensity: 0,
+        fog: 0,
+        temp: 0,
+        pressure: 0,
+        time: `${result.date} 13:00:00`,
+        date: `${year}-01-01`,
+        timestamp: 0
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, result);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/locations:
+ *   post:
+ *     summary: Tarkov Call 22
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/locations', function(req, res, next) {
+
+    const locations = {};
+    const db = global._database;
+    for(const locationId in db.locations) {
+        const mapBase = db.locations[locationId]?.base;
+        if (!mapBase) {
+            continue;
+        }
+
+         // Clear out loot array
+         mapBase.Loot = [];
+         // Add map base data to dictionary
+         locations[mapBase._Id] = mapBase;
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { locations: locations, paths: db.locations.base.paths });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/handbook/templates:
+ *   post:
+ *     summary: Tarkov Call 23
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/handbook/templates', function(req, res, next) {
+
+    const dbHandbook = global._database.templates.handbook;
+    if(!dbHandbook)
+        throw "Handbook not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbHandbook);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/hideout/areas:
+ *   post:
+ *     summary: Tarkov Call 24
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/hideout/areas', function(req, res, next) {
+
+    const dbAreas = global._database.hideout.areas;
+    if(!dbAreas)
+        throw "Hideout Areas not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbAreas);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/hideout/qte/list:
+ *   post:
+ *     summary: Tarkov Call 25
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/hideout/qte/list', function(req, res, next) {
+
+    const dbHideoutQte = global._database.hideout.qte;
+    if(!dbHideoutQte)
+        throw "Hideout QTE not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbHideoutQte);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/hideout/settings:
+ *   post:
+ *     summary: Tarkov Call 26
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/hideout/settings', function(req, res, next) {
+
+    const dbHideoutSettings = global._database.hideout.settings;
+    if(!dbHideoutSettings)
+        throw "Hideout Settings not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbHideoutSettings);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/hideout/production/recipes:
+ *   post:
+ *     summary: Tarkov Call 27
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/hideout/production/recipes', function(req, res, next) {
+
+    const dbHideoutProduction = global._database.hideout.production;
+    if(!dbHideoutProduction)
+        throw "Hideout Production not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbHideoutProduction);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/hideout/customization/offer/list:
+ *   post:
+ *     summary: Tarkov Call 28
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/hideout/customization/offer/list', function(req, res, next) {
+
+    const dbHideoutCustomisation = global._database.hideout.customisation;
+    if(!dbHideoutCustomisation)
+        throw "Hideout Customisation not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbHideoutCustomisation);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/builds/list:
+ *   post:
+ *     summary: Tarkov Call 29
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/builds/list', function(req, res, next) {
+
+    // const dbHideoutCustomisation = global._database.hideout.customisation;
+    // if(!dbHideoutCustomisation)
+    //     throw "Hideout Customisation not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { equipmentBuilds: [], weaponBuilds: [], magazineBuilds: [] });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/notifier/channel/create:
+ *   post:
+ *     summary: Tarkov Call 30
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/notifier/channel/create', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, {
+        server: req.host,
+        channel_id: req.SessionId,
+        url: "",
+        notifierServer: req.host,
+        ws: `${req.host}/notifierServer/getwebsocket/${req.SessionId}`,
+    });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /server/list:
+ *   post:
+ *     summary: Tarkov Call 31
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/server/list', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, [{ ip: req.host, port: 443 }]);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/group/current:
+ *   post:
+ *     summary: Tarkov Call 32
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/group/current', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { squad: [] });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/friend/list:
+ *   post:
+ *     summary: Tarkov Call 33
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/friend/list', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { Friends: [], Ignore: [], InIgnoreList: [] });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/friend/request/list/inbox:
+ *   post:
+ *     summary: Tarkov Call 34
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/friend/request/list/inbox', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/friend/request/list/outbox:
+ *   post:
+ *     summary: Tarkov Call 35
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/friend/request/list/outbox', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/mail/dialog/list:
+ *   post:
+ *     summary: Tarkov Call 36
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/mail/dialog/list', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/quest/list:
+ *   post:
+ *     summary: Tarkov Call 37
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/quest/list', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/achievement/statistic:
+ *   post:
+ *     summary: Tarkov Call 38
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/achievement/statistic', function(req, res, next) {
+
+    const dbAchievements = global._database.templates.achievements;
+    if(!dbAchievements)
+        throw "Achievements not found";
+
+    const stats = {};
+    for (const achievement of dbAchievements) {
+        stats[achievement.id] = 0;
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { elements: stats });
+
+    next();
+});
+
+
+/**
+ * @swagger
+ * /client/achievement/list:
+ *   post:
+ *     summary: Tarkov Call 39
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/achievement/list', function(req, res, next) {
+
+    const dbAchievements = global._database.templates.achievements;
+    if(!dbAchievements)
+        throw "Achievements not found";
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { elements: dbAchievements });
+
+    next();
+});
+
+
+/**
+ * @swagger
+ * /client/repeatalbeQuests/activityPeriods:
+ *   post:
+ *     summary: Tarkov Call 40
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/repeatalbeQuests/activityPeriods', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/survey:
+ *   post:
+ *     summary: Tarkov Call 41
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/survey', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { locale: {}, survey: {} });
 
     next();
 });
