@@ -15,6 +15,7 @@ const debug = require('debug')('myexpressapp:server');
 const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
+const ws = require('ws');
 
 const certs = certificate.generate(null);
 
@@ -24,7 +25,6 @@ const certs = certificate.generate(null);
 var httpServer = http.createServer(app);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
-httpServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 
 /**
  * Create HTTPS server.
@@ -35,7 +35,6 @@ var httpsServer = https.createServer({
 }, appHttps);
 httpsServer.on('error', onError);
 httpsServer.on('listening', onListening);
-httpsServer.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 
 /**
  * Servers Listen
@@ -102,3 +101,32 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+
+
+/// ==========================================================
+/// Web Socket Handling on both Servers
+
+const wsServer = new ws.Server({ noServer: true });
+wsServer.on('connection', socket => {
+  socket.on('message', message => console.log(message));
+});
+httpServer.on('upgrade', (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, socket => {
+    console.log("Upgrade WebSocket Https!");
+    wsServer.emit('connection', socket, request);
+    setInterval(()=>{ 
+      socket.send(JSON.stringify({ type: "ping", eventId: "" }));
+    }, 1000);
+  });
+});
+httpsServer.on('upgrade', (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, socket => {
+    console.log("Upgrade WebSocket Https!");
+    wsServer.emit('connection', socket, request);
+    setInterval(()=>{ 
+      socket.send(JSON.stringify({ type: "ping", eventId: "" }));
+    }, 1000);
+  });
+});
+
