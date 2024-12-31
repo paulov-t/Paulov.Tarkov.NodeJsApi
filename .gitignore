@@ -49,3 +49,4 @@ Build/
 pre-db/*
 
 database.zip
+src/data/accounts*
