@@ -4,20 +4,66 @@ class Account {
         this.username = "Developer";
         this.password = "";
         this.edition = "Standard";
+         
         this.modes = {
-            pve: new accountProfileMode()
+            /**
+             * PVP
+             * @type {AccountProfileMode}
+             * @public
+             */
+            regular: new AccountProfileMode("regular"),
+            /**
+             * PVE
+             * @type {AccountProfileMode}
+             * @public
+             */
+            pve: new AccountProfileMode("pve"),
+            /**
+             * Arena
+             * @type {AccountProfileMode}
+             * @public
+             */
+            arena: new AccountProfileMode("arena")
         }
+        this.currentMode = "regular"
     }
 }
 
-class accountProfileMode {
-    constructor() {
-        this.name = "";
-        this.character = {
+class AccountProfileMode {
+    constructor(name = "pve") {
+        this.name = name;
+        /**
+         * 
+         * @type {AccountProfileCharacterSet}
+         * @public
+         */
+        this.characters = new AccountProfileCharacterSet();
+    }
+}
 
-        }
+class AccountProfileCharacterSet {
+    constructor() {
+        /**
+         * 
+         * @type {AccountProfileCharacter}
+         * @public
+         */
+        this.pmc = undefined
+        /**
+         * 
+         * @type {AccountProfileCharacter}
+         * @public
+         */
+        this.scav = undefined
+    }
+}
+
+class AccountProfileCharacter {
+    constructor() {
     }
 }
 
 module.exports.Account = Account;
-module.exports.accountProfileMode = accountProfileMode;
+module.exports.AccountProfileMode = AccountProfileMode;
+module.exports.AccountProfileCharacterSet = AccountProfileCharacterSet;
+module.exports.AccountProfileCharacter = AccountProfileCharacter;

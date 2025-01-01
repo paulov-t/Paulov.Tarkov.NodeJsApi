@@ -3,9 +3,10 @@ const path =  require('path');
 const bsgHelper = require('../bsgHelper');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
-const { Account } = require('../models/account');
+const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('../models/Account');
+const { BotGenerationService } = require('./BotGenerationService');
 
-class accountService {
+class AccountService {
     constructor() {
        this.saveDirectoryPath = path.join(process.cwd(), "data", "accounts");
        if (!fs.existsSync(this.saveDirectoryPath))
@@ -33,12 +34,8 @@ class accountService {
         const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
         // If account doesn't exist, create it
         if (!fs.existsSync(accountFilePath)) {
-            const blankAccount = {
-                username: sessionId,
-                password: "",
-                edition: "Standard"
-            };
-            fs.writeFileSync(accountFilePath, JSON.stringify({}, null, ""));
+            const blankAccount = new Account();
+            fs.writeFileSync(accountFilePath, JSON.stringify(blankAccount, null, ""));
         }
 
     }
@@ -69,12 +66,14 @@ class accountService {
                 voiceId: "6284d6948e4092597733b7a5",
                 username: "Hello",
                 password: "Hello",
-                edition: "Standard"
+                edition: "Standard",
+                currentMode: "regular"
             }
         }
 
-        /**
-         * account {Account}
+       /**
+         * 
+         * @type {Account}
          */
         const account = sessionId !== undefined ? this.getAccount(sessionId) : new Account();
         if (data.username !== undefined) {
@@ -84,10 +83,12 @@ class accountService {
             var hashedPassword = bcrypt.hashSync(data.password, 8);
             account.password = hashedPassword;
             // https://www.freecodecamp.org/news/securing-node-js-restful-apis-with-json-web-tokens-9f811a92bb52/
+            // TODO: Use this throughout Api calls
             account.token = jwt.sign({ id: newAccountId }, "Paulov", {
                 expiresIn: 86400 // expires in 24 hours
             });
             account.edition = data.edition;
+            account.currentMode = data.currentMode;
             if (launcherCreate) {
                 this.saveAccount(account);
                 return account;
@@ -102,10 +103,10 @@ class accountService {
 
         const db = global._database;
         // clone the template
-        // const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"]["Edge Of Darkness"][data.side.toLowerCase()]["character"]));
-        const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"]["Standard"][data.side.toLowerCase()]["character"]));
+        const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"][account.edition][data.side.toLowerCase()]["character"]));
         profile._id = sessionId;
-        profile.aid = bsgHelper.generateMongoId();
+        profile.aid = "1";// bsgHelper.generateMongoId();
+        profile.savage = undefined;
         profile.Info.Nickname = data.nickname;
         profile.Info.LowerNickname = data.nickname.toLowerCase();
         profile.Info.RegistrationDate = Math.floor(Math.random() * 1000000);
@@ -161,38 +162,47 @@ class accountService {
             profile.UnlockedInfo = { unlockedProductionRecipe: [] };
         }
 
-        account["pmc"] = profile;
-        // const profileScav = JSON.parse(JSON.stringify(db["bots"]["base"]));
-        const profileScav = JSON.parse(JSON.stringify(profile));
-        account["scav"] = JSON.parse(JSON.stringify(profileScav));
-        account["scav"]._id = bsgHelper.generateMongoId();
-        account["scav"].aid = bsgHelper.generateMongoId();
-        account["pmc"].savage = account["scav"].aid;
-        account["scav"].savage = account["scav"].aid;
-        account["scav"].Info.Side = "Savage";
+        let accountMode = new AccountProfileMode();
+        accountMode = account.modes[account.currentMode];
+        accountMode.characters.pmc = profile;
+        const profileScav = fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString();
+        accountMode.characters.scav = JSON.parse(profileScav).scav;
+        accountMode.characters.pmc.savage = accountMode.characters.scav._id;
+        // const profileScav = BotGenerationService.generateBot(accountMode.characters.pmc);
+        // accountMode.characters.scav = JSON.parse(JSON.stringify(profileScav));
+        // accountMode.characters.pmc.savage = undefined;// accountMode.characters.scav.aid;
+        // accountMode.characters.scav.savage = undefined;// accountMode.characters.scav.aid;
+        // accountMode.characters.scav.Info.MemberCategory = accountMode.characters.pmc.Info.MemberCategory;
+        // accountMode.characters.scav.Info.SelectedMemberCategory = accountMode.characters.pmc.Info.SelectedMemberCategory;
 
         // Change item IDs to be unique
-        account["pmc"].Inventory.items = this.replaceIDs(
-            account["pmc"].Inventory.items,
-            account["pmc"],
+        accountMode.characters.pmc.Inventory.items = this.replaceIDs(
+            accountMode.characters.pmc.Inventory.items,
+            accountMode.characters.pmc,
             undefined,
-            account["pmc"].Inventory.fastPanel,
+            accountMode.characters.pmc.Inventory.fastPanel,
         );
 
-        // account["scav"].Inventory.items = [];
-        account["scav"].Inventory.items = this.replaceIDs(
-            account["scav"].Inventory.items,
-            account["scav"],
+        accountMode.characters.scav.Inventory.items = this.replaceIDs(
+            accountMode.characters.scav.Inventory.items,
+            accountMode.characters.scav,
             undefined,
-            account["scav"].Inventory.fastPanel,
+            accountMode.characters.scav.Inventory.fastPanel,
         );
-        delete account["scav"].Customization["DogTag"];// = undefined;
-        account["scav"].Inventory.questRaidItems = undefined;
-        account["scav"].Inventory.questStashItems = undefined;
-        account["scav"].Inventory.sortingTable = undefined;
-        const indexOfDogTag = account["scav"].Inventory.items.findIndex(x => this.isDogtag(x._tpl));
 
-
+        const traders = JSON.parse(JSON.stringify(db["traders"]));
+        for (const traderId in traders) {
+            const trader = traders[traderId];
+            accountMode.characters.pmc.TradersInfo[traderId] = 
+            {
+                disabled: false,
+                loyaltyLevel: 1,
+                salesSum: 0,
+                standing: 0.2,
+                nextResupply: trader.base.nextResupply,
+                unlocked: trader.base.unlockedByDefault,
+            }
+        }
 
         account.friends = [];
 
@@ -396,7 +406,7 @@ class accountService {
     /**
      * 
      * @param {*} item 
-     * @returns {string}
+     * @returns {String}
      */
     getChildId(item) {
         if (!("location" in item)) {
@@ -419,6 +429,25 @@ class accountService {
         account = JSON.parse(fs.readFileSync(accountFilePath).toString());
 
         return account;
+    }
+
+    /**
+     * 
+     * @param {String} sessionId 
+     * @returns {AccountProfileMode} Account Profile by Mode
+     */
+    getAccountProfileByCurrentMode (sessionId) {
+
+        this.createAccountBlank(sessionId);
+        const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
+        let account = new Account();
+        account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+
+        /**
+         * @type {AccountProfileMode}
+         */
+        const accountProfile = account.modes[account.currentMode];
+        return accountProfile;
     }
 
     getAccountByUsernamePassword (username, password) {
@@ -448,4 +477,4 @@ class accountService {
     }
 }
 
-module.exports.accountService = new accountService();
+module.exports.AccountService = new AccountService();

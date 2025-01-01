@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 var tarkovSend =  require('./../tarkovSend');
-const { accountService } = require('../services/accountService');
+const { AccountService } = require('../services/AccountService');
 
 /**
  * @swagger
@@ -45,7 +45,7 @@ router.post('/profile/login', function(req, res, next) {
 
     generateLauncherLoginRequestBodyForSwagger(req);
 
-    const account = accountService.getAccountByUsernamePassword(req.body.username, req.body.password);
+    const account = AccountService.getAccountByUsernamePassword(req.body.username, req.body.password);
     // Account has not been found. Send back a "FAILED" notification.
     if (account === undefined || account === null) {
         res.body = "FAILED";
@@ -76,7 +76,7 @@ router.post('/profile/login', function(req, res, next) {
 router.post('/profile/register', function(req, res, next) {
     generateLauncherLoginRequestBodyForSwagger(req);
 
-    const account = accountService.createAccount(req.body, undefined, true);
+    const account = AccountService.createAccount(req.body, undefined, true);
     res.body = account.accountId;
     next();
 });

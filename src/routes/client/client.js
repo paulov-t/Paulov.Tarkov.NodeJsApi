@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
-const { accountService } = require('../../services/accountService');
-const { profileStatus } = require('../../models/profileStatus');
-const { profileStatusResponse } = require('../../models/profileStatusResponse');
+const { AccountService } = require('../../services/AccountService');
+const { ProfileStatus } = require('../../models/ProfileStatus');
+const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
+const { Account, AccountProfileMode } = require('../../models/Account');
 
 
 
@@ -17,7 +18,22 @@ const { profileStatusResponse } = require('../../models/profileStatusResponse');
  *         description: A successful response
  */
 router.post('/game/mode', function(req, res, next) {
-    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "pve", backendUrl: req.host });
+
+    const sessionId = req.SessionId;
+
+    let sessionMode = req.body.sessionMode;
+    if (sessionMode === null)
+        sessionMode = "regular";
+    else {
+        console.log("changed!");
+    }
+
+    const account = AccountService.getAccount(sessionId);
+    account.currentMode = sessionMode;
+    AccountService.saveAccount(account);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: sessionMode, backendUrl: req.host });
+    // bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "pve", backendUrl: req.host });
     next();
   });
 
@@ -253,12 +269,18 @@ router.post('/trading/api/traderSettings', function(req, res, next) {
 router.post('/game/profile/list', function(req, res, next) {
 
     const sessionId = req.SessionId;
+    if (sessionId === undefined)
+        throw "SessionId is not defined!";
+
     const output = [];
-    // clone the account
-    let account = JSON.parse(JSON.stringify(accountService.getAccount(req.SessionId)));
-    if (account.pmc !== undefined) {
-        output.push(account.pmc);
-        output.push(account.scav);
+    /**
+     * @type {AccountProfileMode}
+     */
+    const accountProfileByMode = sessionId !== undefined ? AccountService.getAccountProfileByCurrentMode(sessionId) : new Account();
+    if (accountProfileByMode.characters.pmc !== undefined) {
+        output.push(accountProfileByMode.characters.pmc);
+        output.push(accountProfileByMode.characters.scav);
+
         bsgHelper.getBody(res, output);
         next();
         return;
@@ -344,9 +366,7 @@ router.post('/game/profile/create', function(req, res, next) {
     if (req.SessionId === undefined)
         req.SessionId = bsgHelper.generateMongoId();
 
-    let account = accountService.getAccount(req.SessionId);
-
-    accountService.createAccount(req.body, req.SessionId);
+    AccountService.createAccount(req.body, req.SessionId);
 
     bsgHelper.addBSGBodyInResponseWithData(res, req.SessionId);
 
@@ -398,21 +418,23 @@ router.post('/game/profile/select', function(req, res, next) {
  */
 router.post('/profile/status', function(req, res, next) {
 
-    let account = accountService.getAccount(req.SessionId);
+    let account = AccountService.getAccount(req.SessionId);
 // if we are running via Swagger and SessionId is null. Get first account to test with.
     if(!req.SessionId) {
-        account = accountService.getAllAccounts()[0];
+        account = AccountService.getAllAccounts()[0];
     }
 
-    if (!account["pmc"]) {
-        throw "PMC is missing!!";
-    }
+    let accountMode = AccountService.getAccountProfileByCurrentMode(account.accountId);
 
-    const savageStatus = new profileStatus();
-    savageStatus.profileid = account["pmc"]["savage"];
-    const pmcStatus = new profileStatus();
-    savageStatus.profileid = req.SessionId;
-    const response = new profileStatusResponse(
+    if(!accountMode.characters || !accountMode.characters.pmc)
+        throw new "PMC is missing!";
+
+
+    const savageStatus = new ProfileStatus();
+    savageStatus.profileid = accountMode.characters.scav._id;
+    const pmcStatus = new ProfileStatus();
+    pmcStatus.profileid = accountMode.characters.pmc._id;
+    const response = new ProfileStatusResponse(
         false,
         [
             savageStatus,
@@ -661,7 +683,7 @@ router.post('/notifier/channel/create', function(req, res, next) {
  */
 router.post('/server/list', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    bsgHelper.addBSGBodyInResponseWithData(res, [{ ip: `https://${req.host}`, port: 443 }]);
     next();
 });
 
@@ -995,6 +1017,83 @@ router.post('/survey', function(req, res, next) {
         }
     };
     bsgHelper.addBSGBodyInResponseWithData(res, surveyResult);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/logout:
+ *   post:
+ *     summary: Logout call when clicking Exit
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/logout', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, {});
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/checkVersion:
+ *   post:
+ *     summary: Called to check the Version of the game against updates, could be useful for Client updates?
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/checkVersion', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { isvalid: true });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/items/prices/{id}:
+ *   post:
+ *     summary: Called to check the Version of the game against updates, could be useful for Client updates?
+ *     parameters:
+ *      - name: id
+ *        in: path
+ *        description: The language requested
+ *        required: true
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/items/prices/:id', function(req, res, next) {
+
+    let id = req.params["id"];
+    if(id === undefined)
+        throw "Expected parameter id";
+
+    let itemsTemplates = global._database.templates.items;
+    let pricesTemplates = global._database.templates.prices;
+    let listOfTemplates = Object.values(itemsTemplates).filter((x) => x._type === "Item")
+    const prices = {};
+    for (const item of listOfTemplates) {
+
+        let price = pricesTemplates[item._id];
+        if (!price)
+            price = 1;
+
+        prices[item._id] = Math.round(price);
+    }
+    bsgHelper.addBSGBodyInResponseWithData(res, {
+        supplyNextTime: 0,
+        prices: prices,
+        currencyCourses: {
+            "5449016a4bdc2d6f028b456f": prices["5449016a4bdc2d6f028b456f"],
+            "569668774bdc2da2298b4568": prices["569668774bdc2da2298b4568"],
+            "5696686a4bdc2da3298b456a": prices["5696686a4bdc2da3298b456a"],
+        },
+    });
 
     next();
 });

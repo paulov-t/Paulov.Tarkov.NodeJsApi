@@ -1,6 +1,6 @@
-const { profileStatus } = require('./profileStatus');
+const { ProfileStatus } = require('./ProfileStatus');
 
-class profileStatusResponse {
+class ProfileStatusResponse {
     /**
      * 
      * @param {boolean} maxPveCountExceeded 
@@ -15,4 +15,4 @@ class profileStatusResponse {
     }
 }
 
-module.exports.profileStatusResponse = profileStatusResponse;
+module.exports.ProfileStatusResponse = ProfileStatusResponse;

@@ -113,20 +113,31 @@ wsServer.on('connection', socket => {
 });
 httpServer.on('upgrade', (request, socket, head) => {
   wsServer.handleUpgrade(request, socket, head, socket => {
-    console.log("Upgrade WebSocket Https!");
-    wsServer.emit('connection', socket, request);
-    setInterval(()=>{ 
-      socket.send(JSON.stringify({ type: "ping", eventId: "" }));
-    }, 1000);
+    console.log("Upgrade WebSocket Http!");
+    handleUpgrade(wsServer, request, socket, head, socket);
   });
 });
 httpsServer.on('upgrade', (request, socket, head) => {
   wsServer.handleUpgrade(request, socket, head, socket => {
     console.log("Upgrade WebSocket Https!");
-    wsServer.emit('connection', socket, request);
-    setInterval(()=>{ 
-      socket.send(JSON.stringify({ type: "ping", eventId: "" }));
-    }, 1000);
+    handleUpgrade(wsServer, request, socket, head, socket);
   });
 });
+
+function handleUpgrade(wsServer, request, socket, head, socket) {
+
+  const splitUrl = request.url.substring(0, request.url.indexOf("?")).split("/");
+
+  wsServer.emit('connection', socket, request);
+
+  // Do Ping Notifications
+  setInterval(()=>{ 
+    socket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
+  }, 1000);
+
+  wsServer.on("message", async (msg) => {
+    console.log(`WebSocketHandler connected`);
+    console.log(msg);
+  });
+}
 

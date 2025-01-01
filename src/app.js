@@ -97,6 +97,8 @@ app.use('/', indexRouter);
 app.use('/launcher', launcherRouter);
 app.use('/client', require('./routes/client/client'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
+app.use('/client/trading/api', require('./routes/client/trading'));
+app.use('/itemSearch', require('./routes/itemSearch'));
 
 /** Middleware: Deflates the Response Body using Zlib to a standard BSG expects */
 app.use(function(req, res, next) {
@@ -119,11 +121,12 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
 
-  ownLogger.logger.logError("");
 
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  ownLogger.logger.logError(res.locals.error);
 
   // render the error page
   res.status(err.status || 500);
