@@ -21,14 +21,19 @@ router.post('/game/mode', function(req, res, next) {
 
     const sessionId = req.SessionId;
 
+    const account = AccountService.getAccount(sessionId);
+
     let sessionMode = req.body.sessionMode;
-    if (sessionMode === null)
-        sessionMode = "regular";
+    if (sessionMode === null) {
+        if(!account.currentMode)
+            sessionMode = "regular";
+        else
+            sessionMode = account.currentMode;
+    }
     else {
         console.log("changed!");
     }
 
-    const account = AccountService.getAccount(sessionId);
     account.currentMode = sessionMode;
     AccountService.saveAccount(account);
 
