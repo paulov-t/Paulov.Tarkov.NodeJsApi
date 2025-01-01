@@ -3,6 +3,7 @@ const path =  require('path');
 const bsgHelper = require('../bsgHelper');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
+const { Account } = require('../models/account');
 
 class accountService {
     constructor() {
@@ -11,6 +12,10 @@ class accountService {
         fs.mkdirSync(this.saveDirectoryPath);
     }
 
+    /**
+     * 
+     * @returns {Account[]}
+     */
     getAllAccounts() {
 
         const accountsShallow = [];
@@ -42,9 +47,36 @@ class accountService {
         return this.createAccount(data, undefined, true);
     }
 
+    /**
+     * 
+     * @param {*} data 
+     * @param {*} sessionId 
+     * @param {*} launcherCreate 
+     * @returns {Account}
+     */
     createAccount (data, sessionId, launcherCreate = false) {
 
-        const account = sessionId !== undefined ? this.getAccount(sessionId) : {};
+        // If we are testing OR using the SwaggerUI and not passed sessionId, then generate one
+        if (sessionId === undefined) 
+            sessionId = bsgHelper.generateMongoId();
+
+        // If we are testing OR using the SwaggerUI and not passed some data then recreate the data that BSG will send from Tarkov
+        if ((data === undefined || (data.username === undefined && data.headId === undefined)) && launcherCreate === false) {
+            data = {
+                headId: "5cc084dd14c02e000b0550a3",
+                nickname: "Hello",
+                side: "Bear",
+                voiceId: "6284d6948e4092597733b7a5",
+                username: "Hello",
+                password: "Hello",
+                edition: "Standard"
+            }
+        }
+
+        /**
+         * account {Account}
+         */
+        const account = sessionId !== undefined ? this.getAccount(sessionId) : new Account();
         if (data.username !== undefined) {
             const newAccountId = bsgHelper.generateMongoId();
             account.accountId = newAccountId;
@@ -70,7 +102,8 @@ class accountService {
 
         const db = global._database;
         // clone the template
-        const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"]["Edge Of Darkness"][data.side.toLowerCase()]["character"]));
+        // const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"]["Edge Of Darkness"][data.side.toLowerCase()]["character"]));
+        const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"]["Standard"][data.side.toLowerCase()]["character"]));
         profile._id = sessionId;
         profile.aid = bsgHelper.generateMongoId();
         profile.Info.Nickname = data.nickname;
@@ -129,15 +162,14 @@ class accountService {
         }
 
         account["pmc"] = profile;
-        account["scav"] = JSON.parse(JSON.stringify(profile));
+        // const profileScav = JSON.parse(JSON.stringify(db["bots"]["base"]));
+        const profileScav = JSON.parse(JSON.stringify(profile));
+        account["scav"] = JSON.parse(JSON.stringify(profileScav));
         account["scav"]._id = bsgHelper.generateMongoId();
         account["scav"].aid = bsgHelper.generateMongoId();
         account["pmc"].savage = account["scav"].aid;
         account["scav"].savage = account["scav"].aid;
-
-
-        // account["pmc"].Inventory = this.replaceInventoryItemIds(account["pmc"].Inventory);
-        // account["scav"].Inventory = this.replaceInventoryItemIds(account["scav"].Inventory);
+        account["scav"].Info.Side = "Savage";
 
         // Change item IDs to be unique
         account["pmc"].Inventory.items = this.replaceIDs(
@@ -147,12 +179,20 @@ class accountService {
             account["pmc"].Inventory.fastPanel,
         );
 
+        // account["scav"].Inventory.items = [];
         account["scav"].Inventory.items = this.replaceIDs(
             account["scav"].Inventory.items,
             account["scav"],
             undefined,
             account["scav"].Inventory.fastPanel,
         );
+        delete account["scav"].Customization["DogTag"];// = undefined;
+        account["scav"].Inventory.questRaidItems = undefined;
+        account["scav"].Inventory.questStashItems = undefined;
+        account["scav"].Inventory.sortingTable = undefined;
+        const indexOfDogTag = account["scav"].Inventory.items.findIndex(x => this.isDogtag(x._tpl));
+
+
 
         account.friends = [];
 
@@ -178,6 +218,28 @@ class accountService {
                 item._id = profile.Inventory.equipment;
             }
         }
+    }
+
+    /**
+     * 
+     * @param {string} tpl 
+     * @returns {boolean}
+     */
+    isDogtag(tpl) {
+        const dogTagTpls = [
+            "59f32bb586f774757e1e8442",
+            "6662e9aca7e0b43baa3d5f74",
+            "675dc9d37ae1a8792107ca96",
+            "675dcb0545b1a2d108011b2b",
+            "6662e9cda7e0b43baa3d5f76",
+            "59f32c3b86f77472a31742f0",
+            "6662e9f37fa79a6d83730fa0",
+            "6764207f2fa5e32733055c4a",
+            "6764202ae307804338014c1a",
+            "6662ea05f6259762c56f3189",
+        ];
+
+        return dogTagTpls.includes(tpl);
     }
 
     replaceInventoryItemIds (inventory) {
@@ -293,7 +355,7 @@ class accountService {
         for (const item of items) {
             // register the parents
             if (dupes[item._id] > 1) {
-                const newId = this.hashUtil.generate();
+                const newId = bsgHelper.generateMongoId();
 
                 newParents[item.parentId] = newParents[item.parentId] || [];
                 newParents[item.parentId].push(item);
@@ -331,11 +393,30 @@ class accountService {
         return items;
     }
 
+    /**
+     * 
+     * @param {*} item 
+     * @returns {string}
+     */
+    getChildId(item) {
+        if (!("location" in item)) {
+            return item.slotId;
+        }
+
+        return `${item.slotId},${(item.location).x},${(item.location).y}`;
+    }
+
+    /**
+     * 
+     * @param {*} sessionId 
+     * @returns {Account} account
+     */
     getAccount (sessionId) {
 
         this.createAccountBlank(sessionId);
         const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
-        const account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        let account = new Account();
+        account = JSON.parse(fs.readFileSync(accountFilePath).toString());
 
         return account;
     }

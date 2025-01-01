@@ -1,14 +1,14 @@
 class profileStatus {
     constructor() {
         this.profileid = "";
-        this.profileToken = "";
+        this.profileToken = undefined;
         this.status = "Free";
-        this.raidMode = "Local";
+        this.raidMode = undefined;
         this.ip = "";
         this.port = 0;
-        this.location = "";
+        this.location = undefined;
         this.sid = "";
-        this.mode = "";
+        this.mode = undefined;
         this.shortId = "";
     }
 }
