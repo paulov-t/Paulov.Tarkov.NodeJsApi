@@ -21,7 +21,13 @@ router.post('/getTraderAssort/:traderId', function(req, res, next) {
     if(traderId === undefined)
         throw "traderId not provided"
     
-    const dbResult = JSON.parse(JSON.stringify(global._database["traders"][traderId])).assort;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const traderEntry = db["traders"][traderId];
+    const assortEntry = traderEntry.assort;
+    const dbResult = db.getData(assortEntry);
     dbResult.nextResupply = Math.floor((Date.now() / 1000) + 1000);
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     

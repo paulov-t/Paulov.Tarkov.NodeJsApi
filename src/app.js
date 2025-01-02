@@ -45,7 +45,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(req, res, next) {
-  database.database.loadCompressedDatabase();
+  database.Database.loadCompressedDatabase();
   next();
 });
 

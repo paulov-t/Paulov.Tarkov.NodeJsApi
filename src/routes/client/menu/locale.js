@@ -23,7 +23,13 @@ router.post('/locale/:lang', function(req, res, next) {
     if(lang === undefined)
         lang = "en";
     
-    const dbResult = global._database["locales/menu"][lang];
+    const entry = global._database["locales"]["menu"][lang];
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbResult = db.getData(entry);
+
     const bodyResult = { "err": 0, "errmsg": null, "data": dbResult }
     const stringify = JSON.stringify(bodyResult, null, "\t");
     // bsgHelper.addBSGBodyInResponseWithData(res, dbResult);

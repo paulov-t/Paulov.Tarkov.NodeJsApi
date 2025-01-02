@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
+var { Database } = require('./../classes/database');
 
 /**
  * @swagger
@@ -21,7 +22,12 @@ router.post('/itemSearchByTpl/:tpl', function(req, res, next) {
     if(tpl === undefined)
         throw "tpl not provided"
     
-    const dbResult = global._database["templates"]["items"][tpl];
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const templatesItems = db.getData(global._database["templates"]["items"]);
+    const dbResult = templatesItems[tpl];
     res.json(dbResult);
 });
 

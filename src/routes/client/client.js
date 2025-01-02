@@ -85,7 +85,13 @@ router.post('/game/start', function(req, res, next) {
  */
 router.post('/languages', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["locales"]["languages"]);
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbResult = db.getData(db["locales"]["languages"]);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });
 
@@ -143,7 +149,13 @@ router.post('/game/config', function(req, res, next) {
  */
 router.post('/items', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["templates"]["items"]);
+     /**
+     * @type {Database}
+     */
+      const db = global._database;
+      const dbResult = db.getData(db["templates"]["items"]);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });
 
@@ -158,10 +170,12 @@ router.post('/items', function(req, res, next) {
  */
 router.post('/customization', function(req, res, next) {
 
-    const templateCustomization = global._database["templates"]["customization"];
-    bsgHelper.getBody(res, templateCustomization);
-    // console.log(templateCustomization);
-    // console.log(res.body);
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbResult = db.getData(db["templates"]["customization"]);
+    bsgHelper.getBody(res, dbResult);
     next();
 });
 
@@ -182,8 +196,12 @@ router.post('/customization/storage', function(req, res, next) {
         id, type, source
     }
     */
-   const storage = global._database["templates"]["customisationStorage"];
-    bsgHelper.addBSGBodyInResponseWithData(res, storage);
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbResult = db.getData(db["templates"]["customisationStorage"]);
+    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });
 
@@ -197,10 +215,15 @@ router.post('/customization/storage', function(req, res, next) {
  *         description: A successful response
  */
 router.post('/globals', function(req, res, next) {
-    const globals = global._database["globals"];
-    globals.time = Date.now() / 1000;
 
-    bsgHelper.addBSGBodyInResponseWithData(res, globals);
+     /**
+     * @type {Database}
+     */
+     const db = global._database;
+     const dbResult = db.getData(db["globals"]);
+     dbResult.time = Date.now() / 1000;
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });
 
@@ -215,7 +238,13 @@ router.post('/globals', function(req, res, next) {
  */
 router.post('/settings', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, global._database["settings"]);
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbResult = db.getData(db["settings"]);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });
 
@@ -236,8 +265,12 @@ router.post('/prestige/list', function(req, res, next) {
         elements array
     }
     */
-   const prestige = global._database["templates"]["prestige"];
-   bsgHelper.addBSGBodyInResponseWithData(res, prestige);
+   /**
+     * @type {Database}
+     */
+   const db = global._database;
+   const dbResult = db.getData(db["templates"]["prestige"]);
+   bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
    next();
 });
 
@@ -252,10 +285,14 @@ router.post('/prestige/list', function(req, res, next) {
  */
 router.post('/trading/api/traderSettings', function(req, res, next) {
 
-    const traders = global._database["traders"];
+     /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const traderEntries = db["traders"];
     const traderBases = [];
-    for (const traderId in traders) {
-        traderBases.push(traders[traderId].base);
+    for (const traderId in traderEntries) {
+        traderBases.push(db.getData(traderEntries[traderId].base));
     }
 
     bsgHelper.addBSGBodyInResponseWithData(res, traderBases);
@@ -319,8 +356,13 @@ router.post('/locale/:lang', function(req, res, next) {
     if(lang === undefined)
         lang = "en";
 
-    const locales = global._database["locales"];
-    const result = locales.global[lang];
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const localeEntries = db["locales"];
+    const localeEntry = localeEntries.global[lang];
+    const result = db.getData(localeEntry);
 
     bsgHelper.getUnclearedBody(res, result);
     next();
@@ -497,9 +539,21 @@ router.post('/weather', function(req, res, next) {
 router.post('/locations', function(req, res, next) {
 
     const locations = {};
+    /**
+     * @type {Database}
+     */
     const db = global._database;
-    for(const locationId in db.locations) {
-        const mapBase = db.locations[locationId]?.base;
+    const locationEntries = db["locations"];
+    for(const locationId in locationEntries) {
+
+        const entry = locationEntries[locationId];
+        if (!entry)
+            continue;
+
+        if (!entry.base)
+            continue;
+
+        const mapBase = db.getData(entry.base);
         if (!mapBase) {
             continue;
         }
@@ -510,7 +564,7 @@ router.post('/locations', function(req, res, next) {
          locations[mapBase._Id] = mapBase;
     }
 
-    bsgHelper.addBSGBodyInResponseWithData(res, { locations: locations, paths: db.locations.base.paths });
+    bsgHelper.addBSGBodyInResponseWithData(res, { locations: locations, paths: db.getData(db.locations.base).paths });
 
     next();
 });
@@ -526,7 +580,12 @@ router.post('/locations', function(req, res, next) {
  */
 router.post('/handbook/templates', function(req, res, next) {
 
-    const dbHandbook = global._database.templates.handbook;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbHandbook = db.getData(db.templates.handbook);
+
     if(!dbHandbook)
         throw "Handbook not found";
 
@@ -546,7 +605,11 @@ router.post('/handbook/templates', function(req, res, next) {
  */
 router.post('/hideout/areas', function(req, res, next) {
 
-    const dbAreas = global._database.hideout.areas;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbAreas = db.getData(db.hideout.areas);
     if(!dbAreas)
         throw "Hideout Areas not found";
 
@@ -566,7 +629,11 @@ router.post('/hideout/areas', function(req, res, next) {
  */
 router.post('/hideout/qte/list', function(req, res, next) {
 
-    const dbHideoutQte = global._database.hideout.qte;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbHideoutQte = db.getData(db.hideout.qte);
     if(!dbHideoutQte)
         throw "Hideout QTE not found";
 
@@ -586,7 +653,11 @@ router.post('/hideout/qte/list', function(req, res, next) {
  */
 router.post('/hideout/settings', function(req, res, next) {
 
-    const dbHideoutSettings = global._database.hideout.settings;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbHideoutSettings = db.getData(db.hideout.settings);
     if(!dbHideoutSettings)
         throw "Hideout Settings not found";
 
@@ -606,7 +677,11 @@ router.post('/hideout/settings', function(req, res, next) {
  */
 router.post('/hideout/production/recipes', function(req, res, next) {
 
-    const dbHideoutProduction = global._database.hideout.production;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbHideoutProduction = db.getData(db.hideout.production);
     if(!dbHideoutProduction)
         throw "Hideout Production not found";
 
@@ -626,7 +701,11 @@ router.post('/hideout/production/recipes', function(req, res, next) {
  */
 router.post('/hideout/customization/offer/list', function(req, res, next) {
 
-    const dbHideoutCustomisation = global._database.hideout.customisation;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbHideoutCustomisation = db.getData(db.hideout.customisation);
     if(!dbHideoutCustomisation)
         throw "Hideout Customisation not found";
 
@@ -799,7 +878,11 @@ router.post('/quest/list', function(req, res, next) {
  */
 router.post('/achievement/statistic', function(req, res, next) {
 
-    const dbAchievements = global._database.templates.achievements;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbAchievements = db.getData(db.templates.achievements);
     if(!dbAchievements)
         throw "Achievements not found";
 
@@ -825,7 +908,11 @@ router.post('/achievement/statistic', function(req, res, next) {
  */
 router.post('/achievement/list', function(req, res, next) {
 
-    const dbAchievements = global._database.templates.achievements;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const dbAchievements = db.getData(db.templates.achievements);
     if(!dbAchievements)
         throw "Achievements not found";
 
@@ -1078,8 +1165,13 @@ router.post('/items/prices/:id', function(req, res, next) {
     if(id === undefined)
         throw "Expected parameter id";
 
-    let itemsTemplates = global._database.templates.items;
-    let pricesTemplates = global._database.templates.prices;
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const itemsTemplates = db.getData(db.templates.items);
+    const pricesTemplates = db.getData(db.templates.prices);
+
     let listOfTemplates = Object.values(itemsTemplates).filter((x) => x._type === "Item")
     const prices = {};
     for (const item of listOfTemplates) {
@@ -1099,6 +1191,22 @@ router.post('/items/prices/:id', function(req, res, next) {
             "5696686a4bdc2da3298b456a": prices["5696686a4bdc2da3298b456a"],
         },
     });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/group/invite/cancel-all:
+ *   post:
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/group/invite/cancel-all', function(req, res, next) {
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { });
 
     next();
 });

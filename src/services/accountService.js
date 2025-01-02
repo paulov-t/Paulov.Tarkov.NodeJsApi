@@ -105,17 +105,19 @@ class AccountService {
             data.side = "usec";
 
         const chosenSideCapital = data.side;
-
+        /**
+         * @type {Database}
+         */
         const db = global._database;
         // clone the template
-        const profile = JSON.parse(JSON.stringify(db["templates"]["profiles"][account.edition][data.side.toLowerCase()]["character"]));
+        const profile = db.getData(db["templates"]["profiles"])[account.edition][data.side.toLowerCase()]["character"];
         profile._id = sessionId;
         profile.aid = "1";// bsgHelper.generateMongoId();
         profile.savage = undefined;
         profile.Info.Nickname = data.nickname;
         profile.Info.LowerNickname = data.nickname.toLowerCase();
         profile.Info.RegistrationDate = Math.floor(Math.random() * 1000000);
-        profile.Info.Voice = db["templates"]["customization"][data.voiceId]._name;
+        profile.Info.Voice = db.getData(db["templates"]["customization"])[data.voiceId]._name;
         profile.Stats = {
             Eft: {
                 CarriedQuestItems: [],
@@ -195,17 +197,17 @@ class AccountService {
             accountMode.characters.scav.Inventory.fastPanel,
         );
 
-        const traders = JSON.parse(JSON.stringify(db["traders"]));
-        for (const traderId in traders) {
-            const trader = traders[traderId];
+        const traderEntries = db["traders"];
+        for (const traderId in traderEntries) {
+            const traderBase = db.getData(traderEntries[traderId].base);
             accountMode.characters.pmc.TradersInfo[traderId] = 
             {
                 disabled: false,
                 loyaltyLevel: 1,
                 salesSum: 0,
                 standing: 0.2,
-                nextResupply: trader.base.nextResupply,
-                unlocked: trader.base.unlockedByDefault,
+                nextResupply: traderBase.nextResupply,
+                unlocked: traderBase.unlockedByDefault,
             }
         }
 
