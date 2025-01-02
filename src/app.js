@@ -13,7 +13,6 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
 const { specs, swaggerUi } = require('./swagger');
 var zlib = require('zlib');
 var fs = require('fs');
@@ -25,20 +24,17 @@ const zlibInflate = zlib.inflate;
 const zlibDeflate = zlib.deflate;
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var launcherRouter = require('./routes/launcher');
-var pingRouter = require('./routes/ping');
 
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('view engine', 'html');
 app.use(express.raw({ type: "application/json", limit: '50mb',
   parameterLimit: 100000,
   extended: true  }));
 
-app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 

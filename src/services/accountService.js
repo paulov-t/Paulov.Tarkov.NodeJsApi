@@ -1,7 +1,7 @@
 const fs =  require('fs');
 const path =  require('path');
 const bsgHelper = require('../bsgHelper');
-var jwt = require('jsonwebtoken');
+// var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('../models/Account');
 const { BotGenerationService } = require('./BotGenerationService');
@@ -84,9 +84,9 @@ class AccountService {
             account.password = hashedPassword;
             // https://www.freecodecamp.org/news/securing-node-js-restful-apis-with-json-web-tokens-9f811a92bb52/
             // TODO: Use this throughout Api calls
-            account.token = jwt.sign({ id: newAccountId }, "Paulov", {
-                expiresIn: 86400 // expires in 24 hours
-            });
+            // account.token = jwt.sign({ id: newAccountId }, "Paulov", {
+            //     expiresIn: 86400 // expires in 24 hours
+            // });
             account.edition = data.edition;
             account.currentMode = data.currentMode;
             if (launcherCreate) {

@@ -11,7 +11,6 @@
 
 const app = require('../app');
 const appHttps = require('../app');
-const debug = require('debug')('myexpressapp:server');
 const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
@@ -24,8 +23,13 @@ const certs = certificate.generate(null);
  */
 var httpServer = http.createServer(app);
 httpServer.on('error', onError);
-httpServer.on('listening', onListening);
-
+httpServer.on('listening', () => {
+  var addr = httpServer.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+    console.log(`onListening: ${bind}`);
+});
 /**
  * Create HTTPS server.
  */
@@ -34,7 +38,16 @@ var httpsServer = https.createServer({
   cert: certs.cert
 }, appHttps);
 httpsServer.on('error', onError);
-httpsServer.on('listening', onListening);
+httpsServer.on('listening', () => {
+  var addr = httpsServer.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+    console.log(`onListening: ${bind}`);
+});
+httpsServer.on('connection', (stream) => {
+  console.log('someone connected!');
+});
 
 /**
  * Servers Listen
@@ -89,20 +102,6 @@ function onError(error) {
       throw error;
   }
 }
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = httpsServer.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-}
-
-
 
 /// ==========================================================
 /// Web Socket Handling on both Servers
