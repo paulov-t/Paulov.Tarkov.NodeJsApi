@@ -45,6 +45,11 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(req, res, next) {
+  database.database.loadCompressedDatabase();
+  next();
+});
+
+app.use(function(req, res, next) {
 
   if(req.url.includes("files/")) {
     let filePath = req.url.replace(req.host, "");
@@ -130,6 +135,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-database.loadCompressedDatabase();
 
 module.exports = app;

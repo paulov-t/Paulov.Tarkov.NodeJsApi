@@ -8,9 +8,14 @@ const { BotGenerationService } = require('./BotGenerationService');
 
 class AccountService {
     constructor() {
-       this.saveDirectoryPath = path.join(process.cwd(), "data", "accounts");
+    //    this.saveDirectoryPath = path.join(process.cwd(), "data", "accounts");
+       this.saveDirectoryPath = path.join(__dirname, "../", "data", "accounts");
        if (!fs.existsSync(this.saveDirectoryPath))
-        fs.mkdirSync(this.saveDirectoryPath);
+        fs.mkdir(this.saveDirectoryPath, { recursive: true }, (err) => {
+            
+            if(err)
+                console.error(err);
+        });
     }
 
     /**

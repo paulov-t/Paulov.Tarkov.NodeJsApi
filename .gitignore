@@ -32,21 +32,12 @@ dumpTools/ProfileNameGetter/playerNames.json
 user/configs/mods.json
 
 # Paulov - You shouldn't be pushing profiles or mods to this repo?
-user/mods
-server.json*
-gameplay.json*
-quest.json*
-# user/profiles - profiles is already being done above
+src/mods
 
-AE-Server-*
-Server-*
-JustEmuTarkov-*
 *.exe
-dumpTools
-docs
 
 Build/
-pre-db/*
+*/Dist/*
 
-database.zip
+# database.zip
 src/data/accounts*
