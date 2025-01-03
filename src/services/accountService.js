@@ -431,6 +431,9 @@ class AccountService {
      */
     getAccount (sessionId) {
 
+        if (!sessionId)
+            return undefined;
+
         this.createAccountBlank(sessionId);
         const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
         let account = new Account();
@@ -473,6 +476,9 @@ class AccountService {
     }
 
     saveAccount (account) {
+
+        if (!account)
+            return;
 
         if (account.accountId === undefined) {
             const newAccountId = bsgHelper.generateMongoId();

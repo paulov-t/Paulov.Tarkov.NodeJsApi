@@ -60,6 +60,8 @@ class AccountProfileCharacterSet {
 
 class AccountProfileCharacter {
     constructor() {
+        this.Info = {}
+        this.Inventory = {}
     }
 }
 

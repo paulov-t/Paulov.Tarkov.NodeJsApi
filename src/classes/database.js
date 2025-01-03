@@ -135,6 +135,11 @@ class Database {
       }
     }
 
+    /**
+     * Given the entryName retrieve the parsed Json object from the Database
+     * @param {String} entryName string of the entry to get e.g. database/templates/handbook.json
+     * @returns {object} Parsed Json from the entry
+     */
     getData(entryName) {
       const entry = this.zip.getEntries().find(x => x.entryName == entryName);
       if (!entry)

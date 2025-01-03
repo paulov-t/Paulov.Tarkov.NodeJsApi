@@ -22,6 +22,8 @@ router.post('/server/connect', function(req, res, next) {
  * @swagger
  * /launcher/ping:
  *   post:
+ *     tags:
+ *     - Launcher
  *     summary: Launcher call 2. Attempt to Ping this Server.
  *     responses:
  *       200:
@@ -36,6 +38,8 @@ router.post('/ping', function(req, res, next) {
  * @swagger
  * /launcher/profile/login:
  *   post:
+ *     tags:
+ *     - Launcher
  *     summary: Launcher call 3. Attempt to Login to this Server.
  *     responses:
  *       200:
@@ -68,6 +72,8 @@ router.post('/profile/login', function(req, res, next) {
  * @swagger
  * /launcher/profile/register:
  *   post:
+ *     tags:
+ *     - Launcher
  *     summary: Launcher call 3. Attempt to Login to this Server.
  *     responses:
  *       200:

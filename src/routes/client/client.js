@@ -12,6 +12,8 @@ const { Account, AccountProfileMode } = require('../../models/Account');
  * @swagger
  * /client/game/mode:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 2
  *     responses:
  *       200:
@@ -42,10 +44,12 @@ router.post('/game/mode', function(req, res, next) {
     next();
   });
 
-  /**
+/**
  * @swagger
  * /client/game/start:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 3
  *     responses:
  *       200:
@@ -59,15 +63,17 @@ router.post('/game/start', function(req, res, next) {
   
   });
   
-  /**
-   * @swagger
-   * /client/game/version/validate:
-   *   post:
-   *     summary: Load Tarkov Call 4
-   *     responses:
-   *       200:
-   *         description: A successful response
-   */
+/**
+ * @swagger
+ * /client/game/version/validate:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: Load Tarkov Call 4
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
   router.post('/game/version/validate', function(req, res, next) {
     bsgHelper.nullResponse(res);
     next();
@@ -78,6 +84,8 @@ router.post('/game/start', function(req, res, next) {
  * @swagger
  * /client/languages:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 5
  *     responses:
  *       200:
@@ -95,15 +103,17 @@ router.post('/languages', function(req, res, next) {
     next();
 });
 
-  /**
-   * @swagger
-   * /client/game/config:
-   *   post:
-   *     summary: Load Tarkov Call 6
-   *     responses:
-   *       200:
-   *         description: A successful response
-   */
+/**
+ * @swagger
+ * /client/game/config:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: Load Tarkov Call 6
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
 router.post('/game/config', function(req, res, next) {
 
     const sessionId = req.SessionId;
@@ -142,6 +152,8 @@ router.post('/game/config', function(req, res, next) {
  * @swagger
  * /client/items:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 7
  *     responses:
  *       200:
@@ -163,6 +175,8 @@ router.post('/items', function(req, res, next) {
  * @swagger
  * /client/customization:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 8
  *     responses:
  *       200:
@@ -183,6 +197,8 @@ router.post('/customization', function(req, res, next) {
  * @swagger
  * /client/customization/storage:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 9
  *     responses:
  *       200:
@@ -209,6 +225,8 @@ router.post('/customization/storage', function(req, res, next) {
  * @swagger
  * /client/globals:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 10
  *     responses:
  *       200:
@@ -231,6 +249,8 @@ router.post('/globals', function(req, res, next) {
  * @swagger
  * /client/settings:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 11
  *     responses:
  *       200:
@@ -252,6 +272,8 @@ router.post('/settings', function(req, res, next) {
  * @swagger
  * /client/prestige/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 12
  *     responses:
  *       200:
@@ -278,6 +300,8 @@ router.post('/prestige/list', function(req, res, next) {
  * @swagger
  * /client/trading/api/traderSettings:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 13
  *     responses:
  *       200:
@@ -303,6 +327,8 @@ router.post('/trading/api/traderSettings', function(req, res, next) {
  * @swagger
  * /client/game/profile/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Load Tarkov Call 14
  *     responses:
  *       200:
@@ -340,6 +366,8 @@ router.post('/game/profile/list', function(req, res, next) {
  * @swagger
  * /client/locale/{lang}:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 15
  *     parameters:
  *      - name: lang
@@ -372,6 +400,8 @@ router.post('/locale/:lang', function(req, res, next) {
  * @swagger
  * /client/game/profile/nickname/reserved:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 16
  *     responses:
  *       200:
@@ -387,6 +417,8 @@ router.post('/game/profile/nickname/reserved', function(req, res, next) {
  * @swagger
  * /client/game/profile/nickname/validate:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 17
  *     responses:
  *       200:
@@ -402,6 +434,8 @@ router.post('/game/profile/nickname/validate', function(req, res, next) {
  * @swagger
  * /client/game/profile/create:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 18 (only run when Creating Character)
  *     responses:
  *       200:
@@ -424,6 +458,8 @@ router.post('/game/profile/create', function(req, res, next) {
  * @swagger
  * /client/game/keepalive:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Keep Alive Command
  *     responses:
  *       200:
@@ -444,6 +480,8 @@ router.post('/game/keepalive', function(req, res, next) {
  * @swagger
  * /client/game/profile/select:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 19
  *     responses:
  *       200:
@@ -458,6 +496,8 @@ router.post('/game/profile/select', function(req, res, next) {
  * @swagger
  * /client/profile/status:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 20
  *     responses:
  *       200:
@@ -496,6 +536,8 @@ router.post('/profile/status', function(req, res, next) {
  * @swagger
  * /client/weather:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 21
  *     responses:
  *       200:
@@ -531,6 +573,8 @@ router.post('/weather', function(req, res, next) {
  * @swagger
  * /client/locations:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 22
  *     responses:
  *       200:
@@ -573,6 +617,8 @@ router.post('/locations', function(req, res, next) {
  * @swagger
  * /client/handbook/templates:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 23
  *     responses:
  *       200:
@@ -598,6 +644,8 @@ router.post('/handbook/templates', function(req, res, next) {
  * @swagger
  * /client/hideout/areas:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 24
  *     responses:
  *       200:
@@ -622,6 +670,8 @@ router.post('/hideout/areas', function(req, res, next) {
  * @swagger
  * /client/hideout/qte/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 25
  *     responses:
  *       200:
@@ -646,6 +696,8 @@ router.post('/hideout/qte/list', function(req, res, next) {
  * @swagger
  * /client/hideout/settings:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 26
  *     responses:
  *       200:
@@ -670,6 +722,8 @@ router.post('/hideout/settings', function(req, res, next) {
  * @swagger
  * /client/hideout/production/recipes:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 27
  *     responses:
  *       200:
@@ -694,6 +748,8 @@ router.post('/hideout/production/recipes', function(req, res, next) {
  * @swagger
  * /client/hideout/customization/offer/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 28
  *     responses:
  *       200:
@@ -718,6 +774,8 @@ router.post('/hideout/customization/offer/list', function(req, res, next) {
  * @swagger
  * /client/builds/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 29
  *     responses:
  *       200:
@@ -738,6 +796,8 @@ router.post('/builds/list', function(req, res, next) {
  * @swagger
  * /client/notifier/channel/create:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 30
  *     responses:
  *       200:
@@ -760,6 +820,8 @@ router.post('/notifier/channel/create', function(req, res, next) {
  * @swagger
  * /client/server/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 31
  *     responses:
  *       200:
@@ -775,6 +837,8 @@ router.post('/server/list', function(req, res, next) {
  * @swagger
  * /client/match/group/current:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 32
  *     responses:
  *       200:
@@ -791,6 +855,8 @@ router.post('/match/group/current', function(req, res, next) {
  * @swagger
  * /client/friend/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 33
  *     responses:
  *       200:
@@ -807,6 +873,8 @@ router.post('/friend/list', function(req, res, next) {
  * @swagger
  * /client/friend/request/list/inbox:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 34
  *     responses:
  *       200:
@@ -823,6 +891,8 @@ router.post('/friend/request/list/inbox', function(req, res, next) {
  * @swagger
  * /client/friend/request/list/outbox:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 35
  *     responses:
  *       200:
@@ -839,6 +909,8 @@ router.post('/friend/request/list/outbox', function(req, res, next) {
  * @swagger
  * /client/mail/dialog/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 36
  *     responses:
  *       200:
@@ -855,6 +927,8 @@ router.post('/mail/dialog/list', function(req, res, next) {
  * @swagger
  * /client/quest/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 37
  *     responses:
  *       200:
@@ -871,6 +945,8 @@ router.post('/quest/list', function(req, res, next) {
  * @swagger
  * /client/achievement/statistic:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 38
  *     responses:
  *       200:
@@ -901,6 +977,8 @@ router.post('/achievement/statistic', function(req, res, next) {
  * @swagger
  * /client/achievement/list:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 39
  *     responses:
  *       200:
@@ -926,6 +1004,8 @@ router.post('/achievement/list', function(req, res, next) {
  * @swagger
  * /client/repeatalbeQuests/activityPeriods:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 40
  *     responses:
  *       200:
@@ -942,6 +1022,8 @@ router.post('/repeatalbeQuests/activityPeriods', function(req, res, next) {
  * @swagger
  * /client/survey:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Tarkov Call 41
  *     responses:
  *       200:
@@ -1117,6 +1199,8 @@ router.post('/survey', function(req, res, next) {
  * @swagger
  * /client/game/logout:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Logout call when clicking Exit
  *     responses:
  *       200:
@@ -1133,6 +1217,8 @@ router.post('/game/logout', function(req, res, next) {
  * @swagger
  * /client/checkVersion:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Called to check the Version of the game against updates, could be useful for Client updates?
  *     responses:
  *       200:
@@ -1149,6 +1235,8 @@ router.post('/checkVersion', function(req, res, next) {
  * @swagger
  * /client/items/prices/{id}:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: Called to check the Version of the game against updates, could be useful for Client updates?
  *     parameters:
  *      - name: id
@@ -1199,6 +1287,8 @@ router.post('/items/prices/:id', function(req, res, next) {
  * @swagger
  * /client/match/group/invite/cancel-all:
  *   post:
+ *     tags:
+ *     - Client
  *     summary: 
  *     responses:
  *       200:
