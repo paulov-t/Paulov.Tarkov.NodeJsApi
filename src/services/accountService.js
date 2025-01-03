@@ -298,6 +298,7 @@ class AccountService {
     }
 
     /**
+     * TODO: Look into this! Seems overly complicated...
      * Regenerate all GUIDs with new IDs, for the exception of special item types (e.g. quest, sorting table, etc.) This
      * function will not mutate the original items array, but will return a new array with new GUIDs.
      *
@@ -482,6 +483,7 @@ class AccountService {
 
         fs.writeFileSync(accountFilePath, JSON.stringify(account, null, "\t"));
     }
+
 }
 
 module.exports.AccountService = new AccountService();

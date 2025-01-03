@@ -466,7 +466,7 @@ router.post('/game/profile/select', function(req, res, next) {
 router.post('/profile/status', function(req, res, next) {
 
     let account = AccountService.getAccount(req.SessionId);
-// if we are running via Swagger and SessionId is null. Get first account to test with.
+    // if we are running via Swagger UI and SessionId is null. Get first account to test with.
     if(!req.SessionId) {
         account = AccountService.getAllAccounts()[0];
     }
