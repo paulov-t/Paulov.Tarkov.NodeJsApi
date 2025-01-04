@@ -17,6 +17,7 @@ class Database {
         // this.languages = {};
         // this.locales = {};
         // this.locations = {};
+        this.templates = {};
         this.traders = {};
         // this.weather = [];
         this.zip = undefined;

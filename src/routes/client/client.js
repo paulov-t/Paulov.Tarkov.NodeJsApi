@@ -2,11 +2,14 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
 const { AccountService } = require('../../services/AccountService');
+const { BotGenerationService, BotGenerationCondition } = require('../../services/BotGenerationService');
 const { ProfileStatus } = require('../../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
 const { Account, AccountProfileMode } = require('../../models/Account');
 const { Database } = require('../../classes/database');
 
+const { StartLocalMatchResponse } = require('../../models/Responses/StartLocalMatchResponse');
+const { LocalMatchEndResponse } = require('../../models/Responses/LocalMatchEndResponse');
 
 
 /**
@@ -1439,6 +1442,131 @@ router.post('/getMetricsConfig', function(req, res, next) {
 
     const metrics = Database.getData(Database.match.metrics);
     bsgHelper.getBody(res, metrics);
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/local/start:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            location:
+ *              type: string
+ *              default: factory4_day
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/local/start', function(req, res, next) {
+
+    const result = new StartLocalMatchResponse(req.body.location);
+
+    bsgHelper.getBody(res, result);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/game/bot/generate:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            conditions:
+ *              type: [{Role: 'assault', Limit: 9, Difficulty: 'normal'}]
+ *              default: factory4_day
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/game/bot/generate', function(req, res, next) {
+
+    console.log(req.body);
+    const result = [];
+
+    /**
+     * @type {BotGenerationCondition}
+     */
+    const conditions = req.body.conditions;
+
+    for(const condition of conditions) {
+        for (let index = 0; index < condition.Limit; index++)
+            result.push(BotGenerationService.generateBot(condition));
+    }
+
+    bsgHelper.getBody(res, result);
+
+    next();
+});
+
+
+/**
+ * @swagger
+ * /client/match/local/end:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            location:
+ *              type: string
+ *              default: factory4_day
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/local/end', function(req, res, next) {
+
+    console.log(req.body);
+    const result = new LocalMatchEndResponse();
+
+    const newProfileToSave = result.results.profile;
+    
+    bsgHelper.getBody(res, result);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/putMetrics:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/putMetrics', function(req, res, next) {
+
+    console.log(req.body);
+
+    bsgHelper.nullResponse(res);
+
     next();
 });
 
