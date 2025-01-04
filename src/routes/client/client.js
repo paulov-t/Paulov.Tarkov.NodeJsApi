@@ -5,6 +5,7 @@ const { AccountService } = require('../../services/AccountService');
 const { ProfileStatus } = require('../../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
 const { Account, AccountProfileMode } = require('../../models/Account');
+const { Database } = require('../../classes/database');
 
 
 
@@ -1298,6 +1299,146 @@ router.post('/match/group/invite/cancel-all', function(req, res, next) {
 
     bsgHelper.addBSGBodyInResponseWithData(res, { });
 
+    next();
+});
+
+/**
+ * @swagger
+ * /client/insurance/items/list/cost:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: Receive a list of items to insure and provide a cost against the items. TODO. Currently only provides the MAX value of the items back. Write with the coef.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/insurance/items/list/cost', function(req, res, next) {
+
+    const sessionId = req.SessionId;
+
+    const result = {};
+    const inventoryItemsByItemId = {};
+
+    let account = AccountService.getAccount(sessionId);
+    // if we are running via Swagger UI and SessionId is null. Get first account to test with.
+    if(!sessionId) {
+        const allAccounts = AccountService.getAllAccounts();
+        account = allAccounts.find(x => x.accountId.length > 0 && x.modes[x.currentMode].characters !== undefined && x.modes[x.currentMode].characters.pmc !== undefined);
+    }
+
+    const accountProfile = AccountService.getAccountProfileByCurrentMode(account.accountId);
+    const accountInventory = accountProfile.characters.pmc.Inventory;
+    // console.log(accountInventory);
+    const inventoryItems = accountProfile.characters.pmc.Inventory.items;
+
+    const pmcData = account
+    for (const item of inventoryItems) {
+        inventoryItemsByItemId[item._id] = item;
+    }
+
+    const prices = Database.getData(Database.templates.prices);
+
+    for (const trader of req.body.traders) {
+        const items = {};
+
+        for (const itemId of req.body.items) {
+
+            if (!inventoryItemsByItemId[itemId]) 
+                continue;
+
+            items[inventoryItemsByItemId[itemId]._tpl] = prices[inventoryItemsByItemId[itemId]._tpl];
+            if (!items[inventoryItemsByItemId[itemId]._tpl])
+                items[inventoryItemsByItemId[itemId]._tpl] = 1000;
+
+            // items[inventoryItemsHash[itemId]._tpl] = this.insuranceService.getRoublePriceToInsureItemWithTrader(
+            //     pmcData,
+            //     inventoryItemsHash[itemId],
+            //     trader,
+            // );
+        }
+
+        result[trader] = items;
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, result);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/raid/configuration:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: Sends the RaidSettings object to the Server so that it can configure the raid for this user. Does not expect a response.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/raid/configuration', function(req, res, next) {
+
+    console.log(req.body);
+    bsgHelper.nullResponse(res);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/group/exit_from_menu:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/group/exit_from_menu', function(req, res, next) {
+
+   
+
+    bsgHelper.nullResponse(res);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/available:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/match/available', function(req, res, next) {
+
+   
+    bsgHelper.getBody(res, false);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/getMetricsConfig:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/getMetricsConfig', function(req, res, next) {
+
+    const metrics = Database.getData(Database.match.metrics);
+    bsgHelper.getBody(res, metrics);
     next();
 });
 
