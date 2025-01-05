@@ -100,6 +100,7 @@ app.use('/client', require('./routes/client/client'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
 app.use('/client/trading/api', require('./routes/client/trading'));
 app.use('/client/game/profile/items', require('./routes/client/game/profile/items'));
+app.use('/client/game/profile/search', require('./routes/client/game/profile/search'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));
 app.use('/itemSearch', require('./routes/itemSearch'));
 

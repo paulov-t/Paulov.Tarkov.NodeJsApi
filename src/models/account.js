@@ -60,6 +60,10 @@ class AccountProfileCharacterSet {
 
 class AccountProfileCharacter {
     constructor() {
+        /**
+         * @type {String}
+         */
+        this._id = "";
         this.Info = {}
         this.Inventory = {}
     }

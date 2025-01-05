@@ -24,25 +24,34 @@ class AccountService {
      */
     getAllAccounts() {
 
-        const accountsShallow = [];
+        const accounts = [];
         const accountDirectoryFiles = fs.readdirSync(this.saveDirectoryPath);
         for(const file of accountDirectoryFiles) {
             const accountId = file.replace(".json", "");
-            accountsShallow.push(this.getAccount(accountId));
+            const account = this.getAccount(accountId);
+            if (account && account.accountId && account.accountId != "")
+                accounts.push(account);
         }
 
-        return accountsShallow;
+        return accounts;
     }
 
+    /**
+     * Creates a new Account for sessionId or returns undefined if already exists
+     * @param {String} sessionId 
+     * @returns {Account} New Account record OR undefined if already exists
+     */
     createAccountBlank(sessionId) {
 
         const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
         // If account doesn't exist, create it
         if (!fs.existsSync(accountFilePath)) {
             const blankAccount = new Account();
-            fs.writeFileSync(accountFilePath, JSON.stringify(blankAccount, null, ""));
+            blankAccount.accountId = sessionId;
+            this.saveAccount(blankAccount);
+            return blankAccount;
         }
-
+        return undefined;
     }
 
     createAccountFromLauncher(data) {
@@ -434,10 +443,13 @@ class AccountService {
         if (!sessionId)
             return undefined;
 
-        this.createAccountBlank(sessionId);
-        const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
-        let account = new Account();
-        account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        let account = this.createAccountBlank(sessionId);
+        // If account exists, the blank account wont work. Get account from save file.
+        if (account === undefined) {
+            const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
+            account = new Account();
+            account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        }
 
         return account;
     }
@@ -449,15 +461,37 @@ class AccountService {
      */
     getAccountProfileByCurrentMode (sessionId) {
 
-        this.createAccountBlank(sessionId);
-        const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
-        let account = new Account();
-        account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        let account = this.createAccountBlank(sessionId);
+        // If account exists, the blank account wont work. Get account from save file.
+        if (!account) {
+            const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
+            account = new Account();
+            account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        }
+
+        return this.getAccountProfileByMode(sessionId, account.currentMode);
+    }
+
+    /**
+     * 
+     * @param {String} sessionId 
+     * @param {String} mode Game Mode (pvp, pve, arena) 
+     * @returns {AccountProfileMode} Account Profile by Mode
+     */
+    getAccountProfileByMode (sessionId, mode) {
+
+        let account = this.createAccountBlank(sessionId);
+        // If account exists, the blank account wont work. Get account from save file.
+        if (!account) {
+            const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
+            account = new Account();
+            account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+        }
 
         /**
          * @type {AccountProfileMode}
          */
-        const accountProfile = account.modes[account.currentMode];
+        const accountProfile = account.modes[mode];
         return accountProfile;
     }
 
@@ -485,9 +519,35 @@ class AccountService {
             account.accountId = newAccountId;
         }
 
+        if (!account.accountId)
+            return;
+
         const accountFilePath = path.join(this.saveDirectoryPath, `${account.accountId}.json`);
 
         fs.writeFileSync(accountFilePath, JSON.stringify(account, null, "\t"));
+    }
+
+    /**
+     * 
+     * @param {Account} account 
+     * @returns 
+     */
+    getChatMemberProfile(account) {
+
+        const profile = this.getAccountProfileByCurrentMode(account.accountId);
+        const pmc = profile.characters.pmc;
+
+        return {
+            _id: pmc._id,
+            aid: pmc.aid,
+            Info: {
+                Nickname: pmc.Info.Nickname,
+                Side: pmc.Info.Side,
+                Level: pmc.Info.Level,
+                MemberCategory: pmc.Info.MemberCategory,
+                SelectedMemberCategory: pmc.Info.SelectedMemberCategory,
+            }
+        };
     }
 
 }
