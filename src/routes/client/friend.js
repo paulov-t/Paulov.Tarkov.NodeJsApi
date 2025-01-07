@@ -27,7 +27,7 @@ function generateBugReportFriend() {
  * /client/friend/list:
  *   post:
  *     tags:
- *     - Client
+ *     - Friend
  *     summary: Tarkov Call 33
  *     responses:
  *       200:
@@ -48,7 +48,7 @@ friends.push(generateBugReportFriend());
  * /client/friend/request/send:
  *   post:
  *     tags:
- *     - Client
+ *     - Friend
  *     summary: 
  *     requestBody:
  *      required: true
@@ -100,7 +100,7 @@ router.post('/request/send', function(req, res, next) {
  * /client/friend/request/list/outbox:
  *   post:
  *     tags:
- *     - Client
+ *     - Friend
  *     summary: Client function GetOutputFriendsRequests 
  *     responses:
  *       200:
@@ -158,7 +158,7 @@ for(const outboxObj of myAccountByMode.socialNetwork.friendRequestOutbox) {
  * /client/friend/request/list/inbox:
  *   post:
  *     tags:
- *     - Client
+ *     - Friend
  *     summary: 
  *     responses:
  *       200:
@@ -193,5 +193,63 @@ for(const outboxObj of myAccountByMode.socialNetwork.friendRequestInbox) {
   next();
 });
 
+/**
+ * @swagger
+ * /client/friend/request/accept:
+ *   post:
+ *     tags:
+ *     - Friend
+ *     summary: body with profileId
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            profileId:
+ *              type: string
+ *              default: 677bdee7668e28b53c000151
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/request/accept', function(req, res, next) {
+
+  const requestBody = req.body;
+  console.log(requestBody);
+  const sessionId = req.SessionId;
+  if (!sessionId) {
+    next();
+    return;
+  }
+  const myAccount = AccountService.getAccount(sessionId);
+  if (!myAccount) {
+    next();
+    return;
+  }
+  const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+  if (!myAccountByMode) {
+    next();
+    return;
+  }
+
+  // Ensure friends exists
+  if (!myAccountByMode.socialNetwork.friends)
+    myAccountByMode.socialNetwork.friends = [];
+
+  if (myAccountByMode.socialNetwork.friends.indexOf(x => x == requestBody.profileId) === -1)
+    myAccountByMode.socialNetwork.friends.push(requestBody.profileId);
+
+  const index = myAccountByMode.socialNetwork.friendRequestInbox.findIndex((v) => { return v.from == requestBody.profileId; });
+  if (index != -1)
+    myAccountByMode.socialNetwork.friendRequestInbox.splice(index, 1);
+
+  AccountService.saveAccount(myAccount);
+
+  bsgHelper.getBody(res, {});
+  
+  next();
+});
 
 module.exports = router;

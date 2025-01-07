@@ -485,6 +485,24 @@ class AccountService {
 
     /**
      * 
+     * @param {Account} account 
+     * @returns {AccountProfileMode} Account Profile by Mode (can be undefined!)
+     */
+    getAccountProfileByCurrentModeFromAccount (account) {
+
+        const modeProfile = this.getAccountProfileByModeFromAccount(account, account.currentMode);
+        if (!modeProfile)
+            return undefined;
+
+        // Protection for lack of SocialNetwork on Profile
+        if(!modeProfile.socialNetwork)
+            modeProfile.socialNetwork = new SocialNetwork();
+
+        return modeProfile;
+    }
+
+    /**
+     * 
      * @param {String} sessionId 
      * @param {String} mode Game Mode (pvp, pve, arena) 
      * @returns {AccountProfileMode} Account Profile by Mode (can be undefined!)
@@ -504,6 +522,27 @@ class AccountService {
             account = new Account();
             account = JSON.parse(fs.readFileSync(accountFilePath).toString());
         }
+
+        /**
+         * @type {AccountProfileMode}
+         */
+        const accountProfile = account.modes[mode];
+        return accountProfile;
+    }
+
+     /**
+     * 
+     * @param {Account} account 
+     * @param {String} mode Game Mode (pvp, pve, arena) 
+     * @returns {AccountProfileMode} Account Profile by Mode (can be undefined!)
+     */
+     getAccountProfileByModeFromAccount (account, mode) {
+
+        if (!account)
+            return undefined;
+
+        if (!mode)
+            return undefined;
 
         /**
          * @type {AccountProfileMode}
