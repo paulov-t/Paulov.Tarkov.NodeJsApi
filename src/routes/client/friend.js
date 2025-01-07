@@ -37,6 +37,15 @@ router.post('/list', function(req, res, next) {
 
   const friends = [];
 friends.push(generateBugReportFriend());
+
+const sessionId = req.SessionId;
+const myAccount = AccountService.getAccount(sessionId);
+const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+for(const fr of myAccountByMode.socialNetwork.friends) {
+  const otherAccount = AccountService.getAccount(fr);
+  const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
+  friends.push(AccountService.getChatMemberProfile(otherAccount, myAccount.currentMode));
+}
    
     bsgHelper.getBody(res, { Friends: friends, Ignore: [], InIgnoreList: [] });
 

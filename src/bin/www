@@ -15,6 +15,8 @@ const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
 const ws = require('ws');
+const WebSocketService = require('./../services/WebSocketService');
+
 
 const localPortHttp = 80;
 const localPortHttps = 443;
@@ -123,15 +125,15 @@ try {
     socket.on('message', message => console.log(message));
   });
   httpServer.on('upgrade', (request, socket, head) => {
-    wsServer.handleUpgrade(request, socket, head, socket => {
+    wsServer.handleUpgrade(request, socket, head, cb => {
       console.log("Upgrade WebSocket Http!");
-      handleUpgrade(wsServer, request, socket, head, socket);
+      handleUpgrade(wsServer, request, socket, head, cb);
     });
   });
   httpsServer.on('upgrade', (request, socket, head) => {
-    wsServer.handleUpgrade(request, socket, head, socket => {
+    wsServer.handleUpgrade(request, socket, head, cb => {
       console.log("Upgrade WebSocket Https!");
-      handleUpgrade(wsServer, request, socket, head, socket);
+      handleUpgrade(wsServer, request, socket, head, cb);
     });
   });
 }
@@ -139,9 +141,14 @@ catch(err) {
   console.error(err);
 }
 
-function handleUpgrade(wsServer, request, socket, head, socket) {
+function handleUpgrade(wsServer, request, socket, head, c) {
 
   const splitUrl = request.url.substring(0, request.url.indexOf("?")).split("/");
+
+  if(splitUrl.length < 4)
+    return;
+
+  const sessionId = splitUrl[3];
 
   wsServer.emit('connection', socket, request);
 

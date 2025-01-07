@@ -1,7 +1,7 @@
 const { Database } = require('../../classes/database');
-const bsgHelper = require('./../../bsgHelper');
+const bsgHelper = require('../../bsgHelper');
 
-class StartLocalMatchResponse {
+class LocalMatchStartResponse {
     
     constructor(location) {
         this.serverId = bsgHelper.generateMongoId(),
@@ -22,4 +22,4 @@ class StartLocalMatchResponse {
     }
 }
 
-module.exports.StartLocalMatchResponse = StartLocalMatchResponse;
+module.exports.LocalMatchStartResponse = LocalMatchStartResponse;

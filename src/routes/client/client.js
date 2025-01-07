@@ -8,7 +8,7 @@ const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
 const { Account, AccountProfileMode } = require('../../models/Account');
 const { Database } = require('../../classes/database');
 
-const { StartLocalMatchResponse } = require('../../models/Responses/StartLocalMatchResponse');
+const { LocalMatchStartResponse } = require('../../models/Responses/LocalMatchStartResponse');
 const { LocalMatchEndResponse } = require('../../models/Responses/LocalMatchEndResponse');
 const { UpdatableChatMember } = require('../../models/UpdatableChatMember');
 
@@ -861,26 +861,6 @@ router.post('/server/list', function(req, res, next) {
 
 /**
  * @swagger
- * /client/match/group/current:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 32
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/match/group/current', function(req, res, next) {
-
-    bsgHelper.addBSGBodyInResponseWithData(res, { squad: [] });
-
-    next();
-});
-
-
-
-/**
- * @swagger
  * /client/mail/dialog/list:
  *   post:
  *     tags:
@@ -1438,7 +1418,7 @@ router.post('/getMetricsConfig', function(req, res, next) {
  */
 router.post('/match/local/start', function(req, res, next) {
 
-    const result = new StartLocalMatchResponse(req.body.location);
+    const result = new LocalMatchStartResponse(req.body.location);
 
     bsgHelper.getBody(res, result);
 

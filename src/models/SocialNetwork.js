@@ -1,4 +1,5 @@
 const { FriendRequest } = require('./FriendRequest');
+const { MatchGroup } = require('./MatchGroup');
 
 class SocialNetwork {
     constructor() {
@@ -15,6 +16,11 @@ class SocialNetwork {
          * @type {String[]}
          */
          this.friends = [];
+
+         /**
+          * @type {MatchGroup}
+          */
+         this.group = undefined
     }
 }
 

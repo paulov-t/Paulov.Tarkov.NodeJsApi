@@ -603,11 +603,17 @@ class AccountService {
     /**
      * 
      * @param {Account} account 
+     * @param {String} gameMode 
      * @returns {UpdatableChatMember}
      */
-    getChatMemberProfile(account) {
+    getChatMemberProfile(account, gameMode = undefined) {
 
-        const profile = this.getAccountProfileByCurrentMode(account.accountId);
+        let profile = undefined;
+        if (!gameMode)
+            profile = this.getAccountProfileByCurrentMode(account.accountId);
+        else 
+            profile = this.getAccountProfileByModeFromAccount(account, gameMode);
+
         const pmc = profile.characters.pmc;
 
         const chatMember = new UpdatableChatMember();
