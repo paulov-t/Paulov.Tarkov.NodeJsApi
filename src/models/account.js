@@ -1,3 +1,5 @@
+const { SocialNetwork } = require("./SocialNetwork");
+
 class Account {
     constructor() {
         this.accountId = "";
@@ -38,6 +40,11 @@ class AccountProfileMode {
          * @public
          */
         this.characters = new AccountProfileCharacterSet();
+
+        /**
+         * @type {SocialNetwork}
+         */
+        this.socialNetwork = new SocialNetwork();
     }
 }
 

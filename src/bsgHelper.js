@@ -15,7 +15,7 @@ function addBSGBodyInResponseWithData(response, data) {
 
 function getBody(response, data) {
   response.body = 
-    JSON.stringify({ errmsg: null, err: 0, data: data }, undefined, "\t")
+    JSON.stringify({ errmsg: undefined, err: 0, data: data }, undefined, "\t")
     .replace(/[\b]/g, "")
     .replace(/[\f]/g, "")
     .replace(/[\n]/g, "")
@@ -92,8 +92,9 @@ function deflateResponse(req, res) {
   }
 
   let data = res.body;
+  const typeOfData = typeof(data);
   // This will handle if the previous steps have not stringify the data before
-  if (typeof(data === 'object') && data.length === undefined) {
+  if ((typeOfData ===  'object' || typeOfData === 'array') && (data.length === undefined || JSON.stringify(data).charAt(0) === '[')) {
     const stringified = JSON.stringify(data, null, "\t") 
                         .replace(/[\b]/g, "")
                         .replace(/[\f]/g, "")

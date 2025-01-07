@@ -38,11 +38,7 @@ app.use(express.raw({ type: "application/json", limit: '50mb',
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-/** Middleware: Detects and logs Uri calls */
-app.use(function(req, res, next) {
-  ownLogger.logger.logInfo(`${req.headers["host"] + req.url}`);
-  next();
-});
+
 
 app.use(function(req, res, next) {
   database.Database.loadCompressedDatabase();
@@ -82,6 +78,15 @@ app.use(function(req, res, next) {
   });
 });
 
+/** Middleware: Detects and store Uri calls for metrics */
+app.use(function(req, res, next) {
+
+  // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
+  let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
+  ownLogger.logger.logInfo(responseText);
+  next();
+});
+
 /** Middleware: If required, inflates the Request Body using Zlib */
 app.use(function(req, res, next) {
   bsgHelper.inflateRequest(req, res, next, () => {
@@ -101,7 +106,10 @@ app.use('/client/menu', require('./routes/client/menu/locale'));
 app.use('/client/trading/api', require('./routes/client/trading'));
 app.use('/client/game/profile/items', require('./routes/client/game/profile/items'));
 app.use('/client/game/profile/search', require('./routes/client/game/profile/search'));
+app.use('/client/friend', require('./routes/client/friend'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));
+app.use('/client/mail', require('./routes/client/mail'));
+
 app.use('/itemSearch', require('./routes/itemSearch'));
 
 /** Middleware: Deflates the Response Body using Zlib to a standard BSG expects */

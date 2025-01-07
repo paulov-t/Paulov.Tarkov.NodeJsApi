@@ -5,6 +5,9 @@ const bsgHelper = require('../bsgHelper');
 var bcrypt = require('bcryptjs');
 const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('../models/Account');
 const { BotGenerationService } = require('./BotGenerationService');
+const { SocialNetwork } = require('../models/SocialNetwork');
+const { UpdatableChatMember } = require('../models/UpdatableChatMember');
+const { UpdatableChatMemberInfo } = require('../models/UpdatableChatMemberInfo');
 
 class AccountService {
     constructor() {
@@ -457,7 +460,7 @@ class AccountService {
     /**
      * 
      * @param {String} sessionId 
-     * @returns {AccountProfileMode} Account Profile by Mode
+     * @returns {AccountProfileMode} Account Profile by Mode (can be undefined!)
      */
     getAccountProfileByCurrentMode (sessionId) {
 
@@ -469,16 +472,30 @@ class AccountService {
             account = JSON.parse(fs.readFileSync(accountFilePath).toString());
         }
 
-        return this.getAccountProfileByMode(sessionId, account.currentMode);
+        const modeProfile = this.getAccountProfileByMode(sessionId, account.currentMode);
+        if (!modeProfile)
+            return undefined;
+
+        // Protection for lack of SocialNetwork on Profile
+        if(!modeProfile.socialNetwork)
+            modeProfile.socialNetwork = new SocialNetwork();
+
+        return modeProfile;
     }
 
     /**
      * 
      * @param {String} sessionId 
      * @param {String} mode Game Mode (pvp, pve, arena) 
-     * @returns {AccountProfileMode} Account Profile by Mode
+     * @returns {AccountProfileMode} Account Profile by Mode (can be undefined!)
      */
     getAccountProfileByMode (sessionId, mode) {
+
+        if (!sessionId)
+            return undefined;
+
+        if (!mode)
+            return undefined;
 
         let account = this.createAccountBlank(sessionId);
         // If account exists, the blank account wont work. Get account from save file.
@@ -497,7 +514,7 @@ class AccountService {
 
     getAccountByUsernamePassword (username, password) {
 
-        var hashedPassword = bcrypt.hashSync(password, 8);
+        var hashedPassword = bcrypt.hashSync(password, 10);
 
         const allAccounts = this.getAllAccounts();
         for(const account of allAccounts)
@@ -509,9 +526,22 @@ class AccountService {
         return undefined;
     }
 
+    /**
+     * 
+     * @param {Account} account 
+     * @returns 
+     */
     saveAccount (account) {
 
         if (!account)
+            return;
+
+        const accountType = typeof(account);
+        if (accountType !== 'object')
+            return;
+
+        const accountCurrentMode = account.currentMode
+        if (!accountCurrentMode)
             return;
 
         if (account.accountId === undefined) {
@@ -522,6 +552,10 @@ class AccountService {
         if (!account.accountId)
             return;
 
+        if (!account.accountId)
+            return;
+
+
         const accountFilePath = path.join(this.saveDirectoryPath, `${account.accountId}.json`);
 
         fs.writeFileSync(accountFilePath, JSON.stringify(account, null, "\t"));
@@ -530,24 +564,24 @@ class AccountService {
     /**
      * 
      * @param {Account} account 
-     * @returns 
+     * @returns {UpdatableChatMember}
      */
     getChatMemberProfile(account) {
 
         const profile = this.getAccountProfileByCurrentMode(account.accountId);
         const pmc = profile.characters.pmc;
 
-        return {
-            _id: pmc._id,
-            aid: pmc.aid,
-            Info: {
-                Nickname: pmc.Info.Nickname,
-                Side: pmc.Info.Side,
-                Level: pmc.Info.Level,
-                MemberCategory: pmc.Info.MemberCategory,
-                SelectedMemberCategory: pmc.Info.SelectedMemberCategory,
-            }
-        };
+        const chatMember = new UpdatableChatMember();
+        chatMember.AccountId = account.accountId;
+        chatMember._id = account.accountId;
+        chatMember.aid = account.accountId;
+        chatMember.Info = new UpdatableChatMemberInfo();
+        chatMember.Info.Nickname = pmc.Info.Nickname;
+        chatMember.Info.Side = pmc.Info.Side;
+        chatMember.Info.Level = pmc.Info.Level;
+        chatMember.Info.MemberCategory = pmc.Info.MemberCategory;
+        chatMember.Info.SelectedMemberCategory = pmc.Info.SelectedMemberCategory;
+        return chatMember;
     }
 
 }

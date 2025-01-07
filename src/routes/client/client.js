@@ -10,6 +10,7 @@ const { Database } = require('../../classes/database');
 
 const { StartLocalMatchResponse } = require('../../models/Responses/StartLocalMatchResponse');
 const { LocalMatchEndResponse } = require('../../models/Responses/LocalMatchEndResponse');
+const { UpdatableChatMember } = require('../../models/UpdatableChatMember');
 
 
 /**
@@ -876,59 +877,7 @@ router.post('/match/group/current', function(req, res, next) {
     next();
 });
 
-/**
- * @swagger
- * /client/friend/list:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 33
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/friend/list', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, { Friends: [], Ignore: [], InIgnoreList: [] });
-
-    next();
-});
-
-/**
- * @swagger
- * /client/friend/request/list/inbox:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 34
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/friend/request/list/inbox', function(req, res, next) {
-
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
-
-    next();
-});
-
-/**
- * @swagger
- * /client/friend/request/list/outbox:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 35
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/friend/request/list/outbox', function(req, res, next) {
-
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
-
-    next();
-});
 
 /**
  * @swagger
