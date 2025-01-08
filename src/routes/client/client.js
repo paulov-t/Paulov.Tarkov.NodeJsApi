@@ -1242,24 +1242,6 @@ router.post('/items/prices/:id', function(req, res, next) {
 
 /**
  * @swagger
- * /client/match/group/invite/cancel-all:
- *   post:
- *     tags:
- *     - Client
- *     summary: 
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/match/group/invite/cancel-all', function(req, res, next) {
-
-    bsgHelper.addBSGBodyInResponseWithData(res, { });
-
-    next();
-});
-
-/**
- * @swagger
  * /client/insurance/items/list/cost:
  *   post:
  *     tags:
@@ -1336,26 +1318,6 @@ router.post('/insurance/items/list/cost', function(req, res, next) {
 router.post('/raid/configuration', function(req, res, next) {
 
     console.log(req.body);
-    bsgHelper.nullResponse(res);
-
-    next();
-});
-
-/**
- * @swagger
- * /client/match/group/exit_from_menu:
- *   post:
- *     tags:
- *     - Client
- *     summary: 
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/match/group/exit_from_menu', function(req, res, next) {
-
-   
-
     bsgHelper.nullResponse(res);
 
     next();

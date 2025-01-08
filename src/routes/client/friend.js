@@ -9,6 +9,10 @@ const { FriendRequest } = require('../../models/FriendRequest');
 const { UpdatableChatMember } = require('../../models/UpdatableChatMember');
 const { UpdatableChatMemberInfo } = require('../../models/UpdatableChatMemberInfo');
 const { ProfileStatus } = require('../../models/ProfileStatus');
+const { WebSocketService } = require('../../services/WebSocketService');
+const { ENotificationType } = require('../../models/ENotificationType');
+const { SocialNetworkService } = require('../../services/SocialNetworkService');
+
 
 function generateBugReportFriend() {
   const testFriend = new UpdatableChatMember();
@@ -93,11 +97,14 @@ router.post('/request/send', function(req, res, next) {
   friendRequest.from = myAccount.accountId;
   friendRequest.to = otherAccount.accountId;
   friendRequest.date = new Date().getTime();
+  const senderAccountCurrentMode = myAccount.currentMode;
   
-  myAccount.modes[myAccount.currentMode].socialNetwork.friendRequestOutbox.push(friendRequest);
+  myAccount.modes[senderAccountCurrentMode].socialNetwork.friendRequestOutbox.push(friendRequest);
   AccountService.saveAccount(myAccount);
-  otherAccount.modes[otherAccount.currentMode].socialNetwork.friendRequestInbox.push(friendRequest);
+  otherAccount.modes[senderAccountCurrentMode].socialNetwork.friendRequestInbox.push(friendRequest);
   AccountService.saveAccount(otherAccount);
+
+  WebSocketService.connections[otherAccount.accountId].socket.send(JSON.stringify({ type: ENotificationType.FriendsListNewRequest, eventId: "FriendsListNewRequest", time: 5 }));
 
   bsgHelper.addBSGBodyInResponseWithData(res, 
     { 
@@ -260,6 +267,84 @@ router.post('/request/accept', function(req, res, next) {
     myAccountByMode.socialNetwork.friendRequestInbox.splice(index, 1);
 
   AccountService.saveAccount(myAccount);
+
+
+  // Now we handle the friendship requester
+  const otherAccount = AccountService.getAccount(requestBody.profileId);
+  if (!otherAccount) {
+    next();
+    return;
+  }
+  const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
+  if (!otherAccountByMode) {
+    next();
+    return;
+  }
+
+  // Ensure friends exists
+  if (!otherAccountByMode.socialNetwork.friends)
+    otherAccountByMode.socialNetwork.friends = [];
+
+  if (otherAccountByMode.socialNetwork.friends.indexOf(x => x == requestBody.profileId) === -1)
+    otherAccountByMode.socialNetwork.friends.push(requestBody.profileId);
+
+  const indexOtherAccount = otherAccountByMode.socialNetwork.friendRequestOutbox.findIndex((v) => { return v.from == requestBody.profileId; });
+  if (indexOtherAccount != -1)
+    otherAccountByMode.socialNetwork.friendRequestOutbox.splice(index, 1);
+
+  AccountService.saveAccount(otherAccount);
+
+  bsgHelper.getBody(res, {});
+  
+  next();
+});
+
+router.post('/request/accept-all', function(req, res, next) {
+
+  const requestBody = req.body;
+  console.log(requestBody);
+  const sessionId = req.SessionId;
+  if (!sessionId) {
+    next();
+    return;
+  }
+  const myAccount = AccountService.getAccount(sessionId);
+  if (!myAccount) {
+    next();
+    return;
+  }
+  const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+  if (!myAccountByMode) {
+    next();
+    return;
+  }
+
+  SocialNetworkService.addAllFriends(myAccount);
+
+  // Now we handle the friendship requester
+  const otherAccount = AccountService.getAccount(requestBody.profileId);
+  if (!otherAccount) {
+    next();
+    return;
+  }
+  const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
+  if (!otherAccountByMode) {
+    next();
+    return;
+  }
+
+  // Ensure friends exists
+  if (!otherAccountByMode.socialNetwork.friends)
+    otherAccountByMode.socialNetwork.friends = [];
+
+  if (otherAccountByMode.socialNetwork.friends.indexOf(x => x == requestBody.profileId) === -1)
+    otherAccountByMode.socialNetwork.friends.push(requestBody.profileId);
+
+  const indexOtherAccount = otherAccountByMode.socialNetwork.friendRequestOutbox.findIndex((v) => { return v.from == requestBody.profileId; });
+  if (indexOtherAccount != -1)
+    otherAccountByMode.socialNetwork.friendRequestOutbox.splice(index, 1);
+
+  AccountService.saveAccount(otherAccount);
 
   bsgHelper.getBody(res, {});
   

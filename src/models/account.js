@@ -80,7 +80,24 @@ class AccountProfileCharacter {
     }
 }
 
+class AccountProfileCharacterInfo {
+    constructor() {
+        this.Nickname = "";
+        this.Side = "";
+        this.Level = 0;
+        this.PrestigeLevel = 0;
+        this.MemberCategory = "";
+        this.SelectedMemberCategory = "";
+        this.SavageLockTime = 0;
+        this.SavageNickname = "";
+        this.GameVersion = "";
+        this.HasCoopExtension = true;
+        this.Health = {};
+    }
+}
+
 module.exports.Account = Account;
 module.exports.AccountProfileMode = AccountProfileMode;
 module.exports.AccountProfileCharacterSet = AccountProfileCharacterSet;
 module.exports.AccountProfileCharacter = AccountProfileCharacter;
+module.exports.AccountProfileCharacterInfo = AccountProfileCharacterInfo;

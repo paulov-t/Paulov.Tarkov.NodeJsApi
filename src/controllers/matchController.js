@@ -30,7 +30,7 @@ const { MatchGroup } = require('../models/MatchGroup');
  */
 router.post('/group/current', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, { squad: [] });
+    bsgHelper.addBSGBodyInResponseWithData(res, { squad: [], raidSettings: undefined });
 
     next();
 });
@@ -60,12 +60,63 @@ router.post('/group/invite/send', function(req, res, next) {
     if (!myAccountByMode.socialNetwork.group.groupMemberInvites)
         myAccountByMode.socialNetwork.group.groupMemberInvites = [];
 
-    myAccountByMode.socialNetwork.group.groupMemberInvites.push(requestBody.to);
+    if (myAccountByMode.socialNetwork.group.groupMemberInvites.findIndex(requestBody.to) === -1)
+        myAccountByMode.socialNetwork.group.groupMemberInvites.push(requestBody.to);
+
+    AccountService.saveAccount(myAccount);
 
     bsgHelper.addBSGBodyInResponseWithData(res, bsgHelper.generateMongoId());
 
     next();
 });
 
+/**
+ * @swagger
+ * /client/match/group/invite/cancel-all:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/group/invite/cancel-all', function(req, res, next) {
+
+    const requestBody = req.body;
+    console.log(requestBody);
+    const sessionId = req.SessionId;
+    const myAccount = AccountService.getAccount(sessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    // Clear out the group
+    if (myAccountByMode.socialNetwork.group) {
+        myAccountByMode.socialNetwork.group.groupMembers = [];
+        myAccountByMode.socialNetwork.group.groupMemberInvites = [];
+    }
+    AccountService.saveAccount(myAccountByMode);
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { });
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/group/exit_from_menu:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/group/exit_from_menu', function(req, res, next) {
+
+    bsgHelper.nullResponse(res);
+
+    next();
+});
 
 module.exports = router;
