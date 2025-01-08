@@ -58,3 +58,5 @@ class ENotificationType {
 		this.UserConfirmed = "userConfirmed";
 	}
 }
+
+module.exports.ENotificationType = new ENotificationType();
