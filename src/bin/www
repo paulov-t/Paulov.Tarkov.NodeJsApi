@@ -162,10 +162,13 @@ function handleUpgrade(wsServer, request, unkSocket, head, callbackSocket) {
 
   wsServer.emit('connection', unkSocket, request);
 
+  // Send Initial Ping
+  callbackSocket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
+
   // Do Ping Notifications
   setInterval(()=>{ 
     callbackSocket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
-  }, 1000);
+  }, 30 * 1000);
 
   wsServer.on("message", async (msg) => {
     console.log(`WebSocketHandler connected`);
