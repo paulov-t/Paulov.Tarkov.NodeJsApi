@@ -141,7 +141,16 @@ catch(err) {
   console.error(err);
 }
 
-function handleUpgrade(wsServer, request, socket, head, c) {
+/**
+ * 
+ * @param wsServer 
+ * @param request 
+ * @param unkSocket 
+ * @param head 
+ * @param {ws} callbackSocket
+ * @returns 
+ */
+function handleUpgrade(wsServer, request, unkSocket, head, callbackSocket) {
 
   const splitUrl = request.url.substring(0, request.url.indexOf("?")).split("/");
 
@@ -149,12 +158,13 @@ function handleUpgrade(wsServer, request, socket, head, c) {
     return;
 
   const sessionId = splitUrl[3];
+  WebSocketService.WebSocketService.connections[sessionId] = { socket: callbackSocket };
 
-  wsServer.emit('connection', socket, request);
+  wsServer.emit('connection', unkSocket, request);
 
   // Do Ping Notifications
   setInterval(()=>{ 
-    socket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
+    callbackSocket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
   }, 1000);
 
   wsServer.on("message", async (msg) => {
