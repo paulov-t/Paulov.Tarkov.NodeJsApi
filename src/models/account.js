@@ -1,3 +1,4 @@
+const { Inventory } = require("./Inventory");
 const { SocialNetwork } = require("./SocialNetwork");
 
 class Account {
@@ -72,7 +73,10 @@ class AccountProfileCharacter {
          */
         this._id = "";
         this.Info = {}
-        this.Inventory = {}
+        /**
+         * @type {Inventory}
+         */
+        this.Inventory = new Inventory();
     }
 }
 
