@@ -11,6 +11,9 @@ const { Database } = require('../../classes/database');
 const { LocalMatchStartResponse } = require('../../models/Responses/LocalMatchStartResponse');
 const { LocalMatchEndResponse } = require('../../models/Responses/LocalMatchEndResponse');
 const { UpdatableChatMember } = require('../../models/UpdatableChatMember');
+const { InventoryService } = require('../../services/InventoryService');
+const { Inventory } = require('../../models/Inventory');
+const { ClientRequestDataDumpService } = require('../../services/ClientRequestDataDumpService');
 
 
 /**
@@ -1491,9 +1494,39 @@ router.post('/game/bot/generate', function(req, res, next) {
 router.post('/match/local/end', function(req, res, next) {
 
     console.log(req.body);
-    const result = new LocalMatchEndResponse();
 
-    const newProfileToSave = result.results.profile;
+    // Dump the match client request body. Will be useful for Swagger and Tests.
+    ClientRequestDataDumpService.dumpData("MatchLocalEnd", req.body);
+
+    const result = new LocalMatchEndResponse();
+    result.serverId = req.body.serverId;
+
+    const myAccount = AccountService.getAccount(req.SessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    /**
+     * WARNING Inventory.items is NOT the full Inventory
+     * @type {AccountProfileCharacter} 
+     */
+    const newProfileToSave =  req.body.results.profile;
+    /**
+     * WARNING Inventory.items is NOT the full Inventory
+     * @type {Inventory} 
+     */
+    const newProfileToSaveInventory = newProfileToSave.Inventory;
+    const newProfileToSaveInventoryItems = newProfileToSaveInventory.items;
+    for(const newInvItem of newProfileToSaveInventoryItems) {
+        InventoryService.removeItemAndChildItemsFromProfile(myAccountByMode.characters.pmc, newInvItem._id);
+    }
+    for(const newInvItem of newProfileToSaveInventoryItems) {
+        const indexOf = myAccountByMode.characters.pmc.Inventory.items.findIndex(x => x._id === newInvItem._id);
+        if (indexOf === -1)
+            myAccountByMode.characters.pmc.Inventory.items.push(newInvItem);
+    }
+
+    result.results = req.body.results;
+
+    AccountService.saveAccount(myAccount);
     
     bsgHelper.getBody(res, result);
 
