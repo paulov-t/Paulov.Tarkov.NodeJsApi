@@ -72,6 +72,18 @@ class AccountProfileCharacter {
          * @type {String}
          */
         this._id = "";
+        /**
+         * @type {Object}
+         */
+        this.Achievements = {}
+
+        /**
+         * @type {Object}
+         */
+        this.Encyclopedia = {}
+
+        this.Health = {}
+
         this.Info = {}
         /**
          * @type {Inventory}

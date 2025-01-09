@@ -14,6 +14,9 @@ const { UpdatableChatMember } = require('../../models/UpdatableChatMember');
 const { InventoryService } = require('../../services/InventoryService');
 const { Inventory } = require('../../models/Inventory');
 const { ClientRequestDataDumpService } = require('../../services/ClientRequestDataDumpService');
+const { LocationWeatherTime } = require('../../models/LocationWeatherTime');
+const { Weather } = require('../../models/Weather');
+const { logger } = require('../../classes/logger');
 
 
 /**
@@ -593,7 +596,10 @@ router.post('/weather', function(req, res, next) {
         date: `${year}-01-01`,
         timestamp: 0
     }
+    console.log(result);
 
+    result = new LocationWeatherTime();
+console.log(result);
     bsgHelper.addBSGBodyInResponseWithData(res, result);
     next();
 });
@@ -1456,6 +1462,7 @@ router.post('/game/bot/generate', function(req, res, next) {
 router.post('/match/local/end', function(req, res, next) {
 
     console.log(req.body);
+    const isKilled = req.body.results.result === 'Killed';
 
     // Dump the match client request body. Will be useful for Swagger and Tests.
     ClientRequestDataDumpService.dumpData("MatchLocalEnd", req.body);
@@ -1470,25 +1477,68 @@ router.post('/match/local/end', function(req, res, next) {
      * WARNING Inventory.items is NOT the full Inventory
      * @type {AccountProfileCharacter} 
      */
-    const newProfileToSave =  req.body.results.profile;
-    /**
-     * WARNING Inventory.items is NOT the full Inventory
-     * @type {Inventory} 
-     */
-    const newProfileToSaveInventory = newProfileToSave.Inventory;
-    const newProfileToSaveInventoryItems = newProfileToSaveInventory.items;
-    for(const newInvItem of newProfileToSaveInventoryItems) {
-        InventoryService.removeItemAndChildItemsFromProfile(myAccountByMode.characters.pmc, newInvItem._id);
+    const newProfileToSave = req.body.results.profile;
+
+    const isPMC = myAccountByMode.characters.pmc._id == newProfileToSave._id;
+
+    // =========================================================================
+    // Update Achievements on Player Profile
+    if (isPMC) {
+        for (const achievementId in newProfileToSave.Achievements) {
+            if (!myAccountByMode.characters.pmc.Achievements[achievementId]) {
+                myAccountByMode.characters.pmc.Achievements[achievementId] = newProfileToSave.Achievements[achievementId];
+                logger.logSuccess(`Added achievement ${achievementId}!`)
+            }
+        }
     }
-    for(const newInvItem of newProfileToSaveInventoryItems) {
-        const indexOf = myAccountByMode.characters.pmc.Inventory.items.findIndex(x => x._id === newInvItem._id);
-        if (indexOf === -1)
-            myAccountByMode.characters.pmc.Inventory.items.push(newInvItem);
+
+    // END OF: Update Achievements on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Update Experience on Player Profile
+    if (isPMC) {
+        myAccountByMode.characters.pmc.Info.Experience = newProfileToSave.Info.Experience;
     }
+    else {
+        myAccountByMode.characters.scav.Info.Experience = newProfileToSave.Info.Experience;
+    }
+
+    // =========================================================================
+    // Replace Inventory on Player Profile
+
+    if (isPMC) {
+        /**
+         * WARNING Inventory.items is NOT the full Inventory
+         * @type {Inventory} 
+         */
+        const newProfileToSaveInventory = newProfileToSave.Inventory;
+        const newProfileToSaveInventoryItems = newProfileToSaveInventory.items;
+        for(const newInvItem of newProfileToSaveInventoryItems) {
+            InventoryService.removeItemAndChildItemsFromProfile(myAccountByMode.characters.pmc, newInvItem._id);
+        }
+        for(const newInvItem of newProfileToSaveInventoryItems) {
+            const indexOf = myAccountByMode.characters.pmc.Inventory.items.findIndex(x => x._id === newInvItem._id);
+            if (indexOf === -1)
+                myAccountByMode.characters.pmc.Inventory.items.push(newInvItem);
+        }
+    }
+
+    // END OF: Replace Inventory on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Replace Health on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.Health = newProfileToSave.Health;
+    // END OF: Replace Health on Player Profile
+    // =========================================================================
+
 
     result.results = req.body.results;
 
     AccountService.saveAccount(myAccount);
+    logger.logSuccess(`Saved account ${myAccount.accountId}!`)
     
     bsgHelper.getBody(res, result);
 
@@ -1514,5 +1564,33 @@ router.post('/putMetrics', function(req, res, next) {
 
     next();
 });
+
+/**
+ * @swagger
+ * /client/localGame/weather:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/localGame/weather', function(req, res, next) {
+
+    console.log(req.body);
+
+    const result = {
+        season: 2,
+        weather: []
+    }
+    result.weather.push(new Weather());
+    // result.weather.push(new Weather());
+
+    bsgHelper.getBody(res, result);
+
+    next();
+});
+
 
 module.exports = router;

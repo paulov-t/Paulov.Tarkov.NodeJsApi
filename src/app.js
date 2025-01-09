@@ -24,7 +24,6 @@ const zlibInflate = zlib.inflate;
 const zlibDeflate = zlib.deflate;
 
 var indexRouter = require('./routes/index');
-var launcherRouter = require('./routes/launcher');
 
 var app = express();
 
@@ -100,15 +99,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 /** All routers below. Generate response.body here... */
 app.use('/', indexRouter);
 // app.use('/users', usersRouter);
-app.use('/launcher', launcherRouter);
+app.use('/launcher', require('./controllers/launcherController'));
 app.use('/client', require('./routes/client/client'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
 app.use('/client/trading/api', require('./routes/client/trading'));
 app.use('/client/game/profile/items', require('./routes/client/game/profile/items'));
 app.use('/client/game/profile/search', require('./routes/client/game/profile/search'));
-app.use('/client/friend', require('./routes/client/friend'));
+app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));
-app.use('/client/mail', require('./routes/client/mail'));
+app.use('/client/mail', require('./controllers/mailController'));
 app.use('/client/match', require('./controllers/matchController'));
 
 app.use('/itemSearch', require('./routes/itemSearch'));

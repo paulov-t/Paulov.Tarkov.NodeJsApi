@@ -10,10 +10,22 @@ var { mongoid } = require('mongoid-js');
  * @param {object} data 
  */
 function addBSGBodyInResponseWithData(response, data) {
+  if (!response)
+    throw "response not provided!";
+
+  if (!data)
+    throw "data not provided!";
+
   response.body = { errmsg: null, err: 0, data: data };
 }
 
 function getBody(response, data) {
+  if (!response)
+    throw "response not provided!";
+
+  if (!data)
+    throw "data not provided!";
+
   response.body = 
     JSON.stringify({ errmsg: undefined, err: 0, data: data }, undefined, "\t")
     .replace(/[\b]/g, "")
@@ -24,7 +36,7 @@ function getBody(response, data) {
 }
 
 function nullResponse(response) {
-  addBSGBodyInResponseWithData(response, null);
+  response.body = { errmsg: null, err: 0, data: null };
 }
 
 function getUnclearedBody(response, data) {

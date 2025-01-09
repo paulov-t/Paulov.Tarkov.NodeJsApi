@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bsgHelper =  require('../../../../bsgHelper');
 const { AccountService } = require('../../../../services/AccountService');
+const { logger } = require('../../../../classes/logger');
 
 /**
  * @swagger
@@ -43,7 +44,7 @@ router.post('/moving', function(req, res, next) {
         account = allAccounts.find(x => x.accountId.length > 0 && x.modes[x.currentMode].characters !== undefined && x.modes[x.currentMode].characters.pmc !== undefined);
     }
 
-    const accountProfile = AccountService.getAccountProfileByCurrentMode(account.accountId);
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
 
     const result = {
         warnings: [],
@@ -78,36 +79,57 @@ router.post('/moving', function(req, res, next) {
     for(const action of bodyActionList) {
         console.log(action);
         switch(action.Action) {
+            case 'Heal':
+                processHealAction(account, action, result);
+                break;
             case 'Move':
-                processMoveAction(sessionId, action, result);
+                processMoveAction(account, action, result);
+                break;
+            case 'RestoreHealth':
+                processRestoreHealth(account, action, result);
                 break;
         }
     }
 
+    AccountService.saveAccount(account);
     
-    bsgHelper.addBSGBodyInResponseWithData(res, result);
+    console.log("/moving final result");
+    console.log(result);
 
+    bsgHelper.getBody(res, result);
     next();
 });
 
-function processMoveAction(sessionId, action, outputChanges) {
+function processHealAction(account, action, outputChanges) {
 
     const result = { success: true, error: undefined };
-    console.log(sessionId);
-    console.log(action);
+    logger.logDebug("processHealAction");
 
-    let account = AccountService.getAccount(sessionId);
-    // if we are running via Swagger UI and SessionId is null. Get first account to test with.
-    if(!sessionId) {
-        const allAccounts = AccountService.getAllAccounts();
-        account = allAccounts.find(x => x.accountId.length > 0 && x.modes[x.currentMode].characters !== undefined && x.modes[x.currentMode].characters.pmc !== undefined);
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    logger.logDebug(`Healing ${account.accountId}`);
+
+    const pmcProfile = accountProfile.characters.pmc;
+    const healingItemToUse = pmcProfile.Inventory.items.find((item) => item._id === action.item);
+    logger.logDebug(`Using ${healingItemToUse._id}`);
+
+    const profilePart = accountProfile.characters.pmc.Health.BodyParts[action.part];
+    profilePart.Health.Current = profilePart.Health.Current + action.count > profilePart.Health.Maximum ? profilePart.Health.Maximum : profilePart.Health.Current + account.count;
+    if (profilePart.Health.Current == "NaN") {
+        profilePart.Health.Current = profilePart.Health.Maximum;
     }
+    return result;
+}
 
-    const accountProfile = AccountService.getAccountProfileByCurrentMode(account.accountId);
-    const accountInventory = accountProfile.characters.pmc.Inventory;
-    console.log(accountInventory);
+function processMoveAction(account, action, outputChanges) {
+
+    outputChanges.profileChanges[account.accountId].items = {};
+    const result = { success: true, error: undefined };
+    // console.log(action);
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    // const accountInventory = accountProfile.characters.pmc.Inventory;
+    // console.log(accountInventory);
     const inventoryItems = accountProfile.characters.pmc.Inventory.items;
-
 
     const matchingInventoryItem = inventoryItems.find((item) => item._id === action.item);
     if (!matchingInventoryItem) {
@@ -115,13 +137,42 @@ function processMoveAction(sessionId, action, outputChanges) {
         result.error = "Couldn't find item in player";
         return result;
     }
-    console.log(matchingInventoryItem);
+    // console.log(matchingInventoryItem);
     matchingInventoryItem.location = action.to.location;
     matchingInventoryItem.parentId = action.to.id;
     matchingInventoryItem.slotId = action.to.container;
 
-    outputChanges.profileChanges[account.accountId].items.change.push(matchingInventoryItem);
+    // outputChanges.profileChanges[account.accountId].items.change.push(matchingInventoryItem);
     return result;
+}
+
+function processRestoreHealth(account, action, outputChanges) {
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    
+    for (const bodyPartKey in action.difference.BodyParts) {
+        const partRequest = action.difference.BodyParts[bodyPartKey];
+        const profilePart = pmcProfile.Health.BodyParts[bodyPartKey];
+
+        // Bodypart healing is chosen when part request hp is above 0
+        if (partRequest.Health > 0) {
+            // Heal bodypart
+            profilePart.Health.Current = profilePart.Health.Maximum;
+        }
+
+        if (partRequest.Effects?.length > 0) {
+            for (const effect of partRequest.Effects) {
+                delete pmcProfile.Health.BodyParts[bodyPartKey].Effects[effect];
+            }
+
+            if (Object.keys(pmcProfile.Health.BodyParts[bodyPartKey].Effects).length === 0) {
+                delete pmcProfile.Health.BodyParts[bodyPartKey].Effects;
+            }
+        }
+    }
+
+    outputChanges.profileChanges[pmcProfile._id].health = pmcProfile.Health;
 }
 
 module.exports = router;

@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var bsgHelper =  require('./../bsgHelper');
-var tarkovSend =  require('./../tarkovSend');
+var bsgHelper =  require('../bsgHelper');
 const { AccountService } = require('../services/AccountService');
 
 /**
@@ -14,7 +13,7 @@ const { AccountService } = require('../services/AccountService');
  *         description: A successful response
  */
 router.post('/server/connect', function(req, res, next) {
-    bsgHelper.addBSGBodyInResponseWithData(res, null)
+    bsgHelper.addBSGBodyInResponseWithData(res, { connected: true })
     next();
 });
 
@@ -30,7 +29,7 @@ router.post('/server/connect', function(req, res, next) {
  *         description: A successful response
  */
 router.post('/ping', function(req, res, next) {
-    bsgHelper.addBSGBodyInResponseWithData(res, null)
+    bsgHelper.addBSGBodyInResponseWithData(res, { ping: Date.now() } )
     next();
 });
 
