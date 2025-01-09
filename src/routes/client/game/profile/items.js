@@ -88,6 +88,9 @@ router.post('/moving', function(req, res, next) {
             case 'RestoreHealth':
                 processRestoreHealth(account, action, result);
                 break;
+            case 'TradingConfirm':
+                processTradingConfirm(account, action, result);
+                break;
         }
     }
 
@@ -173,6 +176,40 @@ function processRestoreHealth(account, action, outputChanges) {
     }
 
     outputChanges.profileChanges[pmcProfile._id].health = pmcProfile.Health;
+    return result;
+}
+
+function processTradingConfirmAction(account, action, outputChanges) {
+
+    const result = { success: true, error: undefined };
+    logger.logDebug("processTradingConfirmAction");
+
+    /**
+     * @type {String}
+     */
+    const traderId = action.tid;
+    /**
+     * @type {Number}
+     */
+    const price = action.price;
+
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const traderEntry = db["traders"][traderId];
+    const assortEntry = traderEntry.assort;
+    /**
+     * @type {TraderAssort}
+     */
+    const traderDataResult = db.getData(assortEntry);
+
+    switch(action.type) {
+        case 'sell_to_trader':
+            break;
+    }
+
+    return result;
 }
 
 module.exports = router;
