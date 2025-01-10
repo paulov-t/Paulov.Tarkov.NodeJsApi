@@ -20,10 +20,14 @@ class InventoryService {
             return;
 
         const items = profile.Inventory.items;
+        const equipmentId = profile.Inventory.equipment;
         const childItems = this.findChildItemsOfItemId(items, itemId);
         childItems.push({ _id: itemId });
-        // console.log(childItems);
         for(const item of childItems) {
+            // check for equipmentId
+            if(item._id === equipmentId)
+                continue;
+            
             const indexOfItem = profile.Inventory.items.findIndex(x => x._id === item._id);
             if (indexOfItem !== -1)
                 profile.Inventory.items.splice(indexOfItem, 1);
@@ -203,6 +207,7 @@ class InventoryService {
         }
         // logger.logInfo("Updated equipment Id!");
     }
+
 }
 
 module.exports.InventoryService = new InventoryService();
