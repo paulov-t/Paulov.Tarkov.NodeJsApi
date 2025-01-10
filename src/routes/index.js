@@ -13,4 +13,10 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Paulov-t Tarkov Web Server', serverMode: serverMode });
 });
 
+/* GET home page. */
+router.get('/itemSearch', function(req, res, next) {
+
+  res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
+});
+
 module.exports = router;

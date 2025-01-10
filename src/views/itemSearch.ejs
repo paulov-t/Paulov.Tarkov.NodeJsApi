@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Item Search</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='https://bootswatch.com/5/darkly/bootstrap.min.css' />
+    <link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
+  </head>
+  <body>
+    <h1>Item Search</h1>
+    <div>
+        <table id="myTable">
+          <thead>
+            <tr>
+                <th>Template Id</th>
+                <th>Name</th>
+                <th>Parent Id</th>
+                <th>Parent Name</th>
+            </tr>
+          </thead>
+        </table>
+    </div>
+    
+    <!-- Add JQUERY -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="//cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+    <script>
+        // let table = new DataTable('#myTable');
+        $('#myTable').DataTable({
+            "ajax": {
+              "url": '/itemSearch/getItemEnglishNameAndTpl/',
+              "type": "POST"
+            },
+            columns: [
+              { data: 'itemId' },
+              { data: 'langItem' },
+              { data: 'parentId' },
+              { data: 'parentIdLang' }
+            ]
+        });
+
+        // $.post("/itemSearch/itemSearchByTpl/sdasdas",
+        //     {
+        //     },
+        //     function(data, status){
+        //         alert("Data: " + data.data + "\nStatus: " + status);
+        //     });
+        
+    </script>
+  </body>
+</html>
