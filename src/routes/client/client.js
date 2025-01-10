@@ -460,7 +460,7 @@ router.post('/game/profile/nickname/validate', function(req, res, next) {
         const otherAccountProfile = AccountService.getAccountProfileByModeFromAccount(otherAccount, myAccount.currentMode);
         if (!otherAccountProfile)
             continue;
-        
+
         if (otherAccountProfile.characters.pmc?.Info?.Nickname === requestedNickname)
         {
             result.status = "invalid";
@@ -1333,30 +1333,17 @@ router.post('/insurance/items/list/cost', function(req, res, next) {
  */
 router.post('/raid/configuration', function(req, res, next) {
 
-    console.log(req.body);
+    const account = AccountService.getAccount(req.SessionId);
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    // Store the desired Raid Configuration
+    accountProfile.raidConfiguration = req.body;
     bsgHelper.nullResponse(res);
+    AccountService.saveAccount(account);
 
     next();
 });
 
-/**
- * @swagger
- * /client/match/available:
- *   post:
- *     tags:
- *     - Client
- *     summary: 
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/match/available', function(req, res, next) {
 
-   
-    bsgHelper.getBody(res, false);
-
-    next();
-});
 
 /**
  * @swagger
@@ -1601,6 +1588,26 @@ router.post('/localGame/weather', function(req, res, next) {
 
     next();
 });
+
+/**
+ * @swagger
+ * /client/analytics/event-disconnect:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/analytics/event-disconnect', function(req, res, next) {
+
+    console.log(req.body);
+    bsgHelper.nullResponse(res);
+
+    next();
+});
+
 
 
 module.exports = router;
