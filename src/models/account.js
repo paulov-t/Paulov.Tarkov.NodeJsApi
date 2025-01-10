@@ -46,6 +46,11 @@ class AccountProfileMode {
          * @type {SocialNetwork}
          */
         this.socialNetwork = new SocialNetwork();
+
+        /**
+         * @type {Object}
+         */
+        this.raidConfiguration = {};
     }
 }
 

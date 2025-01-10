@@ -1,6 +1,7 @@
 const bsgHelper = require('./../bsgHelper');
-const { AccountProfileCharacter } = require("../models/Account");
+const { AccountProfileCharacter, Account, AccountProfileMode } = require("../models/Account");
 const { logger } = require('../classes/logger');
+const { Database } = require('../classes/database');
 
 class InventoryService {
     constructor() {
@@ -207,6 +208,28 @@ class InventoryService {
         }
         // logger.logInfo("Updated equipment Id!");
     }
+
+    getTemplateItem(templateId) {
+        return Database.getData(Database.templates.items)[templateId];
+    }
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} accountProfileCharacter 
+     * @returns []
+     */
+    getPlayerStash(accountProfileCharacter) {
+        let stashId = accountProfileCharacter.Inventory.stash;
+        console.log(stashId);
+        const stashItemTpl = accountProfileCharacter.Inventory.items.find(x => x._id == stashId)._tpl;
+        console.log(Database);
+        const templateItems = Database.getData(Database.templates.items);
+        const stashItem = templateItems[stashItemTpl];
+       
+        let stashX = stashItem._props.Grids[0]._props.cellsH !== 0 ? stashItem._props.Grids[0]._props.cellsH : 10;
+        let stashY = stashItem._props.Grids[0]._props.cellsV !== 0 ? stashItem._props.Grids[0]._props.cellsV : 66;
+        return [stashX, stashY];
+      }
 
 }
 

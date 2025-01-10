@@ -1,3 +1,14 @@
+/**
+ * itemsMovingController
+ * This controller is for handling the very over complicated BSG "items/moving" route and actions
+ * BSG supply an object which will be an array of "Actions", these "actions" can be very different in terms of data and what they can provide. 
+ * 
+ * It seems this was meant for the WebSocket OR it was an attempt to stop the client making so many calls to the Server per action.
+ * 
+ * What I have done to combat this is to switch case the Action and then create a function per action
+ */
+
+
 const express = require('express');
 const router = express.Router();
 const bsgHelper =  require('./../bsgHelper');
@@ -232,7 +243,8 @@ function sellToTrader(account, action, outputChanges) {
     const inventoryEquipmentId = pmcProfile.Inventory.equipment;
     const inventory = pmcProfile.Inventory.items;
 
-    const trader = TraderService.getTrader(action.tid);
+    const traderId = action.tid;
+    const trader = TraderService.getTrader(traderId);
     const templatePrices = Database.getData(Database.templates.prices);
     // console.log(templatePrices);
 
@@ -271,6 +283,8 @@ function sellToTrader(account, action, outputChanges) {
         }
 
     }
+
+    TraderService.givePlayerMoneyFromTrader(traderId, money, pmcProfile, outputChanges.profileChanges[pmcProfile._id]);
 
     return result;
 }
