@@ -398,9 +398,8 @@ class AccountService {
         if (accountType !== 'object')
             return;
 
-        const accountCurrentMode = account.currentMode
-        if (!accountCurrentMode)
-            return;
+        if (!account.currentMode)
+            account.currentMode = "regular";
 
         if (account.accountId === undefined) {
             const newAccountId = bsgHelper.generateMongoId();
@@ -409,10 +408,6 @@ class AccountService {
 
         if (!account.accountId)
             return;
-
-        if (!account.accountId)
-            return;
-
 
         const accountFilePath = path.join(this.saveDirectoryPath, `${account.accountId}.json`);
 
