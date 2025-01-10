@@ -363,6 +363,9 @@ class AccountService {
         if (!mode)
             return undefined;
 
+        if (!account.modes)
+            return undefined;
+
         /**
          * @type {AccountProfileMode}
          */
@@ -393,6 +396,9 @@ class AccountService {
 
         if (!account)
             return;
+
+        if (!account.accountId)
+            throw "You are trying to save an account without an AccountId?";
 
         const accountType = typeof(account);
         if (accountType !== 'object')
