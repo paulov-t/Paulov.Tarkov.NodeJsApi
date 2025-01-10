@@ -103,7 +103,7 @@ app.use('/launcher', require('./controllers/launcherController'));
 app.use('/client', require('./routes/client/client'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
 app.use('/client/trading/api', require('./routes/client/trading'));
-app.use('/client/game/profile/items', require('./routes/client/game/profile/items'));
+app.use('/client/game/profile/items', require('./controllers/itemsMovingController'));
 app.use('/client/game/profile/search', require('./routes/client/game/profile/search'));
 app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));

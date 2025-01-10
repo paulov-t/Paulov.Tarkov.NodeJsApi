@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const bsgHelper =  require('../../../../bsgHelper');
-const { AccountService } = require('../../../../services/AccountService');
-const { logger } = require('../../../../classes/logger');
+const bsgHelper =  require('./../bsgHelper');
+const { AccountService } = require('./../services/AccountService');
+const { logger } = require('./../classes/logger');
+const { TraderService } = require('../services/TraderService');
+const { Database } = require('../classes/database');
+const { InventoryService } = require('../services/InventoryService');
 
 /**
  * @swagger
@@ -179,10 +182,10 @@ function processRestoreHealth(account, action, outputChanges) {
     return result;
 }
 
-function processTradingConfirmAction(account, action, outputChanges) {
+function processTradingConfirm(account, action, outputChanges) {
 
-    const result = { success: true, error: undefined };
-    logger.logDebug("processTradingConfirmAction");
+    let result = { success: true, error: undefined };
+    logger.logDebug("processTradingConfirm");
 
     /**
      * @type {String}
@@ -205,8 +208,68 @@ function processTradingConfirmAction(account, action, outputChanges) {
     const traderDataResult = db.getData(assortEntry);
 
     switch(action.type) {
-        case 'sell_to_trader':
+        case 'buy_from_trader':
+            result = buyFromTrader(account, action, outputChanges);
             break;
+        case 'sell_to_trader':
+            result = sellToTrader(account, action, outputChanges);
+            break;
+    }
+
+    return result;
+}
+
+function buyFromTrader(account, action) {
+    const result = { success: true, error: undefined };
+    return result;
+}
+
+function sellToTrader(account, action, outputChanges) {
+    const result = { success: true, error: undefined };
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    const inventoryEquipmentId = pmcProfile.Inventory.equipment;
+    const inventory = pmcProfile.Inventory.items;
+
+    const trader = TraderService.getTrader(action.tid);
+    const templatePrices = Database.getData(Database.templates.prices);
+    // console.log(templatePrices);
+
+    let money = 0;
+    for (const sellItem of action.items) {
+
+        const itemsInInventory = inventory.filter(x => x._id == sellItem.id || x.parentId == sellItem.id);
+        for(const itemInInventory of itemsInInventory) {
+            if (!itemInInventory)
+                continue;
+
+            if (itemInInventory._id === inventoryEquipmentId)
+                continue;
+
+            // This will remove the item from the Client.
+            if (itemInInventory.slotId == 'hideout')
+                outputChanges.profileChanges[pmcProfile._id].items.del.push(itemInInventory);
+
+            if (!templatePrices[itemInInventory._tpl])
+                continue;
+
+            const templatePrice = templatePrices[itemInInventory._tpl];
+            let priceCoef = (trader.base.loyaltyLevels[0].buy_price_coef) / 100;
+            let price = templatePrice >= 1 ? templatePrice : 1;
+            let count =
+                "upd" in itemInInventory && "StackObjectsCount" in itemInInventory.upd
+                ? itemInInventory.upd.StackObjectsCount
+                : 1;
+            price = ((price - (price * priceCoef)) * count);
+
+            money += price;
+
+            // This will remove the item from the Server.
+            // inventory.splice(itemInInventory, 1);
+            InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemInInventory._id);
+        }
+
     }
 
     return result;

@@ -444,13 +444,23 @@ router.post('/game/profile/nickname/reserved', function(req, res, next) {
 router.post('/game/profile/nickname/validate', function(req, res, next) {
 
     const myAccount = AccountService.getAccount(req.SessionId);
-    const myAccountProfile = AccountService.getAccountProfileByMode(myAccount.accountId, myAccount.currentMode);
+    const myAccountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+    if (!myAccountProfile)
+    {
+        const result = { status: "ok" };
+        bsgHelper.addBSGBodyInResponseWithData(res, result);
+        next();
+        return;
+    }
 
     console.log(req.body);
     let requestedNickname = req.body.nickname;
     const result = { status: "ok" };
     for(const otherAccount of AccountService.getAllAccounts()) {
-        const otherAccountProfile = AccountService.getAccountProfileByMode(otherAccount.accountId, myAccount.currentMode);
+        const otherAccountProfile = AccountService.getAccountProfileByModeFromAccount(otherAccount, myAccount.currentMode);
+        if (!otherAccountProfile)
+            continue;
+        
         if (otherAccountProfile.characters.pmc?.Info?.Nickname === requestedNickname)
         {
             result.status = "invalid";
