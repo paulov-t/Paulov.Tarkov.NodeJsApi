@@ -13,7 +13,7 @@ function addBSGBodyInResponseWithData(response, data) {
   if (!response)
     throw "response not provided!";
 
-  if (!data)
+  if (data === undefined)
     throw "data not provided!";
 
   response.body = { errmsg: null, err: 0, data: data };
@@ -23,7 +23,7 @@ function getBody(response, data) {
   if (!response)
     throw "response not provided!";
 
-  if (!data)
+  if (data === undefined)
     throw "data not provided!";
 
   response.body = 
