@@ -41,24 +41,24 @@ class TraderService {
      * @param {Number} amount 
      * @param {AccountProfileCharacter} accountProfileCharacter 
      * @param {Object} profileChanges 
-     * @returns 
+     * @returns {Boolean} Successfulness of the Transaction
      */
     givePlayerMoneyFromTrader(traderId, amount, accountProfileCharacter, profileChanges) {
         const trader = this.getTrader(traderId);
         if (!trader)
-            return;
+            return false;
 
         const currencyTemplateId = ECurrencyTemplates[trader.base.currency];
         if (!currencyTemplateId)
-            return;
+            return false;
 
         const templateItem = InventoryService.getTemplateItem(currencyTemplateId);
         if (!templateItem)
-            return;
+            return false;
 
         const currencyMaxStackSize = templateItem._props?.StackMaxSize;
         if (!currencyMaxStackSize)
-            return;
+            return false;
 
         const newCurrentItem = {
             _id: generateMongoId(),
@@ -69,10 +69,21 @@ class TraderService {
         if (!newCurrentItem)
             return;
 
-        const playerStash2d = InventoryService.getPlayerStash(accountProfileCharacter);
+        const stashId = InventoryService.getPlayerStashId(accountProfileCharacter);
+        const playerStashXandY = InventoryService
+                                .getPlayerStashSizeXAndY(
+                                    accountProfileCharacter);
+        const placementResult = InventoryService
+                                .placeItemIn2dContainer(
+                                    stashId
+                                    , playerStashXandY
+                                    , accountProfileCharacter.Inventory.items
+                                    , newCurrentItem);
 
+        return placementResult;
 
     }
+
 }
 
 module.exports.TraderService = new TraderService();

@@ -216,10 +216,20 @@ class InventoryService {
     /**
      * 
      * @param {AccountProfileCharacter} accountProfileCharacter 
-     * @returns []
+     * @returns {String} Stash Id
      */
-    getPlayerStash(accountProfileCharacter) {
+    getPlayerStashId(accountProfileCharacter) {
         let stashId = accountProfileCharacter.Inventory.stash;
+        return stashId;
+    }
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} accountProfileCharacter 
+     * @returns 
+     */
+    getPlayerStashSizeXAndY(accountProfileCharacter) {
+        let stashId = this.getPlayerStashId(accountProfileCharacter);
         console.log(stashId);
         const stashItemTpl = accountProfileCharacter.Inventory.items.find(x => x._id == stashId)._tpl;
         console.log(Database);
@@ -228,8 +238,56 @@ class InventoryService {
        
         let stashX = stashItem._props.Grids[0]._props.cellsH !== 0 ? stashItem._props.Grids[0]._props.cellsH : 10;
         let stashY = stashItem._props.Grids[0]._props.cellsV !== 0 ? stashItem._props.Grids[0]._props.cellsV : 66;
-        return [stashX, stashY];
-      }
+        return { x: stashX, y: stashY };
+    }
+
+    /**
+     * 
+     * @param {String} containerId 
+     * @param {Object} containerSizeXandY { x , y }
+     * @param {Array} currentItems 
+     * @param {Object} itemToPlace 
+     * @return {Boolean} whether it was possible to place the item 
+     */
+    placeItemIn2dContainer(containerId, containerSizeXandY, currentItems, itemToPlace) {
+        // Create the array as designated by the container size X and Y variables
+        // 0 means nothing is in that spot, 1 means there is
+        // TODO: Find a way to make this a much more performant 2D UInt8Array instead
+        const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
+        console.log(array2d);
+        // Fill 2D Array with current Items
+        for(const item of currentItems) {
+            const itemLocation = item.location;
+            if (!itemLocation)
+                continue;
+
+            if (!item.parentId)
+                continue;
+
+            if (item.parentId !== containerId) {
+                // Check if child item of another item here
+                continue;
+            }
+
+            // The specified spot is filled. This has not handled size yet...
+            array2d[itemLocation.y][itemLocation.x] = 1;
+            console.log(item);
+        }
+
+        return false;
+    }
+
+    create2DArray(rows, columns) {
+        const array = [];
+        for (let i = 0; i < rows; i++) {
+            array[i] = [];
+            for (let j = 0; j < columns; j++) {
+                array[i][j] = 0; // Initialize with zeros
+            }
+        }
+        return array;
+    }
+
 
 }
 
