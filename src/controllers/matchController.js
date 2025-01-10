@@ -94,7 +94,7 @@ router.post('/group/invite/cancel-all', function(req, res, next) {
         myAccountByMode.socialNetwork.group.groupMembers = [];
         myAccountByMode.socialNetwork.group.groupMemberInvites = [];
     }
-    AccountService.saveAccount(myAccountByMode);
+    AccountService.saveAccount(myAccount);
 
     bsgHelper.addBSGBodyInResponseWithData(res, { });
 
