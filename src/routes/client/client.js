@@ -69,6 +69,7 @@ router.post('/game/mode', function(req, res, next) {
 router.post('/game/start', function(req, res, next) {
     const today = new Date().toUTCString();
     const startTimeStampMS = Date.parse(today);
+
     bsgHelper.addBSGBodyInResponseWithData(res, { utc_time: startTimeStampMS / 1000 });
     next();
   
@@ -1413,8 +1414,8 @@ router.post('/match/local/start', function(req, res, next) {
  *           type: object
  *           properties:
  *            conditions:
- *              type: [{Role: 'assault', Limit: 9, Difficulty: 'normal'}]
- *              default: factory4_day
+ *              type: Array
+ *              default: [{Role: 'assault', Limit: 9, Difficulty: 'normal'}]
  *     responses:
  *       200:
  *         description: A successful response

@@ -109,6 +109,7 @@ app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));
 app.use('/client/mail', require('./controllers/mailController'));
 app.use('/client/match', require('./controllers/matchController'));
+app.use('/client/game/profile', require('./controllers/gameProfileController'));
 
 app.use('/itemSearch', require('./routes/itemSearch'));
 

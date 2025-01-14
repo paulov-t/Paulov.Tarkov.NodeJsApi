@@ -35,6 +35,58 @@ class InventoryService {
         }
     }
 
+     /**
+     * Remove's the item and child items from the provided slotId
+     * @param {AccountProfileCharacter} profile 
+     * @param {String} slotId 
+     */
+    removeItemFromSlot(profile, slotId) {
+        if (!profile)
+            return;
+
+        if (!slotId)
+            return;
+
+        const items = profile.Inventory.items;
+        const item = items.find(x => x.slotId === slotId);
+        if (!item)
+            return;
+
+        this.removeItemAndChildItemsFromProfile(profile, item._id);
+    }
+
+     /**
+     * 
+     * @param {AccountProfileCharacter} profile 
+     * @param {String} templateId 
+     * @param {String} slotId 
+     */
+    addTemplatedItemToSlot(profile, templateId, slotId) {
+        if (!profile)
+            return;
+
+        if (!templateId)
+            return;
+
+        if (!slotId)
+            return;
+
+        const templateItems = Database.getTemplateItems();
+        const template = templateItems[templateId];
+        if (!template)
+            return;
+
+        profile.Inventory.items.push(
+            {
+                "_id": bsgHelper.generateMongoId(),
+                "_tpl": templateId,
+                "slotId": slotId,
+                "parentId": profile.Inventory.equipment
+            }
+        );
+
+    }
+
     /**
      * 
      * @param {Object[]} items 
@@ -288,6 +340,25 @@ class InventoryService {
         return array;
     }
 
+
+    getAllAvailableBackpacks() {
+        const backpackParentId = "5448e53e4bdc2d60728b4567";
+        const list = this.getAllAvailableItemOptionsByParentId(backpackParentId);
+        return list;
+    }
+
+    getAllAvailableItemOptionsByParentId(parentId) {
+        const templateItems = Database.getTemplateItems();
+
+        const list = [];
+        for(const itemId in templateItems) {
+            const template = templateItems[itemId];
+            if (template._parent === parentId) {
+                list.push(template);
+            }
+        }
+        return list;
+    }
 
 }
 

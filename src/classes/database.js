@@ -168,6 +168,27 @@ class Database {
       this.initialised = true;
     
     }
+
+    /**
+     * 
+     * @returns 
+     */
+    getTemplateItems() {
+        const db = global._database;
+        const dbResult = db.getData(db["templates"]["items"]);
+        return dbResult;
+    }
+
+    /**
+     * 
+     * @param {String} templateId  
+     * @returns {Number}
+     */
+    getTemplateItemPrice(templateId) {
+      const db = global._database;
+      const dbResultData = db.getData(db["templates"]["prices"]);
+      return dbResultData[templateId];
+  }
 }
 
 module.exports.Database = new Database();

@@ -93,6 +93,9 @@ router.post('/moving', function(req, res, next) {
     for(const action of bodyActionList) {
         console.log(action);
         switch(action.Action) {
+            case 'Examine':
+                accountProfile.characters.pmc.Encyclopedia[action.item] = true
+                break;
             case 'Heal':
                 processHealAction(account, action, result);
                 break;
@@ -164,6 +167,8 @@ function processMoveAction(account, action, outputChanges) {
 }
 
 function processRestoreHealth(account, action, outputChanges) {
+
+    const result = { success: true, error: undefined };
 
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     const pmcProfile = accountProfile.characters.pmc;

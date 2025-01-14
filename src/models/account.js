@@ -80,16 +80,22 @@ class AccountProfileCharacter {
         /**
          * @type {Object}
          */
-        this.Achievements = {}
+        this.Achievements = {};
 
         /**
          * @type {Object}
          */
-        this.Encyclopedia = {}
+        this.Encyclopedia = {};
 
-        this.Health = {}
+        /**
+         * A 
+         * @type {AccountProfileCharacterCustomization}
+         */
+        this.Customization = new AccountProfileCharacterCustomization();
 
-        this.Info = {}
+        this.Health = {};
+
+        this.Info = {};
         /**
          * @type {Inventory}
          */
@@ -110,6 +116,15 @@ class AccountProfileCharacterInfo {
         this.GameVersion = "";
         this.HasCoopExtension = true;
         this.Health = {};
+    }
+}
+
+class AccountProfileCharacterCustomization {
+    constructor() {
+        this.Head = "5cde9ff17d6c8b0474535daa";
+        this.Body = "618d1af10a5a59657e5f56f3";
+        this.Feet = "5cde9fb87d6c8b0474535da9";
+        this.Hands = "64ac23c449d74fd5ec0a124e";
     }
 }
 
