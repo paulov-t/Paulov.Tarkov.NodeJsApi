@@ -185,9 +185,9 @@ router.post('/join', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/match/available', function(req, res, next) {
+router.post('/available', function(req, res, next) {
    
-    // If we respond true here whilst in PvP (or PvE Streets), the vanilla client will attempt to call client/match/join with a requested set of params. 
+    // If we respond true here whilst in PvP (and without any client mods in the mix), the vanilla client will attempt to call client/match/join with a requested set of params. 
     // Unless the client has a Network host at the other end to connect to, it will fail after 4 seconds and kick back to main menu
 
     bsgHelper.getBody(res, false);
