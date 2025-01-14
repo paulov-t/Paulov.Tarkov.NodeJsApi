@@ -1386,7 +1386,12 @@ router.post('/getMetricsConfig', function(req, res, next) {
  */
 router.post('/match/local/start', function(req, res, next) {
 
-    const result = new LocalMatchStartResponse(req.body.location);
+    const location = req.body.location.toLowerCase();
+    if (!Database.locations[location]) {
+        console.log(Database.locations);
+        throw `${location} doesn't exist in Database.locations`
+    }
+    const result = new LocalMatchStartResponse(location);
 
     bsgHelper.getBody(res, result);
 
