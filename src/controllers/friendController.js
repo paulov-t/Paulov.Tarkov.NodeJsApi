@@ -104,7 +104,8 @@ router.post('/request/send', function(req, res, next) {
   otherAccount.modes[senderAccountCurrentMode].socialNetwork.friendRequestInbox.push(friendRequest);
   AccountService.saveAccount(otherAccount);
 
-  WebSocketService.connections[otherAccount.accountId].socket.send(JSON.stringify({ type: ENotificationType.FriendsListNewRequest, eventId: "FriendsListNewRequest", time: 5 }));
+  if(WebSocketService.connections[otherAccount.accountId])
+    WebSocketService.connections[otherAccount.accountId].socket.send(JSON.stringify({ type: ENotificationType.FriendsListNewRequest, eventId: "FriendsListNewRequest", time: 5 }));
 
   bsgHelper.addBSGBodyInResponseWithData(res, 
     { 
