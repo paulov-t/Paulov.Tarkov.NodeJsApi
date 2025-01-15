@@ -109,6 +109,9 @@ router.post('/moving', function(req, res, next) {
             case 'RestoreHealth':
                 processRestoreHealth(account, action, result);
                 break;
+            case 'TraderRepair':
+                processTraderRepair(account, action, result);
+                break;
             case 'TradingConfirm':
                 processTradingConfirm(account, action, result);
                 break;
@@ -233,6 +236,56 @@ function processQuestAccept(account, action, outputChanges) {
 
     return result;
 }
+
+function processTraderRepair(account, action, outputChanges) {
+
+    let result = { success: true, error: undefined };
+    logger.logDebug("processTraderRepair");
+
+    /**
+     * @type {String}
+     */
+    const traderId = action.tid;
+    /**
+     * @type {Number}
+     */
+    const price = action.price;
+
+    /**
+     * @type {Database}
+     */
+    const db = global._database;
+    const traderEntry = db["traders"][traderId];
+    const assortEntry = traderEntry.assort;
+    /**
+     * @type {TraderAssort}
+     */
+    const traderDataResult = db.getData(assortEntry);
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    const inventoryEquipmentId = pmcProfile.Inventory.equipment;
+    const inventoryItems = pmcProfile.Inventory.items;
+    for(const itemToRepairAction of action.repairItems) {
+        const itemToRepair = inventoryItems.find(x => x._id === itemToRepairAction._id);
+        if(!itemToRepair) {
+            logger.logError("could not find item to repair");
+            return { success: false, error: "could not find item to repair" };
+        }
+
+        if (!itemToRepair.upd)
+            continue;
+
+        if (!itemToRepair.upd.Repairable)
+            continue;
+
+        itemToRepair.upd.Repairable.Durability += itemToRepairAction.count;
+        if(itemToRepair.upd.Repairable.Durability > itemToRepair.upd.Repairable.MaxDurability)
+            itemToRepair.upd.Repairable.Durability = itemToRepair.upd.Repairable.MaxDurability;
+
+    }
+}
+
 
 function processTradingConfirm(account, action, outputChanges) {
 
