@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 const { AccountService } = require('./../services/AccountService');
-const { BotGenerationService, BotGenerationCondition } = require('./../services/BotGenerationService');
 const { Account, AccountProfileMode } = require('./../models/Account');
 const { Database } = require('./../classes/database');
 const { FriendRequest } = require('./../models/FriendRequest');

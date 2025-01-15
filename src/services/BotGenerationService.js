@@ -1,6 +1,7 @@
 const { generateMongoId } = require("../bsgHelper");
 const { logger } = require("../classes/logger");
 const { AccountProfileCharacter } = require("../models/Account");
+const { BotGenerationCondition } = require("../models/BotGenerationCondition");
 const fs = require("fs");
 const path = require("path");
 const { InventoryService } = require("./InventoryService");
@@ -145,13 +146,6 @@ class BotGenerationService {
 
 }
 
-class BotGenerationCondition {
-    constructor() {
-        this.Role = "assault";
-        this.Limit = 9;
-        this.Difficulty = "normal"
-    }
-}
+
 
 module.exports.BotGenerationService = new BotGenerationService();
-module.exports.BotGenerationCondition = BotGenerationCondition;
