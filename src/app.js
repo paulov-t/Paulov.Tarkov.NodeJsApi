@@ -20,11 +20,6 @@ var bsgHelper =  require('./bsgHelper');
 const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
 
-const zlibInflate = zlib.inflate;
-const zlibDeflate = zlib.deflate;
-
-var indexRouter = require('./routes/index');
-
 var app = express();
 
 // view engine setup
@@ -34,15 +29,32 @@ app.use(express.raw({ type: "application/json", limit: '50mb',
   parameterLimit: 100000,
   extended: true  }));
 
+  app.use(express.raw({ type: "image/png", limit: '50mb'}));
+
+// Necessary for reading SessionId
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-
 
 app.use(function(req, res, next) {
   database.Database.loadCompressedDatabase();
   next();
 });
+
+
+/** Middleware: Extracts the SessionId into the Request object
+ *  so that future middleware can use Request.SessionId */
+app.use(function(req, res, next) {
+  bsgHelper.extractSessionId(req, res, next);
+});
+
+/** Middleware: Detects and store Uri calls for metrics */
+app.use(function(req, res, next) {
+
+  // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
+  let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
+  ownLogger.logger.logInfo(responseText);
+  next();
+});
+
 
 app.use(function(req, res, next) {
 
@@ -55,9 +67,11 @@ app.use(function(req, res, next) {
       res.setHeader("content-type", "image/png");
     }
 
-    // console.log(`requested file: ${filePath}`);
     if(fs.existsSync(filePath)) {
       res.end(fs.readFileSync(filePath));
+    }
+    else if(fs.existsSync(filePath.replace(".jpg", ".png"))) {
+      res.end(fs.readFileSync(filePath.replace(".jpg", ".png")));
     }
     else {
       ownLogger.logger.logError(`${filePath} doesn't exist`);
@@ -69,22 +83,7 @@ app.use(function(req, res, next) {
     next();
 });
 
-/** Middleware: Extracts the SessionId into the Request object
- *  so that future middleware can use Request.SessionId */
-app.use(function(req, res, next) {
-  bsgHelper.extractSessionId(req, res, next, () => {
-    next();
-  });
-});
-
-/** Middleware: Detects and store Uri calls for metrics */
-app.use(function(req, res, next) {
-
-  // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
-  let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
-  ownLogger.logger.logInfo(responseText);
-  next();
-});
+app.use(express.static(path.join(__dirname, 'public')));
 
 /** Middleware: If required, inflates the Request Body using Zlib */
 app.use(function(req, res, next) {
@@ -97,7 +96,7 @@ app.use(function(req, res, next) {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 /** All routers below. Generate response.body here... */
-app.use('/', indexRouter);
+app.use('/', require('./routes/index'));
 // app.use('/users', usersRouter);
 app.use('/launcher', require('./controllers/launcherController'));
 app.use('/client', require('./routes/client/client'));

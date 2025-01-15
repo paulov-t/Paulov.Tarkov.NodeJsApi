@@ -142,9 +142,8 @@ function deflateResponse(req, res) {
  * @param {Http.IncomingMessage} req request object
  * @param {Http.OutgoingMessage} res response object
  * @param {function} next if you want to skip to next middleware
- * @param {function} done returns function with request body object parameter
  */
-function extractSessionId(req, res, next, done) {
+function extractSessionId(req, res, next) {
 
     const PHPSESSID = req.cookies != undefined && req.cookies["PHPSESSID"] !== undefined ? req.cookies["PHPSESSID"] : undefined;
     
@@ -152,7 +151,7 @@ function extractSessionId(req, res, next, done) {
     if(PHPSESSID !== undefined)
         req.SessionId = PHPSESSID;
     
-    done(req.body);
+    next();
 }
 
 global.mongoIdCounter = 0;

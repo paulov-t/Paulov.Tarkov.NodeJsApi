@@ -52,7 +52,6 @@ router.post('/game/mode', function(req, res, next) {
     AccountService.saveAccount(account);
 
     bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: sessionMode, backendUrl: req.host });
-    // bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: "pve", backendUrl: req.host });
     next();
   });
 
@@ -131,32 +130,37 @@ router.post('/game/config', function(req, res, next) {
 
     const sessionId = req.SessionId;
 
-
     const today = new Date().toUTCString();
     const startTimeStampMS = Date.parse(today);
-    bsgHelper.addBSGBodyInResponseWithData(res, 
-        { 
-            queued: false,
-            banTime: -1,
-            hash: "",
-            lang: "en",
-            aid: req.SessionId,
-            token: req.SessionId,
-            taxonomy: "",
-            activeProfileId: req.SessionId,
-            nickname: req.SessionId,
-            utc_time: startTimeStampMS / 1000,
-            totalInGame: 0,
-            purchasedGames: { eft: true, arena: true },
-            isGameSynced: true,
-            backend: {
-                Main: req.host,
-                Messaging: req.host,
-                Trading: req.host,
-                RagFair: req.host,
-                Lobby: req.host
-            }
-        });
+
+    // Main needs the https:// ... i think?
+    const backend = {
+        Main: `${req.protocol}://${req.host}/`,
+        Messaging: req.host,
+        Trading: req.host,
+        RagFair: req.host,
+        Lobby: req.host,
+    }
+
+    const result = 
+    { 
+        queued: false,
+        banTime: -1,
+        hash: "",
+        lang: "en",
+        aid: req.SessionId,
+        token: req.SessionId,
+        taxonomy: "",
+        activeProfileId: req.SessionId,
+        nickname: req.SessionId,
+        utc_time: startTimeStampMS / 1000,
+        totalInGame: 0,
+        purchasedGames: { eft: true, arena: true },
+        isGameSynced: true,
+        backend: backend
+    };
+    console.log(result);
+    bsgHelper.getBody(res, result);
     next();
 
 });
@@ -911,7 +915,6 @@ router.post('/mail/dialog/list', function(req, res, next) {
  */
 router.post('/quest/list', function(req, res, next) {
 
-    console.log(Database);
     const allQuests = Database.getTemplateQuests();
     let account = AccountService.getAccount(req.SessionId);
     if (!account)
