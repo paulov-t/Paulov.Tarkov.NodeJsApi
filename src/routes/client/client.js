@@ -136,10 +136,10 @@ router.post('/game/config', function(req, res, next) {
     // Main needs the https:// ... i think?
     const backend = {
         Main: `${req.protocol}://${req.host}/`,
-        Messaging: req.host,
-        Trading: req.host,
-        RagFair: req.host,
-        Lobby: req.host,
+        Messaging: `${req.protocol}://${req.host}/`,
+        Trading: `${req.protocol}://${req.host}/`,
+        RagFair: `${req.protocol}://${req.host}/`,
+        Lobby: `${req.protocol}://${req.host}/`,
     }
 
     const result = 
@@ -933,6 +933,9 @@ router.post('/quest/list', function(req, res, next) {
             playerQuests.push(quest);
             continue;
         }
+
+        if (quest.secretQuest)
+            continue;
 
         if(quest.conditions.AvailableForStart.length === 0) {
             playerQuests.push(quest);
