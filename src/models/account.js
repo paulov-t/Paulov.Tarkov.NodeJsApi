@@ -82,24 +82,97 @@ class AccountProfileCharacter {
          */
         this.Achievements = {};
 
-        /**
-         * @type {Object}
+         /**
+         * @type {Array}
          */
-        this.Encyclopedia = {};
+         this.Bonuses = [];
 
-        /**
+         /**
+         * @type {Array}
+         */
+         this.CheckedChambers = [];
+
+         /**
          * A 
          * @type {AccountProfileCharacterCustomization}
          */
         this.Customization = new AccountProfileCharacterCustomization();
 
+          /**
+         * @type {Object}
+         */
+        this.Encyclopedia = {};
+
+        /**
+         * @type {Object}
+         */
         this.Health = {};
 
+        /**
+         * @type {Object}
+         */
+        this.Hideout = {};
+
+        /**
+         * @type {AccountProfileCharacterInfo}
+         */
         this.Info = {};
+
         /**
          * @type {Inventory}
          */
         this.Inventory = new Inventory();
+
+        /**
+        * @type {AccountProfileCharacterInsuredItem[]}
+        */
+         this.InsuredItems = [];
+
+        /**
+        * @type {Object}
+        */
+        this.Prestige = {};
+
+        /**
+         * @type {AccountProfileCharacterQuestItem[]}
+         */
+        this.Quests = [];
+
+        /**
+        * @type {Object}
+        */
+        this.RagfairInfo = {};
+
+        /**
+        * @type {Object}
+        */
+        this.Skills = {};
+
+        /**
+        * @type {Object}
+        */
+        this.Stats = { Arena: {}, Eft: {} };
+
+
+        /**
+        * @type {Object}
+        */
+        this.TaskConditionCounters = { Arena: {}, Eft: {} };
+
+        /**
+        * @type {Object}
+        */
+        this.TradersInfo = {};
+
+        /**
+        * @type {Object}
+        */
+        this.UnlockedInfo = {};
+
+        /**
+        * @type {Object}
+        */
+        this.WishList = {};
     }
 }
 
@@ -128,8 +201,28 @@ class AccountProfileCharacterCustomization {
     }
 }
 
+class AccountProfileCharacterInsuredItem {
+    constructor() {
+        this.tid = "5cde9ff17d6c8b0474535daa";
+        this.itemId = "618d1af10a5a59657e5f56f3";
+    }
+}
+
+class AccountProfileCharacterQuestItem {
+    constructor() {
+        this.qid = "5cde9ff17d6c8b0474535daa";
+        this.startTime = Math.floor(Date.now() / 1000);
+        this.status = "AvailableForStart";
+        this.statusTimers = {};
+        this.completedConditions = [];
+        this.availableAfter = Math.floor(Date.now() / 1000);
+    }
+}
+
 module.exports.Account = Account;
 module.exports.AccountProfileMode = AccountProfileMode;
 module.exports.AccountProfileCharacterSet = AccountProfileCharacterSet;
 module.exports.AccountProfileCharacter = AccountProfileCharacter;
 module.exports.AccountProfileCharacterInfo = AccountProfileCharacterInfo;
+module.exports.AccountProfileCharacterInsuredItem = AccountProfileCharacterInsuredItem;
+module.exports.AccountProfileCharacterQuestItem = AccountProfileCharacterQuestItem;

@@ -189,6 +189,16 @@ class Database {
       const dbResultData = db.getData(db["templates"]["prices"]);
       return dbResultData[templateId];
   }
+
+  /**
+     * 
+     * @returns {Object} Dictionary<string, object>
+     */
+  getTemplateQuests() {
+    const db = global._database;
+    const dbResult = db.getData(db["templates"]["quests"]);
+    return dbResult;
+  }
 }
 
 module.exports.Database = new Database();

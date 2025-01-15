@@ -40,7 +40,7 @@ class BotGenerationService {
             bot.Info.MainProfileNickname = condition.playerProfileName;
 
 
-        console.log(Database);
+        // console.log(Database);
 
         const lowerRole = condition.Role.toLowerCase();
         console.log(condition.Role);

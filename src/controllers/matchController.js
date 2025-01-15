@@ -16,6 +16,12 @@ const { LocalMatchEndResponse } = require('../models/Responses/LocalMatchEndResp
 const { UpdatableChatMember } = require('../models/UpdatableChatMember');
 const { MatchGroup } = require('../models/MatchGroup');
 
+const { ClientRequestDataDumpService } = require('./../services/ClientRequestDataDumpService');
+const { InventoryService } = require('./../services/InventoryService');
+
+const { logger } = require('./../classes/logger');
+
+
 /**
  * @swagger
  * /client/match/group/current:
@@ -191,6 +197,133 @@ router.post('/available', function(req, res, next) {
 
     bsgHelper.getBody(res, false);
     // bsgHelper.getBody(res, true);
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/local/end:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            location:
+ *              type: string
+ *              default: factory4_day
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/local/end', function(req, res, next) {
+
+    console.log(req.body);
+    const isKilled = req.body.results.result === 'Killed';
+
+    // Dump the match client request body. Will be useful for Swagger and Tests.
+    ClientRequestDataDumpService.dumpData("MatchLocalEnd", req.body);
+
+    const result = new LocalMatchEndResponse();
+    result.serverId = req.body.serverId;
+
+    const myAccount = AccountService.getAccount(req.SessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    /**
+     * WARNING Inventory.items is NOT the full Inventory
+     * @type {AccountProfileCharacter} 
+     */
+    const newProfileToSave = req.body.results.profile;
+
+    const isPMC = myAccountByMode.characters.pmc._id == newProfileToSave._id;
+
+    // =========================================================================
+    // Update Achievements on Player Profile
+    if (isPMC) {
+        for (const achievementId in newProfileToSave.Achievements) {
+            if (!myAccountByMode.characters.pmc.Achievements[achievementId]) {
+                myAccountByMode.characters.pmc.Achievements[achievementId] = newProfileToSave.Achievements[achievementId];
+                logger.logSuccess(`Added achievement ${achievementId}!`)
+            }
+        }
+    }
+
+    // END OF: Update Achievements on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Update Experience on Player Profile
+    if (isPMC) {
+        myAccountByMode.characters.pmc.Info.Experience = newProfileToSave.Info.Experience;
+    }
+    else {
+        myAccountByMode.characters.scav.Info.Experience = newProfileToSave.Info.Experience;
+    }
+
+    // =========================================================================
+    // Update Experience on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.InsuredItems = newProfileToSave.InsuredItems;
+
+    // =========================================================================
+    // Replace Inventory on Player Profile
+
+    if (isPMC) {
+        /**
+         * WARNING Inventory.items is NOT the full Inventory
+         * @type {Inventory} 
+         */
+        const newProfileToSaveInventory = newProfileToSave.Inventory;
+        const newProfileToSaveInventoryItems = newProfileToSaveInventory.items;
+        for(const newInvItem of newProfileToSaveInventoryItems) {
+            InventoryService.removeItemAndChildItemsFromProfile(myAccountByMode.characters.pmc, newInvItem._id);
+        }
+        for(const newInvItem of newProfileToSaveInventoryItems) {
+            const indexOf = myAccountByMode.characters.pmc.Inventory.items.findIndex(x => x._id === newInvItem._id);
+            if (indexOf === -1)
+                myAccountByMode.characters.pmc.Inventory.items.push(newInvItem);
+        }
+    }
+
+    // END OF: Replace Inventory on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Replace Health on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.Health = newProfileToSave.Health;
+    // END OF: Replace Health on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Replace Quests on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.Quests = newProfileToSave.Quests;
+    // END OF: Replace Quests on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Replace Stats on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.Stats = newProfileToSave.Stats;
+    else
+        myAccountByMode.characters.scav.Stats = newProfileToSave.Stats;
+    // END OF: Replace Stats on Player Profile
+    // =========================================================================
+
+    result.results = req.body.results;
+
+    AccountService.saveAccount(myAccount);
+    logger.logSuccess(`Saved account ${myAccount.accountId}!`)
+    
+    bsgHelper.getBody(res, result);
 
     next();
 });
