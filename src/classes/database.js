@@ -187,7 +187,11 @@ class Database {
     getTemplateItemPrice(templateId) {
       const db = global._database;
       const dbResultData = db.getData(db["templates"]["prices"]);
-      return dbResultData[templateId];
+      let resultPrice = dbResultData[templateId];
+      if (!resultPrice || resultPrice == NaN)
+        resultPrice = 0;
+
+      return resultPrice;
   }
 
   /**

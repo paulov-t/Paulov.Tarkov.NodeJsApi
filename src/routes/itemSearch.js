@@ -9,7 +9,7 @@ var { Database } = require('./../classes/database');
  *   post:
  *     tags:
  *     - Item Search
- *     summary: Search the Items Database by Tpl
+ *     summary: Get the items table in English and their price
  *     responses:
  *       200:
  *         description: A successful response
@@ -24,6 +24,13 @@ router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
     // console.log(db);
     const languageLocaleData = db.getData(global._database["locales"]["global"]["en"]);
     const templatesItemData = db.getData(global._database["templates"]["items"]);
+    const templatesPricesData = db.getData(global._database["templates"]["prices"]);
+    let highestPrice = 0;
+    for(const itemId in templatesPricesData)
+    {
+        if (templatesPricesData[itemId] > highestPrice)
+            highestPrice = templatesPricesData[itemId];
+    }
     
     const result = [];
     // console.log(languageLocaleData);
@@ -44,12 +51,47 @@ router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
         let parentIdLang = languageLocaleData[`${item._parent} Name`];
         if (!parentIdLang)
             parentIdLang = "N/A";
+
+        let price = Database.getTemplateItemPrice(itemId);
+        let priceRatio = 0;
+        if (price > 0) {
+            priceRatio = Math.ceil((price / highestPrice) * 100);
+            priceRatio *= 3;
+            if(item._props.RarityPvE) {
+                switch(item._props.RarityPvE)
+                {
+                    case 'Superrare':
+                        priceRatio *= 3;
+                        break;
+                    case 'Rare':
+                        priceRatio *= 2.75;
+                        break;
+                    // Common
+                    case 'Common':
+                        priceRatio *= 2.5;
+                        break;
+                    // Not exist is loot table specific
+                    case 'Not_exist':
+                        priceRatio *= 3;
+                        break;
+                    default:
+                        priceRatio *= 2.5;
+                        break;
+                }
+            }
+            priceRatio = Math.min(priceRatio, 100);
+            priceRatio = Math.max(priceRatio, 1);
+            priceRatio = Math.ceil(priceRatio);
+        }
+        
         
         result.push({
             itemId: itemId,
             langItem: langItem,
             parentId: item._parent,
-            parentIdLang: parentIdLang
+            parentIdLang: parentIdLang,
+            price: price,
+            priceRatio: priceRatio
         });
     }
 

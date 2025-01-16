@@ -28,4 +28,9 @@ router.get('/ammo', function(req, res, next) {
   res.render('ammo', { title: 'Paulov-t Tarkov Web Server' });
 });
 
+router.get('/items', function(req, res, next) {
+
+  res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
+});
+
 module.exports = router;
