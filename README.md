@@ -10,7 +10,7 @@
 ## About The Project
 This is a personal project to learn NodeJs Express Api against a real-world game example. In this case Escape from Tarkov.
 
-### My project ruleset
+## My project ruleset
 - I have gone against the new normal of using TypeScript and stuck with simple JavaScript throughout
 - Learn Express
 - Attempt to use the Model-View-Controller design within NodeJs
@@ -20,6 +20,26 @@ This is a personal project to learn NodeJs Express Api against a real-world game
   - The main aim is to keep the footprint VERY low 
   - Do NOT load anything permanently into memory
   - Do NOT have large loose files in the project
+  
+## Installation
+
+### Requirements
+
+This project has been built in [Visual Studio Code](https://code.visualstudio.com/) using [Node.js](https://nodejs.org/).
+
+### Initial Setup
+
+For development you will need to:
+
+1. Clone the repository: `git clone https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi.git`
+2. Get Large File System files: `git lfs pull`
+3. Open `WebServer.code-workspace` in Visual Studio Code.
+4. Run `npm install` in Visual Studio Code Terminal.
+
+## License
+
+This project is licensed under the Attribution-NonCommercial-NoDerivatives 4.0 International License. See [LICENSE](LICENSE.md)
+This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
  
 
 <!-- MARKDOWN LINKS & IMAGES -->
