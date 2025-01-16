@@ -100,6 +100,12 @@ router.post('/moving', function(req, res, next) {
             case 'Heal':
                 processHealAction(account, action, result);
                 break;
+            case 'HideoutUpgrade':
+                processHideoutUpgradeAction(account, action, result);
+                break;
+            case 'HideoutUpgradeComplete':
+                processHideoutUpgradeCompleteAction(account, action, result);
+                break;
             case 'Move':
                 processMoveAction(account, action, result);
                 break;
@@ -144,6 +150,58 @@ function processHealAction(account, action, outputChanges) {
     if (profilePart.Health.Current == "NaN") {
         profilePart.Health.Current = profilePart.Health.Maximum;
     }
+    return result;
+}
+
+function processHideoutUpgradeAction(account, action, outputChanges) {
+    const result = { success: false, error: undefined };
+    logger.logDebug("processHideoutUpgradeAction");
+
+    const accountProfileMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    if (!accountProfileMode)
+        return result;
+
+    const pmcProfile = accountProfileMode.characters.pmc;
+
+    const profileHideoutArea = pmcProfile.Hideout.Areas.find((area) => area.type === action.areaType);
+    if (!profileHideoutArea)
+        return result;
+
+    const dbHideoutAreas = Database.getData(Database.hideout.areas)
+
+    const constructionTime = dbHideoutAreas
+                            .find((area) => area.type === action.areaType)
+                            .stages[profileHideoutArea.level + 1].constructionTime;
+    if (constructionTime > 0) {
+
+        const nowTimestamp = Math.floor(new Date().getTime() / 1000);
+        profileHideoutArea.completeTime = Math.round(nowTimestamp + constructionTime);
+        profileHideoutArea.constructing = true;
+    }
+
+    // We've made it. Success!
+    result.success = true;
+    return result;
+}
+
+function processHideoutUpgradeCompleteAction(account, action, outputChanges) {
+    const result = { success: true, error: undefined };
+    logger.logDebug("processHideoutUpgradeCompleteAction");
+
+    const accountProfileMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    if (!accountProfileMode)
+        return result;
+
+    const pmcProfile = accountProfileMode.characters.pmc;
+
+    const profileHideoutArea = pmcProfile.Hideout.Areas.find((area) => area.type === action.areaType);
+    if (!profileHideoutArea)
+        return result;
+
+    profileHideoutArea.level++;
+    profileHideoutArea.completeTime = 0;
+    profileHideoutArea.constructing = false;
+
     return result;
 }
 
