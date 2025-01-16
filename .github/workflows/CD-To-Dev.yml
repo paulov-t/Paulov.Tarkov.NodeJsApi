@@ -41,5 +41,5 @@ jobs:
         with:
           app-name: 'paulovtarkovnodejsapi-dev'
           slot-name: 'Production'
-          package: .
+          package: ./src
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6F46A79FD5784D56BC28447C7765468B }}
