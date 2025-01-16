@@ -2,16 +2,17 @@
 <html>
   <head>
     <title><%= title %></title>
+    <link rel='stylesheet' href='https://bootswatch.com/5/darkly/bootstrap.min.css' />
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
     <h1><%= title %></h1>
     <p>Welcome to <%= title %></p>
     <p>Server Mode is: <%= serverMode %></p>
+    <p>App Version is: <%= appVersion %></p>
     <ul>
       <li><a href="/api-docs">Swagger API Docs</a></li>
       <li><a href="/itemSearch">Item Template Search</a></li>
     </ul>
-    
   </body>
 </html>

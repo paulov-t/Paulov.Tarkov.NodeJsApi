@@ -2,6 +2,7 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
+var packageJson =  require('./../package.json');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -10,7 +11,9 @@ router.get('/', function(req, res, next) {
 
   const serverMode = process.env && process.env.ServerMode ? process.env.ServerMode : "Dev";
 
-  res.render('index', { title: 'Paulov-t Tarkov Web Server', serverMode: serverMode });
+  const appVersion = packageJson.version;
+
+  res.render('index', { title: 'Paulov-t Tarkov Web Server', serverMode: serverMode, appVersion: appVersion });
 });
 
 /* GET home page. */
