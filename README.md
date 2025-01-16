@@ -1,5 +1,5 @@
 ﻿<div align="center">
-<h3 align="center">Paulov's Tarkov NodeJs Api</h3>
+<h1 align="center">Paulov's Tarkov NodeJs Api</h1>
 
   <p align="center">
 	A personal project to learn NodeJs Express Api against a real-world game example.
