@@ -16,10 +16,16 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Paulov-t Tarkov Web Server', serverMode: serverMode, appVersion: appVersion });
 });
 
-/* GET home page. */
+/* GET Item Search page. */
 router.get('/itemSearch', function(req, res, next) {
 
   res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
+});
+
+/* GET Item Search page. */
+router.get('/ammo', function(req, res, next) {
+
+  res.render('ammo', { title: 'Paulov-t Tarkov Web Server' });
 });
 
 module.exports = router;
