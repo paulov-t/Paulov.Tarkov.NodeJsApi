@@ -164,6 +164,10 @@ function toHexString(byteArray) {
   return hexString;
 }
 
+/**
+ * Gets a generated Mongo Id
+ * @returns {String} Generated MongoId
+ */
 function generateMongoId() {
     const result = mongoid();
     return result;

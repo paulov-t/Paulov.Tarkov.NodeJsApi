@@ -196,6 +196,15 @@ class Database {
 
   /**
      * 
+     * @param {String} templateId  
+     * @returns {Number}
+     */
+  getTemplatePrice(templateId) {
+    return this.getTemplateItemPrice(templateId);
+}
+
+  /**
+     * 
      * @returns {Object} Dictionary<string, object>
      */
   getTemplateQuests() {

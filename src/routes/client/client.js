@@ -18,6 +18,7 @@ const { ClientRequestDataDumpService } = require('../../services/ClientRequestDa
 const { LocationWeatherTime } = require('../../models/LocationWeatherTime');
 const { Weather } = require('../../models/Weather');
 const { logger } = require('../../classes/logger');
+const { LootGenerationService } = require('../../services/LootGenerationService');
 
 
 /**
@@ -1421,12 +1422,29 @@ router.post('/getMetricsConfig', function(req, res, next) {
  */
 router.post('/match/local/start', function(req, res, next) {
 
+    if (!req.body.location)
+        throw `expected location in request body`
+
     const location = req.body.location.toLowerCase();
     if (!Database.locations[location]) {
         console.log(Database.locations);
         throw `${location} doesn't exist in Database.locations`
     }
     const result = new LocalMatchStartResponse(location);
+
+    // Add Loot
+    result.locationLoot.Loot = LootGenerationService.Generate(result.locationLoot);
+
+    // Add Insured Items
+    if (req.SessionId) {
+        const account = AccountService.getAccount(req.SessionId);
+        if(account) {
+            const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+            const insuredItems = accountProfile.characters?.pmc?.InsuredItems;
+            if (insuredItems)
+                result.profile.insuredItems = insuredItems;
+        }
+    }
 
     bsgHelper.getBody(res, result);
 
