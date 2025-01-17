@@ -118,11 +118,33 @@ router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
  */
 router.post('/getAmmo/', function(req, res, next) {
     
-    
+    function calcAmmo(item) {
+        return (item._props.ArmorDamage * 1.25) * (item._props.PenetrationPower * 1.25) * (item._props.Damage * 0.5);
+    }
+
+
     const db = Database;
     // console.log(db);
     const languageLocaleData = db.getData(global._database["locales"]["global"]["en"]);
     const templatesItemData = db.getData(global._database["templates"]["items"]);
+
+    const ammoParentId = '5485a8684bdc2da71d8b4567';
+    const ammoIdsToIgnore = ['5996f6d686f77467977ba6cc', '5d2f2ab648f03550091993ca', '5cde8864d7f00c0010373be1'];
+
+    let highestRating = 0;
+    for(const itemId in templatesItemData)
+    {
+        const item = templatesItemData[itemId];
+        if (item._parent !== ammoParentId)
+            continue;
+
+        if (ammoIdsToIgnore.findIndex(x => x == itemId) !== -1)
+            continue;
+
+        const calc = calcAmmo(item);
+        if (calc > highestRating)
+            highestRating = calc;
+    }
     
     let result = [];
     // console.log(languageLocaleData);
@@ -135,6 +157,9 @@ router.post('/getAmmo/', function(req, res, next) {
             continue;
 
         if (item._parent !== '5485a8684bdc2da71d8b4567')
+            continue;
+
+        if (ammoIdsToIgnore.findIndex(x => x == itemId) !== -1)
             continue;
 
         if (!item._props)
@@ -153,6 +178,9 @@ router.post('/getAmmo/', function(req, res, next) {
         let parentIdLang = languageLocaleData[`${item._parent} Name`];
         if (!parentIdLang)
             parentIdLang = "N/A";
+
+        const calc = calcAmmo(item);
+        const rating = Math.round((calc / highestRating) * 100);
         
         result.push({
             itemId: itemId,
@@ -161,7 +189,7 @@ router.post('/getAmmo/', function(req, res, next) {
             armorDamage: item._props.ArmorDamage,
             penetration: item._props.PenetrationPower,
             damage: item._props.Damage,
-            rating: item._props.ArmorDamage * item._props.PenetrationPower * item._props.Damage
+            rating: rating
         });
     }
 
