@@ -21,6 +21,14 @@ This is a personal project to learn NodeJs Express Api against a real-world game
   - Do NOT load anything permanently into memory
   - Do NOT have large loose files in the project
   
+## Current running live example Website and Api
+- [Development](https://paulovtarkovnodejsapi-dev.azurewebsites.net/)
+- [Production](https://paulovtarkovnodejsapi.azurewebsites.net/)
+- [Hardcore](https://paulovtarkovnodejsapi-hc.azurewebsites.net/) - Not live
+- [Swagger Api UI](https://paulovtarkovnodejsapi-dev.azurewebsites.net/api-docs)
+- [Ammo Table - useful for quickly checking the best ammo](https://paulovtarkovnodejsapi-dev.azurewebsites.net/ammo)
+- [Item Table - useful for quickly checking the best items](https://paulovtarkovnodejsapi-dev.azurewebsites.net/items)
+  
 ## Installation
 
 ### Requirements
@@ -35,6 +43,7 @@ For development you will need to:
 2. Get Large File System files: `git lfs pull`
 3. Open `WebServer.code-workspace` in Visual Studio Code.
 4. Run `npm install` in Visual Studio Code Terminal.
+5. Press F5 and select Node.js
 
 ## License
 
