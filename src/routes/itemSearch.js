@@ -119,7 +119,19 @@ router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
 router.post('/getAmmo/', function(req, res, next) {
     
     function calcAmmo(item) {
-        return (item._props.ArmorDamage * 1.25) * (item._props.PenetrationPower * 1.25) * (item._props.Damage * 0.5);
+
+        let armorDamage = Math.max(1, item._props.ArmorDamage > 0 ? item._props.ArmorDamage * 2 : 1);
+        let penRating = Math.max(1, item._props.PenetrationPower > 0 ? item._props.PenetrationPower * 2 : 1);
+        let damageRating = Math.max(1, item._props.Damage > 0 ? item._props.Damage * 0.01 : 1);
+
+        let itemRating = armorDamage * penRating * damageRating;
+        
+        if(itemRating === 0)
+            itemRating = 1;
+
+        itemRating = Math.round(itemRating);
+
+        return itemRating;
     }
 
 
@@ -144,6 +156,8 @@ router.post('/getAmmo/', function(req, res, next) {
         const calc = calcAmmo(item);
         if (calc > highestRating)
             highestRating = calc;
+
+        item.PaulovRating = calc;
     }
     
     let result = [];
@@ -179,8 +193,8 @@ router.post('/getAmmo/', function(req, res, next) {
         if (!parentIdLang)
             parentIdLang = "N/A";
 
-        const calc = calcAmmo(item);
-        const rating = Math.round((calc / highestRating) * 100);
+        // const calc = calcAmmo(item);
+        const rating = Math.ceil((item.PaulovRating / highestRating) * 100);
         
         result.push({
             itemId: itemId,
