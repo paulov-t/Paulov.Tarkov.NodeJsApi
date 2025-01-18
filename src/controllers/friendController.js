@@ -13,7 +13,10 @@ const { WebSocketService } = require('../services/WebSocketService');
 const { ENotificationType } = require('../models/ENotificationType');
 const { SocialNetworkService } = require('../services/SocialNetworkService');
 
-
+/**
+ * Creates a simple Bug Report "friend" to send messages to using the Client
+ * @returns 
+ */
 function generateBugReportFriend() {
   const testFriend = new UpdatableChatMember();
   testFriend._id = bsgHelper.generateMongoId();
