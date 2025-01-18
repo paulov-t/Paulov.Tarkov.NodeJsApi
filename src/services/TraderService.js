@@ -4,6 +4,9 @@ const { ECurrencyTemplates } = require("../models/Enums/ECurrencyTemplates");
 const { AccountService } = require("./AccountService");
 const { InventoryService } = require("./InventoryService");
 
+/**
+ * A service for anything trader or "ragfair" (flea market) related
+ */
 class TraderService {
     constructor() {
         
