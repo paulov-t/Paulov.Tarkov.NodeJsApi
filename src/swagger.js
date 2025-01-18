@@ -11,7 +11,7 @@ const options = {
       description: 'Swagger documentation of NodeJs Api',
     },
   },
-  apis: ['./routes/**/*.js'], // Path to your API routes
+  apis: ['./routes/**/*.js','./controllers/**/*.js'], // Path to your API routes
 };
 
 const specs = swaggerJsdoc(options);
