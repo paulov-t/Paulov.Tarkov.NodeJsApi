@@ -7,6 +7,8 @@ const { AccountService } = require('../services/AccountService');
  * @swagger
  * /launcher/server/connect:
  *   post:
+ *     tags:
+ *     - Launcher
  *     summary: Launcher call 1. Attempt to Connect to this Server.
  *     responses:
  *       200:
