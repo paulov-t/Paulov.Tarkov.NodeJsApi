@@ -18,6 +18,7 @@ const { TraderService } = require('../services/TraderService');
 const { Database } = require('../classes/database');
 const { InventoryService } = require('../services/InventoryService');
 const { AccountProfileCharacterQuestItem } = require('../models/Account');
+const { DatabaseService } = require('../services/DatabaseService');
 
 /**
  * @swagger
@@ -122,6 +123,9 @@ router.post('/moving', function(req, res, next) {
                 break;
             case 'TradingConfirm':
                 processTradingConfirm(account, action, result);
+                break;
+            case 'QuestHandover':
+                processQuestHandover(account, action, result);
                 break;
         }
     }
@@ -440,6 +444,52 @@ function sellToTrader(account, action, outputChanges) {
 
     TraderService.givePlayerMoneyFromTrader(traderId, money, pmcProfile, outputChanges.profileChanges[pmcProfile._id]);
 
+    return result;
+}
+
+function processQuestHandover(account, action, outputChanges) {
+    const result = { success: true, error: undefined };
+
+    const quests = DatabaseService.getTemplateQuestsAsList();
+    const quest = quests.find(x => x._id === action.qid);
+    const handoverQuestTypes = ["HandoverItem", "WeaponAssembly"];
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    const profileQuest = pmcProfile.Quests.find(x => x.qid === action.qid);
+    
+    let counterValue = 0;
+    for (const itemHandover of action.items) {
+       
+        const itemToHandOverInInventory = InventoryService.findItemInInventory(pmcProfile, itemHandover.id);
+        if (!itemToHandOverInInventory)
+            continue;
+
+        if (typeof outputChanges.profileChanges[pmcProfile._id].items.del === "undefined") outputChanges.profileChanges[pmcProfile._id].items.del = [];
+            outputChanges.profileChanges[pmcProfile._id].items.del.push({ _id: itemToHandOverInInventory._id });
+
+        InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemToHandOverInInventory._id);
+        counterValue++;
+    }
+
+    for (const condition of quest.conditions.AvailableForFinish) {
+        if (
+            condition.id === action.conditionId &&
+            handoverQuestTypes.includes(condition.conditionType)
+        ) {
+            if (pmcProfile.TaskConditionCounters[condition.id] !== undefined) {
+                pmcProfile.TaskConditionCounters[condition.id].value += counterValue;
+                return;
+            }
+
+            pmcProfile.TaskConditionCounters[condition.id] = {
+                id: condition.id,
+                sourceId: quest._id,
+                type: "HandoverItem",
+                value: counterValue,
+            };
+        }
+    }
     return result;
 }
 
