@@ -317,7 +317,7 @@ class LootGenerationService
             Math.max(1, 
               Math.round(Math.random() * containerTemplate._props.Grids[0]._props.cellsV * containerTemplate._props.Grids[0]._props.cellsH));
   
-            //   let usedLootItems = [];
+              let usedLootItems = [];
           
               // we finished generating spawn for this container now its time to roll items to put in container
               let itemWidth = 0;
@@ -330,7 +330,12 @@ class LootGenerationService
                 let RollIndex = this.RandomInteger(0, LootListItems.length - 1);
                 // add current rolled index
                 indexRolled.push(RollIndex);
+
                 // getting rolled item
+                const rolledRandomItemTemplateId = LootListItems[RollIndex]._tpl;
+                if (usedLootItems.findIndex(x => x ===rolledRandomItemTemplateId) !== -1)
+                  continue;
+
                 const rolledRandomItemToPlace = templateItemList[LootListItems[RollIndex]._tpl];
                 
                 if (rolledRandomItemToPlace === undefined) {
@@ -365,6 +370,8 @@ class LootGenerationService
                   slotId: "main",
                   location: { x: result.x, y: result.y, r: rot }
                 };
+
+                usedLootItems.push(rolledRandomItemToPlace._id)
           
             //     let cartridges;
 
