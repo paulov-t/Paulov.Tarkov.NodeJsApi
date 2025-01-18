@@ -12,6 +12,8 @@ const { BotGenerationService } = require('../services/BotGenerationService');
  * @swagger
  * /client/game/profile/savage/regenerate:
  *   post:
+ *     tags:
+ *     - Game Profile
  *     summary: Called when regenerating the scav for the player's profile
  *     requestBody:
  *      required: true
