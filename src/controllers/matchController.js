@@ -82,7 +82,7 @@ router.post('/group/invite/send', function(req, res, next) {
  * /client/match/group/invite/cancel-all:
  *   post:
  *     tags:
- *     - Client
+ *     - Match
  *     summary: 
  *     responses:
  *       200:
@@ -113,7 +113,7 @@ router.post('/group/invite/cancel-all', function(req, res, next) {
  * /client/match/group/exit_from_menu:
  *   post:
  *     tags:
- *     - Client
+ *     - Match
  *     summary: 
  *     responses:
  *       200:
@@ -184,7 +184,7 @@ router.post('/join', function(req, res, next) {
  * /client/match/available:
  *   post:
  *     tags:
- *     - Client
+ *     - Match
  *     summary: 
  *     responses:
  *       200:
@@ -206,8 +206,8 @@ router.post('/available', function(req, res, next) {
  * /client/match/local/end:
  *   post:
  *     tags:
- *     - Client
- *     summary: 
+ *     - Match
+ *     summary: Called when ending a local match and attempting to save the data of the local match
  *     requestBody:
  *      required: true
  *      content:
