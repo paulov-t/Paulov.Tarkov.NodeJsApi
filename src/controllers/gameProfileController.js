@@ -51,5 +51,43 @@ router.post('/savage/regenerate', function(req, res, next) {
     next();
 });
 
+/**
+ * @swagger
+ * /client/game/profile/list:
+ *   post:
+ *     tags:
+ *     - Game Profile
+ *     summary: Load Tarkov Call 14. List's the PMC [index 0] and Scav [index 1] profiles. If there is a blank array, the client assumes it is a new or wiped account.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/list', function(req, res, next) {
+
+    const sessionId = req.SessionId;
+    if (sessionId === undefined)
+        throw "SessionId is not defined!";
+
+    const output = [];
+    /**
+     * @type {AccountProfileMode}
+     */
+    const accountProfileByMode = sessionId !== undefined ? AccountService.getAccountProfileByCurrentMode(sessionId) : new Account();
+    if (accountProfileByMode.characters.pmc !== undefined) {
+        output.push(accountProfileByMode.characters.pmc);
+        output.push(accountProfileByMode.characters.scav);
+
+        bsgHelper.getBody(res, output);
+        next();
+        return;
+    }
+    // if the account has been wiped, send back blank array
+    // TODO >>>
+
+    // TODO: :)
+    bsgHelper.addBSGBodyInResponseWithData(res, output);
+    next();
+});
+
 
 module.exports = router;

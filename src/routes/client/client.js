@@ -343,45 +343,6 @@ router.post('/trading/api/traderSettings', function(req, res, next) {
 
 /**
  * @swagger
- * /client/game/profile/list:
- *   post:
- *     tags:
- *     - Client
- *     summary: Load Tarkov Call 14
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/game/profile/list', function(req, res, next) {
-
-    const sessionId = req.SessionId;
-    if (sessionId === undefined)
-        throw "SessionId is not defined!";
-
-    const output = [];
-    /**
-     * @type {AccountProfileMode}
-     */
-    const accountProfileByMode = sessionId !== undefined ? AccountService.getAccountProfileByCurrentMode(sessionId) : new Account();
-    if (accountProfileByMode.characters.pmc !== undefined) {
-        output.push(accountProfileByMode.characters.pmc);
-        output.push(accountProfileByMode.characters.scav);
-
-        bsgHelper.getBody(res, output);
-        next();
-        return;
-    }
-    // if the account has been wiped, send back blank array
-    // TODO >>>
-
-    // TODO: :)
-    bsgHelper.addBSGBodyInResponseWithData(res, output);
-    next();
-});
-
-
-/**
- * @swagger
  * /client/locale/{lang}:
  *   post:
  *     tags:
