@@ -14,6 +14,9 @@ class ContainerServiceSpotResult {
     }
 }
 
+/**
+ * A service to manage container array and placing items within a container array
+ */
 class ContainerService {
     /**
      * Finds a spot for an item in a container
