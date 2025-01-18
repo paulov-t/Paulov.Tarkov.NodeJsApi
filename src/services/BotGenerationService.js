@@ -33,9 +33,13 @@ class BotGenerationService {
         bot._id = generateMongoId();
         bot.aid = generateMongoId();
         bot.Info.Side = condition.Role.includes("pmcBEAR") ? "Bear" : condition.Role.includes("pmcUSEC") ? "Usec" : "Savage";
-        if(bot.Info.Side != "Savage") {
+
+        // Determine bot difficulty from condition
+        if (condition.Difficulty)
+            bot.Info.Settings.BotDifficulty = condition.Difficulty;
+
+        if(bot.Info.Side != "Savage") 
             logger.logInfo(`Generating ${condition.Role} on ${bot.Info.Side}`);
-        }
 
         // Update if a playerScav to the player's name
         bot.Info.MainProfileNickname = undefined;
@@ -46,7 +50,7 @@ class BotGenerationService {
         // console.log(Database);
 
         const lowerRole = condition.Role.toLowerCase();
-        console.log(condition.Role);
+        // console.log(condition.Role);
         // console.log(Database.bots);
         // console.log(Database.bots.types[lowerRole]);
         const botDatabaseData = Database.getData(Database.bots.types[lowerRole]);
@@ -85,12 +89,20 @@ class BotGenerationService {
         
         // Remove the Headwear
         InventoryService.removeItemFromSlot(bot, "Headwear");
+        if (Object.keys(botDatabaseData.inventory.equipment.Headwear).length === 1) {
+            const firstKey = Object.keys(botDatabaseData.inventory.equipment.Headwear)[0];
+            InventoryService.addTemplatedItemToSlot(bot, firstKey, "Headwear");
+        }
 
         // Remove the Eyewear
         InventoryService.removeItemFromSlot(bot, "Eyewear");
 
         // Remove the FaceCover
         InventoryService.removeItemFromSlot(bot, "FaceCover");
+        if (Object.keys(botDatabaseData.inventory.equipment.FaceCover).length > 0) {
+            const randomFacecoverId = Object.keys(botDatabaseData.inventory.equipment.FaceCover)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.FaceCover).length)];
+            InventoryService.addTemplatedItemToSlot(bot, randomFacecoverId, "FaceCover");
+        }
 
         if (bot.Info.Side !== "Savage")
             this.addDogtag(bot);
