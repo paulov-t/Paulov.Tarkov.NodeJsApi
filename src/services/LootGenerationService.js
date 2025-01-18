@@ -907,13 +907,14 @@ class LootGenerationService
         LootGenerationService.PreviouslyGeneratedContainers = [];
 
         const locationLootChanceModifierFromFile = location.GlobalLootChanceModifier;
+        const locationIdLower = location.Id.toLowerCase()
 
-        const looseLoot = Database.getData(Database.locations[location.Id].looseLoot);
+        const looseLoot = Database.getData(Database.locations[locationIdLower].looseLoot);
 
-        const staticAmmo = Database.getData(Database.locations[location.Id].staticAmmo);
-        const staticContainers = Database.getData(Database.locations[location.Id].staticContainers);
-        const staticLoot = Database.getData(Database.locations[location.Id].staticLoot);
-        const statics = Database.getData(Database.locations[location.Id].statics);
+        const staticAmmo = Database.getData(Database.locations[locationIdLower].staticAmmo);
+        const staticContainers = Database.getData(Database.locations[locationIdLower].staticContainers);
+        const staticLoot = Database.getData(Database.locations[locationIdLower].staticLoot);
+        const statics = Database.getData(Database.locations[locationIdLower].statics);
 
         for(const container of staticContainers.staticContainers) {
             if (Math.random() < container.probability) {
