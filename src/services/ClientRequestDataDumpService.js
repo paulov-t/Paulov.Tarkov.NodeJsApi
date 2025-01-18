@@ -1,6 +1,9 @@
 var fs = require('fs');
 var path = require('path');
 
+/**
+ * A service that will dump client request into a file
+ */
 class ClientRequestDataDumpService {
     constructor() {
        this.requestDataDumpDirectoryPath = path.join(__dirname, "../", "./data/dumps/client");
