@@ -1,6 +1,9 @@
 const { AccountService } = require("./AccountService");
 const { AccountProfileMode, Account } = require("../models/Account");
 
+/**
+ * A service to manage friendship, grouping and messages in the app
+ */
 class SocialNetworkService {
     constructor() {
 
