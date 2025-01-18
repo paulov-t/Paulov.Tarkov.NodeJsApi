@@ -95,7 +95,9 @@ router.post('/moving', function(req, res, next) {
         console.log(action);
         switch(action.Action) {
             case 'Examine':
-                accountProfile.characters.pmc.Encyclopedia[action.item] = true
+                const examinedItem = InventoryService.findItemInInventory(accountProfile.characters.pmc, action.item);
+                if (examinedItem)
+                    accountProfile.characters.pmc.Encyclopedia[examinedItem._tpl] = true
                 break;
             case 'Heal':
                 processHealAction(account, action, result);
