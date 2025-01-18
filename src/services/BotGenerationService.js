@@ -7,13 +7,16 @@ const path = require("path");
 const { InventoryService } = require("./InventoryService");
 const { Database } = require("../classes/database");
 
+/**
+ * A service to generate bots for a player scav or raids
+ */
 class BotGenerationService {
     constructor() {
 
     }
 
     /**
-     * 
+     * Generates a bot based on the conditions provided
      * @param {BotGenerationCondition} condition use { Role: 'playerscav', playerProfileName: 'Name' } for generating a player scav
      * @returns 
      */
@@ -64,7 +67,11 @@ class BotGenerationService {
         bot.Info.Voice = voiceKeys[this.randomInteger(0, voiceKeys.length-1)];
 
         bot.Info.Nickname = botDatabaseData.firstName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
+        if (botDatabaseData.lastName.length > 0)
+            bot.Info.Nickname = bot.Info.Nickname + " " + botDatabaseData.lastName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
 
+        // Generate the bot's level (if PMC)
+        this.generateBotLevel(bot);
 
         // Generate the bot's inventory
 
@@ -85,7 +92,8 @@ class BotGenerationService {
         // Remove the FaceCover
         InventoryService.removeItemFromSlot(bot, "FaceCover");
 
-       
+        if (bot.Info.Side !== "Savage")
+            this.addDogtag(bot);
 
         // Fix the Ids of the inventory
         InventoryService.updateInventoryEquipmentId(bot);
@@ -94,7 +102,12 @@ class BotGenerationService {
         return bot;
     }
 
-    
+    /**
+     * 
+     * @param {BotGenerationCondition} condition 
+     * @param {AccountProfileCharacter} bot 
+     * @returns 
+     */
     addBackpack(condition, bot) {
        
         let backpackChance = 69;
@@ -138,6 +151,54 @@ class BotGenerationService {
         // Add a new Backpack (by chance)
         // console.log(chosenBackpack);
         InventoryService.addTemplatedItemToSlot(bot, chosenBackpack.item._id, "Backpack");
+    }
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} bot 
+     * @returns 
+     */
+    addDogtag(bot) {
+
+        if (bot.Info.Side === "Savage")
+            return;
+
+        bot.Inventory.items.push({
+            _id: generateMongoId(),
+            _tpl: bot.Info.Side === "Usec" ? "59f32c3b86f77472a31742f0" : "59f32bb586f774757e1e8442",
+            parentId: bot.Inventory.equipment,
+            slotId: "Dogtag",
+            upd: {
+            Dogtag: {
+                AccountId: bot.aid,
+                ProfileId: bot._id,
+                Nickname: bot.Info.Nickname,
+                Side: bot.Info.Side,
+                Level: bot.Info.Level,
+                Time: new Date().toISOString(),
+                Status: "Killed by ",
+                KillerAccountId: "Unknown",
+                KillerProfileId: "Unknown",
+                KillerName: "Unknown",
+                WeaponName: "Unknown",
+            },
+            },
+        });
+
+        return bot;
+    }
+
+    /**
+     * Adds a random level to the PMC characters
+     * @param {AccountProfileCharacter} bot 
+     * @returns 
+     */
+    generateBotLevel(bot) {
+        if (bot.Info.Side === "Savage")
+            return;
+
+        // TODO: Make this more dynamic to the Accounts on the Server
+        bot.Info.Level = this.randomInteger(1, 50);
     }
 
     randomInteger(min, max) {
