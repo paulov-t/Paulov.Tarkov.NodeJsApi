@@ -360,6 +360,15 @@ class InventoryService {
         return list;
     }
 
+    /**
+     * 
+     * @param {AccountProfileCharacter} character 
+     * @param {String} itemId 
+     */
+    findItemInInventory(character, itemId) {
+        return character.Inventory.items.find(x=> x._id === itemId);
+    }
+
 }
 
 module.exports.InventoryService = new InventoryService();
