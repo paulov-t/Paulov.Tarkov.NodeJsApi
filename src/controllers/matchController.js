@@ -310,11 +310,29 @@ router.post('/local/end', function(req, res, next) {
     // =========================================================================
 
     // =========================================================================
+    // Replace Skills on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.Skills = newProfileToSave.Skills;
+    else
+        myAccountByMode.characters.scav.Skills = newProfileToSave.Skills;
+    // END OF: Replace Stats on Player Profile
+    // =========================================================================
+
+    // =========================================================================
     // Replace Stats on Player Profile
     if (isPMC) 
         myAccountByMode.characters.pmc.Stats = newProfileToSave.Stats;
     else
         myAccountByMode.characters.scav.Stats = newProfileToSave.Stats;
+    // END OF: Replace Stats on Player Profile
+    // =========================================================================
+
+    // =========================================================================
+    // Replace TaskConditionCounters on Player Profile
+    if (isPMC) 
+        myAccountByMode.characters.pmc.TaskConditionCounters = newProfileToSave.TaskConditionCounters;
+    else
+        myAccountByMode.characters.scav.TaskConditionCounters = newProfileToSave.TaskConditionCounters;
     // END OF: Replace Stats on Player Profile
     // =========================================================================
 
