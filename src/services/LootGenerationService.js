@@ -917,11 +917,20 @@ class LootGenerationService
         const statics = Database.getData(Database.locations[locationIdLower].statics);
 
         for(const container of staticContainers.staticContainers) {
-            if (Math.random() < container.probability) {
-                const containerId = container.template.Items[0]._tpl;
-                LootGenerationService.GenerateContainerLoot(container.template, staticLoot[containerId], locationLootChanceModifierFromFile, location.Name);
-                result.push(container.template);
-            }
+          if (!container.template)
+            continue;
+
+          if (!container.template.Items)
+            continue;
+
+          if (container.template.Items.length === 0)
+            continue;
+
+          if (Math.random() < container.probability) {
+              const containerId = container.template.Items[0]._tpl;
+              LootGenerationService.GenerateContainerLoot(container.template, staticLoot[containerId], locationLootChanceModifierFromFile, location.Name);
+              result.push(container.template);
+          }
         }
 
         return result;
