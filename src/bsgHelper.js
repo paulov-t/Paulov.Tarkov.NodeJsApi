@@ -39,6 +39,10 @@ function nullResponse(response) {
   response.body = { errmsg: null, err: 0, data: null };
 }
 
+function errorResponse(response, err, errmsg) {
+  response.body = JSON.stringify({ errmsg: errmsg, err: err, data: null });
+}
+
 function getUnclearedBody(response, data) {
   response.body = JSON.stringify({ errmsg: null, err: 0, data: data });
 }
@@ -196,6 +200,7 @@ exports.inflateRequest = inflateRequest;
 exports.deflateRequest = deflateResponse;
 exports.extractSessionId = extractSessionId;
 exports.generateMongoId = generateMongoId;
+exports.errorResponse = errorResponse;
 exports.nullResponse = nullResponse;
 exports.getUnclearedBody = getUnclearedBody;
 exports.getInRaidTime = getInRaidTime;
