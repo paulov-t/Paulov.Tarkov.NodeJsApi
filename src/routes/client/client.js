@@ -1522,6 +1522,55 @@ router.post('/analytics/event-disconnect', function(req, res, next) {
     next();
 });
 
+/**
+ * @swagger
+ * /client/profile/view:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: Called when clicking "View Profile" on the friends list
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/profile/view', function(req, res, next) {
+
+    const sessionId = req.SessionId;
+    console.log(req.body);
+
+    const otherAccount = AccountService.getAccount(req.body.accountId);
+    const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
+    const pmcCharacter = otherAccountByMode.characters.pmc;
+    const scavCharacter = otherAccountByMode.characters.scav;
+    const hideoutKeys = [...Object.values(pmcCharacter.Inventory.hideoutAreaStashes), pmcCharacter.Inventory.hideoutCustomizationStashId];
+    const hideoutItems = pmcCharacter.Inventory.items.filter(x => hideoutKeys.includes(x._id));
+    const itemsToReturn = [];
+    for (const item of hideoutItems) {
+        const foundItems = InventoryService.findChildItemsOfItemId(pmcCharacter.Inventory.items, item._id);
+        itemsToReturn.push(...foundItems);
+    }
+    const responseBody = {
+        favoriteItems: [],
+        id: pmcCharacter._id,
+        aid: req.body.accountId,
+        info: pmcCharacter.Info,
+        achievements: pmcCharacter.Achievements,
+        customization: pmcCharacter.Customization,
+        equipment: {
+            Id: pmcCharacter.Inventory.equipment,
+            Items: pmcCharacter.Inventory.items,
+        },
+        pmcStats: pmcCharacter.Stats,
+        scavStats: scavCharacter.Stats,
+        skills: pmcCharacter.Skills,
+        hideout: pmcCharacter.Hideout,
+        customizationStash: pmcCharacter.Inventory.hideoutCustomizationStashId,
+        hideoutAreaStashes: pmcCharacter.Inventory.hideoutAreaStashes,
+        items: itemsToReturn
+    };
+    bsgHelper.addBSGBodyInResponseWithData(res, responseBody);
+    next();
+});
 
 
 module.exports = router;
