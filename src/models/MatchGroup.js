@@ -16,6 +16,9 @@ class MatchGroup {
           * @type {String[]}
           */
           this.groupMemberInvites = []
+
+          /** */
+          this.raidSettings = {}
     }
 }
 
