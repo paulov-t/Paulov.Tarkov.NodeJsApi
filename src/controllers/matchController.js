@@ -21,6 +21,10 @@ const { InventoryService } = require('./../services/InventoryService');
 
 const { logger } = require('./../classes/logger');
 
+const { ENotificationType } = require('../models/ENotificationType');
+
+const { WebSocketService } = require('./../services/WebSocketService');
+
 
 /**
  * @swagger
@@ -35,7 +39,19 @@ const { logger } = require('./../classes/logger');
  */
 router.post('/group/current', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, { squad: [], raidSettings: undefined });
+    const sessionId = req.SessionId;
+    const myAccount = AccountService.getAccount(sessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    let squad = [];
+    let raidSettings = undefined;
+    // If the group hasn't been initialised. Then create one
+    if (myAccountByMode.socialNetwork.group) {
+        squad = myAccountByMode.socialNetwork.group.groupMembers;
+        raidSettings = myAccountByMode.socialNetwork.group.raidSettings;
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, { squad: squad, raidSettings: undefined });
 
     next();
 });
@@ -57,6 +73,14 @@ router.post('/group/invite/send', function(req, res, next) {
 
     const requestBody = req.body;
     console.log(requestBody);
+
+    // if user is not logged in. send not logged in error.
+    if (!WebSocketService.connections[requestBody.to]) {
+        bsgHelper.errorResponse(res, 502014, "player not online");
+        next();
+        return;
+    }
+
     const sessionId = req.SessionId;
     const myAccount = AccountService.getAccount(sessionId);
     const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
@@ -67,8 +91,14 @@ router.post('/group/invite/send', function(req, res, next) {
     if (!myAccountByMode.socialNetwork.group.groupMemberInvites)
         myAccountByMode.socialNetwork.group.groupMemberInvites = [];
 
-    if (myAccountByMode.socialNetwork.group.groupMemberInvites.findIndex(requestBody.to) === -1)
+    if (myAccountByMode.socialNetwork.group.groupMemberInvites.findIndex(x => x === requestBody.to) === -1)
         myAccountByMode.socialNetwork.group.groupMemberInvites.push(requestBody.to);
+
+     if(WebSocketService.connections[requestBody.to])
+        WebSocketService.connections[requestBody.to].socket.send(JSON.stringify({ type: ENotificationType.GroupMatchInviteSend, eventId: "GroupMatchInviteSend", time: 10 }));
+    
+
+
 
     AccountService.saveAccount(myAccount);
 
@@ -76,6 +106,47 @@ router.post('/group/invite/send', function(req, res, next) {
 
     next();
 });
+
+/**
+ * @swagger
+ * /client/match/group/invite/cancel:
+ *   post:
+ *     tags:
+ *     - Match
+ *     summary: Called from the Group section (bottom left)
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/group/invite/cancel', function(req, res, next) {
+
+    const requestBody = req.body;
+    console.log(requestBody);
+    const sessionId = req.SessionId;
+    const myAccount = AccountService.getAccount(sessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    // Requires a group to exist
+    if (myAccountByMode.socialNetwork.group) {
+
+        // Requires a group with groupMemberInvites to exist
+        if (myAccountByMode.socialNetwork.group.groupMemberInvites) {
+
+            // Requires a group with groupMemberInvites with the request id to exist
+            const index = myAccountByMode.socialNetwork.group.groupMemberInvites.findIndex(x => x === requestBody.to) ;
+            if (index !== -1) {
+                // Remove the indexed groupMember
+                myAccountByMode.socialNetwork.group.groupMemberInvites.splice(index, 1);
+                AccountService.saveAccount(myAccount);
+            }
+        }
+    }
+
+    bsgHelper.addBSGBodyInResponseWithData(res, bsgHelper.generateMongoId());
+
+    next();
+});
+
 
 /**
  * @swagger
@@ -338,6 +409,12 @@ router.post('/local/end', function(req, res, next) {
 
     result.results = req.body.results;
 
+    // Empty the raidSettings for the Group
+    if (myAccountByMode.socialNetwork.group) {
+        myAccountByMode.socialNetwork.group.raidSettings = undefined;
+    }
+
+    // Save the Account
     AccountService.saveAccount(myAccount);
     logger.logSuccess(`Saved account ${myAccount.accountId}!`)
     
