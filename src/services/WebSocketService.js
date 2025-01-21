@@ -1,3 +1,4 @@
+const { AccountService } = require('./AccountService');
 const { ENotificationType } = require('../models/ENotificationType');
 const { generateMongoId } = require('./../bsgHelper');
 
@@ -22,8 +23,8 @@ class WebSocketService {
      */
     sendRagfairOfferSold(accountId, offerId, handbookId, count) {
 
-        if(WebSocketService.connections[accountId])
-            WebSocketService.connections[accountId].socket.send(JSON.stringify(
+        if(this.connections[accountId])
+          this.connections[accountId].socket.send(JSON.stringify(
             { 
                 type: ENotificationType.RagfairOfferSold
                 , eventId: generateMongoId()
@@ -42,8 +43,8 @@ class WebSocketService {
      */
     sendRagfairNewRating(accountId, rating, isRatingGrowing) {
 
-        if(WebSocketService.connections[accountId])
-            WebSocketService.connections[accountId].socket.send(JSON.stringify(
+        if(this.connections[accountId])
+          this.connections[accountId].socket.send(JSON.stringify(
             { 
                 type: ENotificationType.RagfairNewRating
                 , eventId: generateMongoId()
@@ -75,11 +76,61 @@ class WebSocketService {
     }
 
     /**
-     * 
-     * @param {string} accountId 
-     * @param {string[]} memberIds member 1 is the person its coming from
+     * Send a group invite to "accountToSendToId" which will trigger a popup for that player
+     * @param {string} accountToSendToId 
+     * @param {string} fromMemberAccountId 
+     * @param {string[]} memberIds
      */
-    sendGroupMatchInviteSend(accountId, memberIds) {
+    sendGroupMatchInviteSend(accountToSendToId, fromMemberAccountId, memberIds) {
+
+
+      const accountFrom = AccountService.getAccount(fromMemberAccountId);
+      const accountFromByMode = AccountService.getAccountProfileByCurrentModeFromAccount(accountFrom);
+
+      const accountToSendTo = AccountService.getAccount(accountToSendToId);
+      const accountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(accountToSendTo);
+
+      const members = [];
+      // Add self
+      const contentSelf = {
+        "_id": accountFromByMode.characters.pmc._id,
+        "aid": accountFromByMode.characters.pmc.aid,
+        "Info": accountFromByMode.characters.pmc.Info,
+        "isLeader": true,
+        "isReady": false,
+        "PlayerVisualRepresentation": null
+      }
+      members.push(contentSelf);
+
+      for (const memberId of memberIds) {
+        const memberAccount = AccountService.getAccount(memberId);
+        const memberAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(memberAccount);
+        const bodyOfMember = memberAccountByMode.characters.pmc;
+        const contentMember = {
+            "_id": bodyOfMember._id,
+            "aid": bodyOfMember.aid,
+            "Info": bodyOfMember.Info,
+            "isLeader": false,
+            "isReady": false,
+            "PlayerVisualRepresentation": null
+          }
+        members.push(contentMember);
+      }
+      const contentToSend = {
+        "type": "groupMatchInviteSend",
+        "eventId": accountByMode.socialNetwork.groupInvite.eventId,
+        "requestId": accountByMode.socialNetwork.groupInvite.eventId,
+        "from": accountFromByMode.characters.pmc.aid,
+        members: members,
+        "isLeader": false,
+        "isReady": false,
+      }
+
+
+      if(this.connections[accountToSendToId])
+        this.connections[accountToSendToId].socket.send(JSON.stringify(contentToSend));
+
+
         /*
         {
   "type": "groupMatchInviteSend",
@@ -173,8 +224,45 @@ class WebSocketService {
      * 
      * @param {string} accountId 
      */
-        sendGroupMatchRaidSettings(accountId, memberIds) {
-       
+        sendGroupMatchRaidSettings(accountId, raidSettings) {
+
+          const contentToSend = {
+            "type": "groupMatchRaidSettings",
+            "eventId": generateMongoId(),
+            "raidSettings": {
+              "location": "Interchange",
+              "timeVariant": "CURR",
+              "raidMode": "Online",
+              "metabolismDisabled": false,
+              "playersSpawnPlace": "SamePlace",
+              "timeAndWeatherSettings": {
+                "isRandomTime": false,
+                "isRandomWeather": false,
+                "cloudinessType": "Clear",
+                "rainType": "NoRain",
+                "fogType": "NoFog",
+                "windType": "Light",
+                "timeFlowType": "x1",
+                "hourOfDay": -1
+              },
+              "botSettings": {
+                "isScavWars": false,
+                "botAmount": "AsOnline"
+              },
+              "wavesSettings": {
+                "botAmount": "AsOnline",
+                "botDifficulty": "AsOnline",
+                "isBosses": true,
+                "isTaggedAndCursed": false
+              },
+              "side": "Pmc",
+              "isLocationTransition": true
+            }
+          }
+
+          if(this.connections[accountId])
+            this.connections[accountId].socket.send(JSON.stringify(contentToSend));
+
             /*
             {
   "type": "groupMatchRaidSettings",

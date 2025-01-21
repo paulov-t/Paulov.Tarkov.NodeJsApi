@@ -24,6 +24,7 @@ const { logger } = require('./../classes/logger');
 const { ENotificationType } = require('../models/ENotificationType');
 
 const { WebSocketService } = require('./../services/WebSocketService');
+const { GroupInvite } = require('../models/GroupInvite');
 
 
 /**
@@ -84,6 +85,9 @@ router.post('/group/invite/send', function(req, res, next) {
     const sessionId = req.SessionId;
     const myAccount = AccountService.getAccount(sessionId);
     const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+    const newEventId = bsgHelper.generateMongoId();
+    myAccountByMode.socialNetwork.groupInvite = new GroupInvite(newEventId, requestBody.to, false);
+
     // If the group hasn't been initialised. Then create one
     if (!myAccountByMode.socialNetwork.group)
         myAccountByMode.socialNetwork.group = new MatchGroup();
@@ -94,15 +98,17 @@ router.post('/group/invite/send', function(req, res, next) {
     if (myAccountByMode.socialNetwork.group.groupMemberInvites.findIndex(x => x === requestBody.to) === -1)
         myAccountByMode.socialNetwork.group.groupMemberInvites.push(requestBody.to);
 
-     if(WebSocketService.connections[requestBody.to])
-        WebSocketService.connections[requestBody.to].socket.send(JSON.stringify({ type: ENotificationType.GroupMatchInviteSend, eventId: "GroupMatchInviteSend", time: 10 }));
-    
+    const otherAccount = AccountService.getAccount(requestBody.to);
+    const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
+    otherAccountByMode.socialNetwork.groupInvite = new GroupInvite(newEventId, requestBody.to, false);
 
-
-
+    // Save the group before sending...
     AccountService.saveAccount(myAccount);
+    AccountService.saveAccount(otherAccount);
 
-    bsgHelper.addBSGBodyInResponseWithData(res, bsgHelper.generateMongoId());
+    WebSocketService.sendGroupMatchInviteSend(requestBody.to, sessionId, myAccountByMode.socialNetwork.group.groupMemberInvites)
+
+    bsgHelper.addBSGBodyInResponseWithData(res, otherAccountByMode.socialNetwork.groupInvite.eventId);
 
     next();
 });
@@ -143,6 +149,39 @@ router.post('/group/invite/cancel', function(req, res, next) {
     }
 
     bsgHelper.addBSGBodyInResponseWithData(res, bsgHelper.generateMongoId());
+
+    next();
+});
+
+/**
+ * @swagger
+ * /client/match/group/invite/accept:
+ *   post:
+ *     tags:
+ *     - Match
+ *     summary: Called from the Popup Accept button
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/group/invite/accept', function(req, res, next) {
+
+    const requestBody = req.body;
+    console.log(requestBody);
+    const sessionId = req.SessionId;
+    const myAccount = AccountService.getAccount(sessionId);
+    const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+
+    if (myAccountByMode.socialNetwork.groupInvite) {
+
+
+
+    }
+
+    const groupMembers = []
+
+    // Expects array of the group members
+    bsgHelper.addBSGBodyInResponseWithData(res, groupMembers);
 
     next();
 });
