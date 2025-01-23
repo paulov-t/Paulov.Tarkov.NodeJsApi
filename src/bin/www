@@ -15,7 +15,7 @@ const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
 const ws = require('ws');
-const WebSocketService = require('./../services/WebSocketService');
+const { WebSocketService } = require('./../services/WebSocketService');
 
 
 const localPortHttp = 80;
@@ -158,17 +158,15 @@ function handleUpgrade(wsServer, request, unkSocket, head, callbackSocket) {
     return;
 
   const sessionId = splitUrl[3];
-  WebSocketService.WebSocketService.connections[sessionId] = { socket: callbackSocket };
+  WebSocketService.connections[sessionId] = { socket: callbackSocket };
 
   wsServer.emit('connection', unkSocket, request);
 
   // Send Initial Ping
-  callbackSocket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
+  WebSocketService.sendPing(sessionId);
 
   // Do Ping Notifications
-  setInterval(()=>{ 
-    callbackSocket.send(JSON.stringify({ type: "ping", eventId: "ping" }));
-  }, 30 * 1000);
+  WebSocketService.startPingInterval(sessionId);
 
   wsServer.on("message", async (msg) => {
     console.log(`WebSocketHandler connected`);

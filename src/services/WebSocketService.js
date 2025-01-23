@@ -1,6 +1,7 @@
 const { AccountService } = require('./AccountService');
 const { ENotificationType } = require('../models/ENotificationType');
 const { generateMongoId } = require('./../bsgHelper');
+const { PlayerVisualRepresentation } = require('../models/PlayerVisualRepresentation');
 
 /**
  * A service to retain connections for each user logged in to the App
@@ -116,6 +117,9 @@ class WebSocketService {
           }
         members.push(contentMember);
       }
+
+      accountByMode.socialNetwork.groupInvite.members = members;
+
       const contentToSend = {
         "type": "groupMatchInviteSend",
         "eventId": accountByMode.socialNetwork.groupInvite.eventId,
@@ -126,10 +130,13 @@ class WebSocketService {
         "isReady": false,
       }
 
-
+      // Send the Content
       if(this.connections[accountToSendToId])
         this.connections[accountToSendToId].socket.send(JSON.stringify(contentToSend));
 
+      // Save the Accounts
+      AccountService.saveAccount(accountFrom);
+      AccountService.saveAccount(accountToSendTo);
 
         /*
         {
@@ -218,6 +225,44 @@ class WebSocketService {
   ]
 }
         */
+    }
+
+
+
+     /**
+     * Accept a group invite all members of the group 
+     * @param {string} accountToSendToId 
+     * @param {string} fromMemberAccountId 
+     */
+     sendGroupMatchInviteAccept(accountToSendToId, fromMemberAccountId) {
+
+      const accountFrom = AccountService.getAccount(fromMemberAccountId);
+      const accountFromByMode = AccountService.getAccountProfileByCurrentModeFromAccount(accountFrom);
+
+      const accountToSendTo = AccountService.getAccount(accountToSendToId);
+      const accountToByMode = AccountService.getAccountProfileByCurrentModeFromAccount(accountToSendTo);
+
+      const contentSelf = {
+        "type": "groupMatchInviteAccept",
+        "eventId": accountFromByMode.socialNetwork.groupInvite.eventId,
+        "_id": accountFromByMode.characters.pmc._id,
+        "aid": accountFromByMode.characters.pmc.aid,
+        "Info": accountFromByMode.characters.pmc.Info,
+        "isLeader": false,
+        "isReady": false,
+        "PlayerVisualRepresentation": null// new PlayerVisualRepresentation()
+      }
+
+      // NOTE: I checked the Logs of playing Live with a friend. PVR is not send with this notification.
+      // contentSelf.PlayerVisualRepresentation.Customization = accountFromByMode.characters.pmc.Customization;
+      // contentSelf.PlayerVisualRepresentation.Info = accountFromByMode.characters.pmc.Info;
+      // contentSelf.PlayerVisualRepresentation.Equipment.Id = accountFromByMode.characters.pmc.Inventory.equipment;
+      // contentSelf.PlayerVisualRepresentation.Equipment.Items = accountFromByMode.characters.pmc.Inventory.items;
+    
+      // Send the Content
+      this.sendDataToAccountId(accountFromByMode.characters.pmc._id, contentSelf);
+      this.sendDataToAccountId(accountToByMode.characters.pmc._id, contentSelf);
+
     }
 
         /**
@@ -319,6 +364,23 @@ class WebSocketService {
   "eventId": "",
   "extendedProfile": this is the whole profile
             */
+        }
+
+
+        startPingInterval(accountId) {
+
+          // Do Ping Notifications
+          setInterval(()=>{ this.sendPing(accountId);
+          }, 3 * (60 * 1000));
+
+        }
+
+        sendPing(accountId) {
+          this.sendDataToAccountId(accountId, { type: "ping", eventId: "ping" });
+        }
+
+        sendDataToAccountId(accountId, content) {
+          this.connections[accountId].socket.send(JSON.stringify(content));
         }
 }
 

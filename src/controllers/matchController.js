@@ -100,7 +100,7 @@ router.post('/group/invite/send', function(req, res, next) {
 
     const otherAccount = AccountService.getAccount(requestBody.to);
     const otherAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(otherAccount);
-    otherAccountByMode.socialNetwork.groupInvite = new GroupInvite(newEventId, requestBody.to, false);
+    otherAccountByMode.socialNetwork.groupInvite = new GroupInvite(newEventId, requestBody.to, myAccount.accountId, false);
 
     // Save the group before sending...
     AccountService.saveAccount(myAccount);
@@ -172,13 +172,25 @@ router.post('/group/invite/accept', function(req, res, next) {
     const myAccount = AccountService.getAccount(sessionId);
     const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
 
-    if (myAccountByMode.socialNetwork.groupInvite) {
-
-
-
+    if (!myAccountByMode.socialNetwork.groupInvite) { 
+        bsgHelper.errorResponse(res, 502014, "no group invite found");
+        next();
+        throw "No groupInvite found on this account!";
     }
 
-    const groupMembers = []
+    // TODO: Rewrite Groups into the Service. This will only work 1-2-1 but not when 3 or more people are join asymetrically
+    const groupMembers = myAccountByMode.socialNetwork.groupInvite.members;
+    const memberIds = [];
+    for(const member of groupMembers) {
+        // only send to other people?
+        // if (member._id !== sessionId)
+        memberIds.push(member._id);
+    }
+
+    for(const memberId of memberIds) {
+        WebSocketService.sendGroupMatchInviteAccept(memberId, sessionId, memberIds);
+    }
+
 
     // Expects array of the group members
     bsgHelper.addBSGBodyInResponseWithData(res, groupMembers);
