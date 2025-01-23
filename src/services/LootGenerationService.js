@@ -9,6 +9,9 @@ const { ContainerService } = require('./ContainerService');
  */
 class LootGenerationService 
 {
+  constructor() {
+    
+  }
   /**
    * DO NOT USE - Created via Loot generation
    */
@@ -186,8 +189,7 @@ class LootGenerationService
             
           in_additionalLootModifier *= 2;
           in_additionalLootModifier *= LootGenerationService.LocationLootChanceModifierFromFile;
-        //   const globals = DatabaseService.getDatabase().getData(Database.globals);
-          in_additionalLootModifier *= 0.3;// globals.config.GlobalLootChanceModifier;
+          in_additionalLootModifier *= 0.3;
           
           if(out_itemsRemoved == undefined)
             out_itemsRemoved = {};
@@ -213,7 +215,6 @@ class LootGenerationService
             return true;
       
           const itemRarityType = LootGenerationService.GetItemRarityType(itemTemplate);
-      
       
           // logger.logInfo(itemRarityType + " - " + itemTemplate._props.Name);
       
@@ -242,7 +243,9 @@ class LootGenerationService
               }
             }
             else if (itemRarityType == "COMMON")  {
-              if (Math.random() > (modifierCommon * in_additionalLootModifier)) {
+              const randomCommonNumber = Math.random();
+              const randomCommonLootModifier = (modifierCommon * in_additionalLootModifier);
+              if (randomCommonNumber > randomCommonLootModifier) {
                 out_itemsRemoved.numberOfCommonRemoved++;
                   return false;
               } else {
@@ -261,7 +264,7 @@ class LootGenerationService
         });
       }
 
-      static GenerateContainerLoot(containerData, loot, in_locationLootChanceModifier, in_mapName) {
+      static GenerateContainerLoot(containerData, loot, in_locationLootChanceModifier, in_mapName, templateItemList, containerLootAttempt) {
 
         // console.log(Database);
         // console.log(Database.getTemplateItems());
@@ -281,14 +284,12 @@ class LootGenerationService
         
         const isAirdrop = containerData.Id.includes("Scripts") || containerData.Id.includes("scripts");
 
-        const templateItemList = DatabaseService.getDatabase().getTemplateItems();
-
         const containerTemplate = templateItemList[containerTemplateId];
         let container2D = Array(containerTemplate._props.Grids[0]._props.cellsV)
         .fill()
         .map(() => Array(containerTemplate._props.Grids[0]._props.cellsH).fill(0));
 
-        let LootListItems = LootGenerationService.GenerateLootList(parentId, loot, templateItemList);
+        let LootListItems = LootGenerationService.GenerateLootList(parentId, loot, templateItemList, containerLootAttempt);
         if(isAirdrop) {
           LootListItems = LootGenerationService.GenerateAirdropLootList(parentId, in_mapName, container2D);
           // logger.logInfo(`Airdrop container contains ${LootListItems.length} items!`);
@@ -298,8 +299,8 @@ class LootGenerationService
           LootListItems = LootGenerationService.GenerateWeaponBoxLootList(parentId, in_mapName, container2D);
         }
        
-        if(LootListItems.length == 0) {
-          logger.logError(`EmptyContainer: ${parentId}`);
+        if(LootListItems.length == 0 ) {
+          logger.logWarning(`EmptyContainer: ${parentId} ${containerTemplate._name}`);
           return false;
         }
 
@@ -442,7 +443,7 @@ class LootGenerationService
        * @param {String} containerId 
        * @returns {Array} an array of loot item ids
        */
-      static GenerateLootList(containerId, expectedItemDistribution, templateItemList) {
+      static GenerateLootList(containerId, expectedItemDistribution, templateItemList, containerLootAttempt) {
         let lootList = [];
         let UniqueLootList = [];
         const itemCountDistList = expectedItemDistribution.itemcountDistribution;
@@ -450,12 +451,22 @@ class LootGenerationService
         const itemDistList = expectedItemDistribution.itemDistribution;
 
         let itemsRemoved = {};
-        lootList = itemDistList.filter(x => LootGenerationService.FilterItemByRarity(templateItemList[x.tpl], itemsRemoved))
+        lootList = itemDistList.filter(x => 
+          x !== undefined 
+          && x.tpl !== undefined 
+          && LootGenerationService.FilterItemByRarity(templateItemList[x.tpl], itemsRemoved, (x.relativeProbability * 0.1 + ((containerLootAttempt + 1) * 0.1))));
+        if (lootList.length === 0) {
+          logger.logWarning(`lootList for ${containerId} ${templateItemList[containerId]} is empty`);
+          return [];
+        }
 
         let finalItemList = [];
         for(let index = 0; index < itemCount; index++)
         {
             const randomItem = lootList[LootGenerationService.RandomInteger(0, lootList.length-1)];
+            if (!randomItem)
+              continue;
+
             const templateItem = templateItemList[randomItem.tpl];
             const newRandomItem = {
                 _id: bsgHelper.generateMongoId(),
@@ -906,10 +917,24 @@ class LootGenerationService
         LootGenerationService.PreviouslyGeneratedItems = [];
         LootGenerationService.PreviouslyGeneratedContainers = [];
 
+        const templateItemList = DatabaseService.getDatabase().getTemplateItems();
+
         const locationLootChanceModifierFromFile = location.GlobalLootChanceModifier;
         const locationIdLower = location.Id.toLowerCase()
 
         const looseLoot = Database.getData(Database.locations[locationIdLower].looseLoot);
+
+        for(const llspfItem of looseLoot.spawnpointsForced) {
+          const locationId = llspfItem.locationId;
+          const probability = llspfItem.probability;
+          if (Math.random() < probability) {
+            const template = llspfItem.template;
+            if(template) {
+              result.push(template);
+            }
+          }
+
+        }
 
         const staticAmmo = Database.getData(Database.locations[locationIdLower].staticAmmo);
         const staticContainers = Database.getData(Database.locations[locationIdLower].staticContainers);
@@ -928,7 +953,19 @@ class LootGenerationService
 
           if (Math.random() < container.probability) {
               const containerId = container.template.Items[0]._tpl;
-              LootGenerationService.GenerateContainerLoot(container.template, staticLoot[containerId], locationLootChanceModifierFromFile, location.Name);
+              let containerLootResult = false;
+              let containerLootAttempt = 0;
+              while(!containerLootResult && containerLootAttempt < 10) {
+                containerLootResult = LootGenerationService.GenerateContainerLoot(
+                  container.template
+                  , staticLoot[containerId]
+                  , locationLootChanceModifierFromFile
+                  , location.Name
+                  , templateItemList
+                  , containerLootAttempt
+                );
+                containerLootAttempt++;
+              }
               result.push(container.template);
           }
         }

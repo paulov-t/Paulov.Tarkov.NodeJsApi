@@ -19,6 +19,7 @@ const { LocationWeatherTime } = require('../../models/LocationWeatherTime');
 const { Weather } = require('../../models/Weather');
 const { logger } = require('../../classes/logger');
 const { LootGenerationService } = require('../../services/LootGenerationService');
+const { LocationService } = require('../../services/LocationService');
 
 
 /**
@@ -595,33 +596,7 @@ console.log(result);
  */
 router.post('/locations', function(req, res, next) {
 
-    const locations = {};
-    /**
-     * @type {Database}
-     */
-    const db = global._database;
-    const locationEntries = db["locations"];
-    for(const locationId in locationEntries) {
-
-        const entry = locationEntries[locationId];
-        if (!entry)
-            continue;
-
-        if (!entry.base)
-            continue;
-
-        const mapBase = db.getData(entry.base);
-        if (!mapBase) {
-            continue;
-        }
-
-         // Clear out loot array
-         mapBase.Loot = [];
-         // Add map base data to dictionary
-         locations[mapBase._Id] = mapBase;
-    }
-
-    bsgHelper.addBSGBodyInResponseWithData(res, { locations: locations, paths: db.getData(db.locations.base).paths });
+    bsgHelper.addBSGBodyInResponseWithData(res, new LocationService().getAllLocationData());
 
     next();
 });
@@ -1381,7 +1356,7 @@ router.post('/getMetricsConfig', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/match/local/start', function(req, res, next) {
+router.post('/match/local/start', async function(req, res, next) {
 
     if (!req.body.location)
         throw `expected location in request body`
@@ -1404,6 +1379,8 @@ router.post('/match/local/start', function(req, res, next) {
             const insuredItems = accountProfile.characters?.pmc?.InsuredItems;
             if (insuredItems)
                 result.profile.insuredItems = insuredItems;
+
+            AccountService.saveAccount(account);
         }
     }
 

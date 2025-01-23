@@ -1,5 +1,6 @@
 const { Database } = require('../../classes/database');
 const bsgHelper = require('../../bsgHelper');
+const { LocationService } = require('../../services/LocationService');
 
 class LocalMatchStartResponse {
     
@@ -11,7 +12,7 @@ class LocalMatchStartResponse {
          * @type {object}
          */
         this.profile = { insuredItems: [] },
-        this.locationLoot = Database.getData(Database.locations[location].base),
+        this.locationLoot = new LocationService().getLocationByLocationName(location);
         this.transitionType = "None",
         this.transition = {
             transitionType: "None",
