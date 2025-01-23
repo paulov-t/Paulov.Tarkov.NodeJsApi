@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var bsgHelper =  require(__dirname + '/./../bsgHelper');
-const { AccountService } = require(__dirname + '/./../services/AccountService');
+var bsgHelper =  require('./../bsgHelper');
+const { AccountService } = require('./../services/AccountService');
 
 /**
  * @swagger
