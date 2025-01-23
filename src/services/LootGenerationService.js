@@ -11,7 +11,7 @@ const { ContainerService } = require('./ContainerService');
 class LootGenerationService 
 {
   constructor() {
-    this.itemPresets = Database.getItemPresets();
+    this.cachedItemPresets = {}
   }
   /**
    * DO NOT USE - Created via Loot generation
@@ -463,18 +463,8 @@ class LootGenerationService
 
           let createdPreset = false;
           
-          for (const itemPresetId in this.itemPresets) {
-
-            const itemPreset = this.itemPresets[itemPresetId];
-            if (!itemPreset)
-              continue;
-
-            if (itemPreset._encyclopedia == randomItem.tpl) {
-              console.log(itemPreset);
-
-              createdPreset = true;
-            }
-
+          for (const itemPreset of Database.getItemPresetArrayByEncyclopedia(randomItem.tpl, ["_encyclopedia", "_items"])) {
+            createdPreset = true;
           }
 
           if (!createdPreset) {

@@ -214,10 +214,26 @@ class Database {
     return dbResult;
   }
 
-  getItemPresets() {
+  getItemPresetArrayByEncyclopedia(filterByEncyclopediaTpl, properties) {
     this.loadCompressedDatabase();
     const db = global._database;
-    const dbResult = db.getData(db["globals"])["ItemPresets"];
+    let dbResult = Object.values(db.getData(db["globals"])["ItemPresets"]);
+    dbResult = dbResult.filter(x => x._encyclopedia === filterByEncyclopediaTpl);
+    if (dbResult.length === 0)
+      return [];
+
+    // If we have defined properties
+    if (properties) {
+      const selectResult = [];
+      for(const item of dbResult) {
+        var propertyResult = {};
+        properties.forEach((key) => {
+          item[key] && (propertyResult[key] = item[key]);
+        });
+        selectResult.push(propertyResult);
+      }
+      return selectResult;
+    }
     return dbResult;
   }
 }
