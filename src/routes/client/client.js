@@ -1368,8 +1368,9 @@ router.post('/match/local/start', async function(req, res, next) {
     }
     const result = new LocalMatchStartResponse(location);
 
+    const lootGenService = new LootGenerationService();
     // Add Loot
-    result.locationLoot.Loot = LootGenerationService.Generate(result.locationLoot);
+    result.locationLoot.Loot = lootGenService.Generate(result.locationLoot);
 
     // Add Insured Items
     if (req.SessionId) {

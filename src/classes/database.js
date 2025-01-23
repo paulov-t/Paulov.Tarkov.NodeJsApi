@@ -163,7 +163,7 @@ class Database {
       // this.readZipArchiveIntoMemory(dbFilePath);
       this.databaseFilePath = dbFilePath;
       this.readZipArchiveDatabaseIntoDbEntryNames(dbFilePath);
-      // console.log(global._database);
+      console.log(global._database);
       console.log("loaded database!");
       this.initialised = true;
     
@@ -208,8 +208,16 @@ class Database {
      * @returns {Object} Dictionary<string, object>
      */
   getTemplateQuests() {
+    this.loadCompressedDatabase();
     const db = global._database;
     const dbResult = db.getData(db["templates"]["quests"]);
+    return dbResult;
+  }
+
+  getItemPresets() {
+    this.loadCompressedDatabase();
+    const db = global._database;
+    const dbResult = db.getData(db["globals"])["ItemPresets"];
     return dbResult;
   }
 }
