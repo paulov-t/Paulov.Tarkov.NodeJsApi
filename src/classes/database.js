@@ -147,7 +147,7 @@ class Database {
         throw `Unable to find entry ${entryName} in Database`;
 
       const bufferData = entry.getData();
-      if (!entry)
+      if (!bufferData)
         throw `Unable to get data from entry ${entryName}`;
       
       return JSON.parse(bufferData.toString('utf8'));
@@ -216,8 +216,7 @@ class Database {
 
   getItemPresetArrayByEncyclopedia(filterByEncyclopediaTpl, properties) {
     this.loadCompressedDatabase();
-    const db = global._database;
-    let dbResult = Object.values(db.getData(db["globals"])["ItemPresets"]);
+    let dbResult = Object.values(this.getData(this["globals"])["ItemPresets"]);
     dbResult = dbResult.filter(x => x._encyclopedia === filterByEncyclopediaTpl);
     if (dbResult.length === 0)
       return [];
