@@ -3,12 +3,12 @@ const path =  require('path');
 const bsgHelper = require('../bsgHelper');
 // var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
-const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('../models/Account');
+const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('./../models/Account');
 const { BotGenerationService } = require('./BotGenerationService');
-const { SocialNetwork } = require('../models/SocialNetwork');
-const { UpdatableChatMember } = require('../models/UpdatableChatMember');
-const { UpdatableChatMemberInfo } = require('../models/UpdatableChatMemberInfo');
-const { logger } = require('../classes/logger');
+const { SocialNetwork } = require('./../models/SocialNetwork');
+const { UpdatableChatMember } = require('./../models/UpdatableChatMember');
+const { UpdatableChatMemberInfo } = require('./../models/UpdatableChatMemberInfo');
+const { logger } = require('./../classes/logger');
 const { InventoryService } = require('./InventoryService');
 
 class AccountService {
