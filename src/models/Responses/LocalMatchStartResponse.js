@@ -12,7 +12,7 @@ class LocalMatchStartResponse {
          * @type {object}
          */
         this.profile = { insuredItems: [] },
-        this.locationLoot = new LocationService().getLocationByLocationName(location);
+        this.locationLoot = "";// new LocationService().getLocationByLocationName(location);
         this.transitionType = "None",
         this.transition = {
             transitionType: "None",

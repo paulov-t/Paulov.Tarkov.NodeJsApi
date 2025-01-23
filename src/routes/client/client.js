@@ -1366,7 +1366,9 @@ router.post('/match/local/start', async function(req, res, next) {
         console.log(Database.locations);
         throw `${location} doesn't exist in Database.locations`
     }
+
     const result = new LocalMatchStartResponse(location);
+    result.locationLoot = new LocationService().getLocationByLocationName(location);
 
     // generate temporary instance
     let lootGenService = new LootGenerationService();

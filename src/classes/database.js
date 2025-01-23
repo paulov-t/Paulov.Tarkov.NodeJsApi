@@ -163,7 +163,7 @@ class Database {
       // this.readZipArchiveIntoMemory(dbFilePath);
       this.databaseFilePath = dbFilePath;
       this.readZipArchiveDatabaseIntoDbEntryNames(dbFilePath);
-      console.log(global._database);
+      // console.log(global._database);
       console.log("loaded database!");
       this.initialised = true;
     

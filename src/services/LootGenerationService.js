@@ -463,9 +463,9 @@ class LootGenerationService
 
           let createdPreset = false;
           
-          // for (const itemPreset of Database.getItemPresetArrayByEncyclopedia(randomItem.tpl, ["_encyclopedia", "_items"])) {
-          //   createdPreset = true;
-          // }
+          for (const itemPreset of Database.getItemPresetArrayByEncyclopedia(randomItem.tpl, ["_encyclopedia", "_items"])) {
+            createdPreset = true;
+          }
 
           if (!createdPreset) {
             const newRandomItem = {
@@ -911,6 +911,10 @@ class LootGenerationService
 
 
       Generate(location) {
+
+        if(!location)
+          throw "location parameter is undefined"
+
 
         const result = [];
         // Clear Loot Rarities

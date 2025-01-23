@@ -47,7 +47,7 @@ class LocationService
 
     /**
      * 
-     * @param {String} locationId 
+     * @param {String} locationName 
      * @returns 
      */
     getLocationByLocationName(locationName) {
@@ -55,7 +55,7 @@ class LocationService
         const allLocations = this.getAllLocationData().locations;
         for (const locationId in allLocations) {
             const location = allLocations[locationId];
-            if (location.Name.toLowerCase() == locationNameLower) {
+            if (locationNameLower.includes(location.Id.toLowerCase())) {
                 return location;
             }
         }
