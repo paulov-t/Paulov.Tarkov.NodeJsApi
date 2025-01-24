@@ -373,6 +373,12 @@ class AccountService {
         return accountProfile;
     }
 
+    /**
+     * 
+     * @param {String} username 
+     * @param {String} password 
+     * @returns {Account}
+     */
     getAccountByUsernamePassword (username, password) {
 
         var hashedPassword = bcrypt.hashSync(password, 10);
