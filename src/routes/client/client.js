@@ -6,7 +6,7 @@ const { BotGenerationService } = require('../../services/BotGenerationService');
 const { BotGenerationCondition } = require("./../../models/BotGenerationCondition");
 const { ProfileStatus } = require('../../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
-const { Account, AccountProfileMode } = require('../../models/Account');
+const { Account, AccountProfileMode, AccountProfileCharacterQuestItem } = require('../../models/Account');
 const { Database } = require('../../classes/database');
 
 const { LocalMatchStartResponse } = require('../../models/Responses/LocalMatchStartResponse');
@@ -539,6 +539,17 @@ router.post('/profile/status', function(req, res, next) {
             pmcStatus
         ]
     );
+
+
+    // REMOVEME: Do general fixes here for any bugs or mistakes from code. I know this is a tad dumb but it helps when developing things, for now.
+    accountMode.characters.pmc.Health.BodyParts.Head.Health.Maximum = 35;
+    accountMode.characters.pmc.Health.BodyParts.Chest.Health.Maximum = 85;
+    accountMode.characters.pmc.Health.BodyParts.RightArm.Health.Maximum = 60;
+    accountMode.characters.pmc.Health.BodyParts.LeftArm.Health.Maximum = 60;
+    accountMode.characters.pmc.Health.BodyParts.Stomach.Health.Maximum = 70;
+    accountMode.characters.pmc.Health.BodyParts.RightLeg.Health.Maximum = 65;
+    accountMode.characters.pmc.Health.BodyParts.LeftLeg.Health.Maximum = 65;
+
     bsgHelper.addBSGBodyInResponseWithData(res, response);
     next();
 });
@@ -556,28 +567,32 @@ router.post('/profile/status', function(req, res, next) {
  */
 router.post('/weather', function(req, res, next) {
 
-    let result = { acceleration: 1, time: "", date: "", weather: undefined, season: 1 }; 
-    const year = new Date().getUTCFullYear();
-    result.date = `${year}-01-01`
-    result.time = bsgHelper.getInRaidTime(undefined);
-    result.time = `${result.date} 13:00:00`; 
-    result.weather = { 
-        cloud: 0,
-        wind_speed: 0,
-        wind_direction: 1,
-        wind_gustiness: 0,
-        rain: 0,
-        rain_intensity: 0,
-        fog: 0,
-        temp: 0,
-        pressure: 0,
-        time: `${result.date} 13:00:00`,
-        date: `${year}-01-01`,
-        timestamp: 0
-    }
-    console.log(result);
+    // let result = { acceleration: 1, time: "", date: "", weather: undefined, season: 1 }; 
+    const date = new Date();
+    // const year = new Date().getUTCFullYear();
+    // result.date = `${year}-01-01`
+    // result.time = bsgHelper.getInRaidTime(undefined);
 
-    result = new LocationWeatherTime();
+    const hoursText = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
+    // result.time = `${result.date} ${hoursText}:00:00`; 
+    // result.weather = { 
+    //     cloud: 0,
+    //     wind_speed: 0,
+    //     wind_direction: 1,
+    //     wind_gustiness: 0,
+    //     rain: 0,
+    //     rain_intensity: 0,
+    //     fog: 0,
+    //     temp: 0,
+    //     pressure: 0,
+    //     time: result.time,
+    //     date: `${year}-01-01`,
+    //     timestamp: 0
+    // }
+    // console.log(result);
+
+    let result = new LocationWeatherTime();
+    result.time = `${hoursText}:00:00`; 
 console.log(result);
     bsgHelper.addBSGBodyInResponseWithData(res, result);
     next();
@@ -878,9 +893,52 @@ router.post('/quest/list', function(req, res, next) {
             playerQuests.push(quest);
             continue;
         }
+
+        if(quest.conditions.AvailableForStart.length > 0) {
+            let available = true;
+            // console.log(quest.conditions.AvailableForStart);
+
+            for(const afsCondition of quest.conditions.AvailableForStart) {
+                // console.log(afsCondition);
+                if(afsCondition.conditionType) {
+                    switch (afsCondition.conditionType) {
+                        case 'Quest':
+                            if (allQuests[afsCondition.target]) {
+                                const targetQuest = allQuests[afsCondition.target];
+                                if(targetQuest.status !== "Success") {
+                                    available = false;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+
+            if(available)
+                playerQuests.push(quest);
+            continue;
+        }
     }
 
     console.log(playerQuests);
+
+    let updatedQuests = false;
+    for(const quest of playerQuests) {
+
+        const questInProfile = accountMode.characters.pmc.Quests.find((x) => x.qid === quest._id);
+        if(!questInProfile) {
+            
+            let playerQuestInProfile = new AccountProfileCharacterQuestItem();
+            playerQuestInProfile.qid = quest._id;
+            // console.log(quest);
+            accountMode.characters.pmc.Quests.push(playerQuestInProfile);
+            updatedQuests = true;
+        }
+    }
+
+    if(updatedQuests)
+        AccountService.saveAccount(account);
+    
     bsgHelper.addBSGBodyInResponseWithData(res, playerQuests);
 
     next();
