@@ -3,6 +3,7 @@ const { Database } = require('./../classes/database');
 const bsgHelper = require('./../bsgHelper');
 const { DatabaseService } = require('./DatabaseService');
 const { ContainerService } = require('./ContainerService');
+const { InventoryService } = require('./InventoryService');
 
 /**
  * A service to generate loot for the given map. Use the Generate method with location instance.
@@ -279,15 +280,11 @@ class LootGenerationService
         .map(() => Array(containerTemplate._props.Grids[0]._props.cellsH).fill(0));
 
         let LootListItems = this.GenerateLootList(parentId, loot, templateItemList, containerLootAttempt);
-        if(isAirdrop) {
+        if (isAirdrop && LootListItems.length == 0) {
+          logger.logDebug(`Airdrop Container: ${parentId} ${containerTemplate._name}`);
           LootListItems = LootGenerationService.GenerateAirdropLootList(parentId, in_mapName, container2D);
-          // logger.logInfo(`Airdrop container contains ${LootListItems.length} items!`);
         }
-        if(isWeaponBox) {
-          // logger.logInfo(`This is a weapon box container`);
-          LootListItems = LootGenerationService.GenerateWeaponBoxLootList(parentId, in_mapName, container2D);
-        }
-       
+
         if(LootListItems.length == 0 ) {
           logger.logWarning(`EmptyContainer: ${parentId} ${containerTemplate._name}`);
           return false;
@@ -314,38 +311,72 @@ class LootGenerationService
               let itemHeight = 0;
               let indexRolled = [];
               mainIterator: for (let i = 0; i < minCount && i < LootListItems.length; i++) {
-                //let item = {};
-                let containerItem = {};
+
+                let containerItems = [];
           
                 let RollIndex = this.RandomInteger(0, LootListItems.length - 1);
                 // add current rolled index
                 indexRolled.push(RollIndex);
 
+                const rolledLootListItem = LootListItems[RollIndex];
+
                 // getting rolled item
-                const rolledRandomItemTemplateId = LootListItems[RollIndex]._tpl;
+                const rolledRandomItemTemplateId = rolledLootListItem._tpl;
                 if (usedLootItems.findIndex(x => x ===rolledRandomItemTemplateId) !== -1)
                   continue;
 
-                const rolledRandomItemToPlace = templateItemList[LootListItems[RollIndex]._tpl];
+                const rolledRandomItemToPlace = templateItemList[rolledLootListItem._tpl];
                 
                 if (rolledRandomItemToPlace === undefined) {
                   logger.logWarning(`Undefined in container: ${ContainerId}  ${LootListItems.length} ${RollIndex}`);
                   continue;
                 }
                 let result = { success: false };
-                let maxAttempts = 1;
-                // attempt to add item x times
-                while (!result.success && maxAttempts > 0) {
-                  //let currentTotal = 0;
+
+                // Must be a preset or embedded into something else. Lets add the entire thing.
+                if (rolledLootListItem.parentId != parentId) {
+                  
+                  // this is part of a preset.
+                  const presetParent = LootListItems.find(x => x._id == rolledLootListItem.parentId);
+                  if (_items.findIndex(x => x._tpl === presetParent._tpl) !== -1)
+                    continue;
+
+                  usedLootItems.push(presetParent._id)
+
+                  const newPresetParentId = bsgHelper.generateMongoId();
+                  containerItems.push({ _id: newPresetParentId, _tpl: presetParent._tpl, parentId: parentId });
+
+
+                  // console.log(presetParent);
+                  const presetParentTemplate = templateItemList[presetParent._tpl];
+                 
+                  let extraWidth = 0;
+                  let extraHeight = 0;
+                  for(const presetModItem of LootListItems.filter(x => x.parentId == presetParent._id)) {
+                    const presetModItemTemplate = templateItemList[presetModItem._tpl];
+                    // if(presetModItemTemplate._props.ExtraSizeDown !== 0) {
+                    //   console.log(presetModItemTemplate);
+                    // }
+                    extraWidth = Math.max(extraWidth, presetModItemTemplate._props.ExtraSizeLeft + presetModItemTemplate._props.ExtraSizeRight);
+                    extraHeight = Math.max(extraHeight, presetModItemTemplate._props.ExtraSizeUp + presetModItemTemplate._props.ExtraSizeDown);
+                    containerItems.push({ _id: presetModItem._id, _tpl: presetModItem._tpl, parentId: newPresetParentId, slotId: presetModItem.slotId });
+                  }
+
+                  itemWidth = presetParentTemplate._props.Width + extraWidth;
+                  itemHeight = presetParentTemplate._props.Height + extraHeight;
+                }
+                else {
                   // get basic width and height of the item
                   itemWidth = rolledRandomItemToPlace._props.Width;
                   itemHeight = rolledRandomItemToPlace._props.Height;
-                  
-                  result = ContainerService.findSpotForItem(container2D, itemWidth, itemHeight);
-                  maxAttempts--;
                 }
+
+                if (itemWidth === 0 || itemHeight === 0)
+                  continue;
+
+                result = ContainerService.findSpotForItem(container2D, itemWidth, itemHeight);
+
                 // finished attempting to insert item into container
-          
                 // if we weren't able to find an item to fit after x tries then container is probably full
                 if (!result.success) 
                   break;
@@ -353,9 +384,18 @@ class LootGenerationService
                 container2D = ContainerService.addItemToContainerMap(container2D, result.x, result.y, itemWidth, itemHeight, result.rotation);
                 let rot = result.rotation ? 1 : 0;
 
-                
+                if(containerItems.length > 0) {
 
-                containerItem = {
+                  containerItems[0].slotId = "main";
+                  containerItems[0].location = { x: result.x, y: result.y, r: rot };
+                  for(const item of containerItems) {
+                    _items.push(item);
+                  }
+
+                  continue;
+                }
+
+                let containerItem = {
                   _id: bsgHelper.generateMongoId(),
                   _tpl: rolledRandomItemToPlace._id,
                   parentId: parentId,
@@ -438,7 +478,7 @@ class LootGenerationService
         let lootList = [];
         let UniqueLootList = [];
         const itemCountDistList = expectedItemDistribution.itemcountDistribution;
-        const itemCount = itemCountDistList[this.RandomInteger(0, itemCountDistList.length-1)].count;
+        const itemCount = Math.max(1, itemCountDistList[this.RandomInteger(0, itemCountDistList.length-1)].count);
         const itemDistList = expectedItemDistribution.itemDistribution;
 
         let itemsRemoved = {};
@@ -459,12 +499,18 @@ class LootGenerationService
             continue;
 
           const templateItem = templateItemList[randomItem.tpl];
-          
 
           let createdPreset = false;
           
           for (const itemPreset of Database.getItemPresetArrayByEncyclopedia(randomItem.tpl, ["_encyclopedia", "_items"])) {
-            createdPreset = true;
+            const presetItems = InventoryService.replaceIDs(itemPreset._items, undefined, undefined, undefined);
+            if (presetItems) {
+              presetItems[0].parentId = containerId;
+              for(const pItem of presetItems) {
+                finalItemList.push(pItem);
+              }
+              createdPreset = true;
+            }
           }
 
           if (!createdPreset) {
@@ -478,28 +524,7 @@ class LootGenerationService
         }
 
         return finalItemList;
-
-        //let ItemList = DatabaseService.getDatabase().locationConfigs.StaticLootTable[containerId];
-        let numberOfItemsRemoved = 0;
-
-
-        lootList = ItemList.SpawnList;
-        lootList = lootList.filter(itemId => 
-          !itemId.QuestItem
-          && LootGenerationService.FilterItemByRarity(templateItemList[itemId], itemsRemoved)
-          );
-      
-        if(lootList.length === 0)
-        {
-            // If we have nothing, put a random item in there
-            lootList.push(ItemList.SpawnList[utility.getRandomInt(0, ItemList.SpawnList.length-1)]);
-        }
-        // Unique/Distinct the List
-        UniqueLootList = [...new Set(lootList)];
-        
-        // LootGenerationService.PreviouslyGeneratedItems = LootGenerationService.PreviouslyGeneratedItems.concat(UniqueLootList)
-
-        return UniqueLootList;
+       
       }
 
       static GenerateAirdropLootList(containerId, in_location, container2D) {
