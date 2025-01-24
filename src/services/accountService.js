@@ -381,13 +381,17 @@ class AccountService {
      */
     getAccountByUsernamePassword (username, password) {
 
-        var hashedPassword = bcrypt.hashSync(password, 10);
-
         const allAccounts = this.getAllAccounts();
         for(const account of allAccounts)
         {
-            if (account.username == username)// && account.password == hashedPassword)
-                return account;
+            if (account.username == username) {
+                
+                if (bcrypt.compareSync(password, account.password)) 
+                    return account;
+                else 
+                    return "INVALID_PASSWORD";
+
+            }
         }
 
         return undefined;
