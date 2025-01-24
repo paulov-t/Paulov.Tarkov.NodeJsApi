@@ -115,6 +115,9 @@ router.post('/moving', function(req, res, next) {
             case 'QuestAccept':
                 processQuestAccept(account, action, result);
                 break;
+            case 'QuestComplete':
+                processQuestComplete(account, action, result);
+                    break;
             case 'RestoreHealth':
                 processRestoreHealth(account, action, result);
                 break;
@@ -297,6 +300,26 @@ function processQuestAccept(account, action, outputChanges) {
 
 
     }
+
+    return result;
+}
+
+function processQuestComplete(account, action, outputChanges) {
+
+    const result = { success: true, error: undefined };
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    const allQuests = Database.getTemplateQuests();
+    const quest = allQuests[action.qid];
+    const index = pmcProfile.Quests.findIndex(x => x.qid === quest._id);
+    if (index === -1) {
+        return;
+    }
+    let profileQuestItem = pmcProfile.Quests[index];
+    profileQuestItem.status = "Success";
+
+    logger.logInfo(`Completed ${profileQuestItem._id}`);
 
     return result;
 }
