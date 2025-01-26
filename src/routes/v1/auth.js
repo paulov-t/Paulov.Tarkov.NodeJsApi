@@ -10,9 +10,24 @@ var router = express.Router();
  *     tags:
  *     - Authorization
  *     summary: Attempts to login
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *            type: object
+ *            properties:
+ *              username:
+ *                type: string
+ *                default: L33tS0ld13r
+ *              pwd:
+ *                type: string
+ *                default: l33tg0ld3nm4n
  *     responses:
  *       200:
  *         description: A successful response
+ *       401:
+ *         description: A unauthorized response
  */
 router.post('/login', function(req, res, next) {
 
@@ -20,12 +35,19 @@ router.post('/login', function(req, res, next) {
         const account = AccountService.getAccountByUsernamePassword(req.body.username, req.body.pwd);
         if(account) {
             const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+            let options = {
+                maxAge: 8 * 60 * 60 * 1000, // would expire in 8 hours
+                httpOnly: false, // The cookie is only accessible by the web server
+                secure: true,
+                sameSite: "None",
+            };
+            res.cookie('PHPSESSID', account.accountId, options);
             res.redirect(`../../user/details/${account.accountId}/${accountMode.name}`);
             return;
         }
     }
 
-    res.render('unauthorized', { });
+    res.status(401).render('unauthorized', { });
 
 });
 
