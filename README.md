@@ -7,27 +7,30 @@
 
 </div>
 
-## About The Project
-This is a personal project to learn NodeJs Express Api against a real-world game example. In this case Escape from Tarkov.
+## About the Project
+This is a personal project to learn NodeJs Express Api & Website against a real-world game example. In this case Escape from Tarkov server side endpoints.
 
-## My project ruleset
+## The project ruleset
 - I have gone against the new normal of using TypeScript and stuck with simple JavaScript throughout
-- Learn Express
+- Learn and use Express
 - Attempt to use the Model-View-Controller design within NodeJs
 - Use Swagger Open Api
-- Create a NodeJs that will work in the FREE Azure Web Service. 
-  - The FREE version of the Azure Web Service has a VERY low memory size threshold and VERY low hard disk space threshold. If you exceed the threshold, the app will not start or crash. 
-  - The main aim is to keep the footprint VERY low 
-  - Do NOT load anything permanently into memory
-  - Do NOT have large loose files in the project
+- Use username/password authorization
+- Use web token authorization
+- Create a NodeJs that will work in the free Azure Web Service. 
+  - The free tier of the Azure Web Service has a very low memory size threshold and very low hard disk space threshold. If you exceed the threshold, the app will not start or crash. 
+  - The main aim is to keep the footprint very low 
+  - Do not load anything permanently into memory
+  - Do not have large loose files in the project
   
 ## Current running live example Website and Api
-- [Development](https://paulovtarkovnodejsapi-dev.azurewebsites.net/)
+- [Dev-Test](https://paulovtarkovnodejsapi-dev.azurewebsites.net/)
 - [Production](https://paulovtarkovnodejsapi.azurewebsites.net/)
 - [Hardcore](https://paulovtarkovnodejsapi-hc.azurewebsites.net/) - Not live
+- [Zombies](https://paulovtarkovnodejsapi-zombies.azurewebsites.net/) - Not live
 - [Swagger Api UI](https://paulovtarkovnodejsapi-dev.azurewebsites.net/api-docs)
-- [Ammo Table - useful for quickly checking the best ammo](https://paulovtarkovnodejsapi-dev.azurewebsites.net/ammo)
-- [Item Table - useful for quickly checking the best items](https://paulovtarkovnodejsapi-dev.azurewebsites.net/items)
+- [Ammo Table - including custom rating calculation](https://paulovtarkovnodejsapi-dev.azurewebsites.net/ammo)
+- [Item Table - including custom rating calculation](https://paulovtarkovnodejsapi-dev.azurewebsites.net/items)
   
 ## Installation
 
