@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Paulov Tarkov WebServer - Dashboard</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+        <%- include('stylesheets.ejs') %>
+    </head>
+    <body>
+        <%- include('navbar.ejs') %>
+        <div class="container mt-3">
+            <main class="form-signin w-75 m-auto">
+                <form action="/v1/auth/login" method="post" >
+                    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="floatingUsername" name="username" placeholder="PaulovIsGOAT" data-username="" required>
+                        <label for="floatingUsername">Username</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="floatingPassword" name="pwd" placeholder="Password" data-pwd="" required>
+                        <label for="floatingPassword">Password</label>
+                    </div>
+
+                    <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+                </form>
+            </main>
+        </div>
+    </body>
+</html>

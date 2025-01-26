@@ -33,4 +33,9 @@ router.get('/items', function(req, res, next) {
   res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
 });
 
+router.get('/login', function(req, res, next) {
+
+  res.render('login', { title: 'Paulov-t Tarkov Web Server' });
+});
+
 module.exports = router;

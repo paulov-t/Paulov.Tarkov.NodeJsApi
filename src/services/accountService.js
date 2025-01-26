@@ -50,13 +50,19 @@ class AccountService {
 
         const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
         // If account doesn't exist, create it
-        if (!fs.existsSync(accountFilePath)) {
+        if (!this.accountExists(sessionId)) {
             const blankAccount = new Account();
             blankAccount.accountId = sessionId;
             this.saveAccount(blankAccount);
             return blankAccount;
         }
         return undefined;
+    }
+
+    accountExists(sessionId) {
+        const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
+        // If account doesn't exist, create it
+        return (fs.existsSync(accountFilePath));
     }
 
     createAccountFromLauncher(data) {

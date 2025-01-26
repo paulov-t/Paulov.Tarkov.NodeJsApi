@@ -2,26 +2,28 @@
 <html>
   <head>
     <title>Paulov Tarkov WebServer - Ammo Table</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='https://bootswatch.com/5/darkly/bootstrap.min.css' />
     <link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
   </head>
   <body>
-    <h1>Ammo</h1>
-    <div>
-        <table id="myTable">
-          <thead>
-            <tr>
-                <th>Template Id</th>
-                <th>Name</th>
-                <th>Caliber</th>
-                <th>Damage</th>
-                <th>Armor Damage</th>
-                <th>Penetration</th>
-                <th>Rating</th>
-            </tr>
-          </thead>
-        </table>
+    <%- include('navbar.ejs') %>
+    <div class="container">
+      <h1>Ammo</h1>
+      <div>
+          <table id="myTable">
+            <thead>
+              <tr>
+                  <th>Template Id</th>
+                  <th>Name</th>
+                  <th>Caliber</th>
+                  <th>Damage</th>
+                  <th>Armor Damage</th>
+                  <th>Penetration</th>
+                  <th>Rating</th>
+              </tr>
+            </thead>
+          </table>
+      </div>
     </div>
     
     <!-- Add JQUERY -->

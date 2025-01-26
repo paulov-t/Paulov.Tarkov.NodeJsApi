@@ -131,7 +131,7 @@ class InventoryService {
         fastPanel,
     ) {
         let items = JSON.parse(JSON.stringify((originalItems)));
-        let serialisedInventory = JSON.stringify(items);
+        let stringifiedItemsList = JSON.stringify(items);
         const hideoutAreaStashes = Object.values(pmcData?.Inventory.hideoutAreaStashes ?? {});
 
         for (const item of items) {
@@ -158,7 +158,7 @@ class InventoryService {
             // Replace the ID of the item in the serialised inventory using a regular expression.
             const oldId = item._id;
             const newId = bsgHelper.generateMongoId();
-            serialisedInventory = serialisedInventory.replace(new RegExp(oldId, "g"), newId);
+            stringifiedItemsList = stringifiedItemsList.replace(new RegExp(oldId, "g"), newId);
 
             // Also replace in quick slot if the old ID exists.
             if (fastPanel) {
@@ -170,7 +170,7 @@ class InventoryService {
             }
         }
 
-        items = JSON.parse(serialisedInventory);
+        items = JSON.parse(stringifiedItemsList);
 
         // fix duplicate id's
         const dupes = {};

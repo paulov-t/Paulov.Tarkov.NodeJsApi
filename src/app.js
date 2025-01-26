@@ -24,6 +24,7 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.raw({ type: "application/json", limit: '50mb',
   parameterLimit: 100000,
@@ -111,6 +112,14 @@ app.use('/client/match', require('./controllers/matchController'));
 app.use('/client/game/profile', require('./controllers/gameProfileController'));
 
 app.use('/itemSearch', require('./routes/itemSearch'));
+
+/** Paulov API v1 */
+app.use('/v1/auth', require('./routes/v1/auth'));
+app.use('/v1/user', require('./routes/v1/user'));
+
+/** User Views */
+app.use('/user', require('./controllers/userController'));
+
 
 /** Middleware: Deflates the Response Body using Zlib to a standard BSG expects */
 app.use(function(req, res, next) {

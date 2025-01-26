@@ -36,8 +36,20 @@ const { LocationService } = require('../../services/LocationService');
 router.post('/game/mode', function(req, res, next) {
 
     const sessionId = req.SessionId;
+    if (!sessionId) {
+        logger.logError(`sessionId has not been set`);
+
+        res.render('unauthorized');
+        return;
+    }
 
     const account = AccountService.getAccount(sessionId);
+    if (!account) {
+        logger.logError(`account with sessionId ${sessionId} not found`);
+
+        res.render('unauthorized');
+        return;
+    }
 
     let sessionMode = req.body.sessionMode;
     if (sessionMode === null) {

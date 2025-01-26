@@ -8,26 +8,30 @@ class Account {
         this.password = "";
         this.edition = "Standard";
          
-        this.modes = {
-            /**
-             * PVP
-             * @type {AccountProfileMode}
-             * @public
-             */
-            regular: new AccountProfileMode("regular"),
-            /**
-             * PVE
-             * @type {AccountProfileMode}
-             * @public
-             */
-            pve: new AccountProfileMode("pve"),
-            /**
-             * Arena
-             * @type {AccountProfileMode}
-             * @public
-             */
-            arena: new AccountProfileMode("arena")
-        }
+        // this.modes = {
+        //     /**
+        //      * PVP
+        //      * @type {AccountProfileMode}
+        //      * @public
+        //      */
+        //     regular: new AccountProfileMode("regular"),
+        //     /**
+        //      * PVE
+        //      * @type {AccountProfileMode}
+        //      * @public
+        //      */
+        //     pve: new AccountProfileMode("pve"),
+        //     /**
+        //      * Arena
+        //      * @type {AccountProfileMode}
+        //      * @public
+        //      */
+        //     arena: new AccountProfileMode("arena")
+        // }
+        /**
+         * @type {AccountProfileModes}
+         */
+        this.modes = new AccountProfileModes();
         this.currentMode = "regular"
     }
 }
@@ -51,6 +55,29 @@ class AccountProfileMode {
          * @type {Object}
          */
         this.raidConfiguration = {};
+    }
+}
+
+class AccountProfileModes {
+    constructor() {
+        /**
+             * PVP
+             * @type {AccountProfileMode}
+             * @public
+             */
+        this.regular = new AccountProfileMode("regular");
+        /**
+         * PVE
+         * @type {AccountProfileMode}
+         * @public
+         */
+        this.pve = new AccountProfileMode("pve");
+        /**
+         * Arena
+         * @type {AccountProfileMode}
+         * @public
+         */
+        this.arena = new AccountProfileMode("arena");
     }
 }
 
@@ -221,6 +248,7 @@ class AccountProfileCharacterQuestItem {
 
 module.exports.Account = Account;
 module.exports.AccountProfileMode = AccountProfileMode;
+module.exports.AccountProfileModes = AccountProfileModes;
 module.exports.AccountProfileCharacterSet = AccountProfileCharacterSet;
 module.exports.AccountProfileCharacter = AccountProfileCharacter;
 module.exports.AccountProfileCharacterInfo = AccountProfileCharacterInfo;
