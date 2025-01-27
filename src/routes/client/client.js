@@ -534,11 +534,10 @@ router.post('/profile/status', function(req, res, next) {
         account = AccountService.getAllAccounts()[0];
     }
 
-    let accountMode = AccountService.getAccountProfileByCurrentMode(account.accountId);
+    let accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
 
     if(!accountMode.characters || !accountMode.characters.pmc)
         throw new "PMC is missing!";
-
 
     const savageStatus = new ProfileStatus();
     savageStatus.profileid = accountMode.characters.scav._id;
@@ -562,6 +561,9 @@ router.post('/profile/status', function(req, res, next) {
     accountMode.characters.pmc.Health.BodyParts.RightLeg.Health.Maximum = 65;
     accountMode.characters.pmc.Health.BodyParts.LeftLeg.Health.Maximum = 65;
 
+    if(AccountService.recalculateLevel(accountMode.characters.pmc).hasChanged)
+        AccountService.saveAccount(account);
+
     bsgHelper.addBSGBodyInResponseWithData(res, response);
     next();
 });
@@ -579,17 +581,17 @@ router.post('/profile/status', function(req, res, next) {
  */
 router.post('/weather', function(req, res, next) {
 
+    const dt = new Date();
     let result = new LocationWeatherTime();
 
     const tomorrow = 1000 * 60 * 60 * 24;
     const stpetersbergtime = 1000 * 60 * 60 * 3;
-    const tarkovTime = new Date((stpetersbergtime + (date.getTime() * 7)) % tomorrow);
+    const tarkovTime = new Date((stpetersbergtime + (dt.getTime() * 7)) % tomorrow);
     
     const hoursText = tarkovTime.getHours() < 10 ? `0${tarkovTime.getHours()}` : tarkovTime.getHours();
     const minText = tarkovTime.getMinutes() < 10 ? `0${tarkovTime.getMinutes()}` : tarkovTime.getMinutes();
     const secondText = tarkovTime.getSeconds() < 10 ? `0${tarkovTime.getSeconds()}` : tarkovTime.getSeconds();
     
-    const dt = new Date();
     const dateOnlyString = dt.toISOString().slice(0, 10);
     result.date = `${dateOnlyString}`; 
     result.time = `${hoursText}:${minText}:${secondText}`; 

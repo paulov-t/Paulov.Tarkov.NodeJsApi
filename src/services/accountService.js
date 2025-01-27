@@ -10,6 +10,7 @@ const { UpdatableChatMember } = require('./../models/UpdatableChatMember');
 const { UpdatableChatMemberInfo } = require('./../models/UpdatableChatMemberInfo');
 const { logger } = require('./../classes/logger');
 const { InventoryService } = require('./InventoryService');
+const { DatabaseService } = require('./DatabaseService');
 
 class AccountService {
     constructor() {
@@ -465,6 +466,32 @@ class AccountService {
         chatMember.Info.MemberCategory = pmc.Info.MemberCategory;
         chatMember.Info.SelectedMemberCategory = pmc.Info.SelectedMemberCategory;
         return chatMember;
+    }
+
+    /**
+     * Recalculate level of player dependant on Experience. The client only updates Experience!
+     * @param {AccountProfileCharacter} profile
+     * @returns {Object} Recalculated newLevel of profile and hasChanged
+     */
+    recalculateLevel(profile) {
+        let accExp = 0;
+
+        const currentLevel = profile.Info.Level;
+
+        const database = DatabaseService.getDatabase();
+        const globalsResult = database.getData(database["globals"]);
+        const xpTable = globalsResult.config.exp.level.exp_table;
+        for (const [level, { exp }] of globalsResult.config.exp.level.exp_table.entries()) {
+            accExp += exp;
+
+            if (profile.Info.Experience < accExp) {
+                break;
+            }
+
+            profile.Info.Level = level + 1;
+        }
+
+        return { newLevel: profile.Info.Level, hasChanged: profile.Info.Level !== currentLevel };
     }
 
 }
