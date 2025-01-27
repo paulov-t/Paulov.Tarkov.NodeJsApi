@@ -307,6 +307,8 @@ class InventoryService {
         // TODO: Find a way to make this a much more performant 2D UInt8Array instead
         const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
         console.log(array2d);
+        const templatesItemData = _database.getData(global._database["templates"]["items"]);
+
         // Fill 2D Array with current Items
         for(const item of currentItems) {
             const itemLocation = item.location;
@@ -323,7 +325,10 @@ class InventoryService {
 
             // The specified spot is filled. This has not handled size yet...
             array2d[itemLocation.y][itemLocation.x] = 1;
-            console.log(item);
+
+            const itemTemplate = templatesItemData[item._tpl];
+            console.log(itemTemplate);
+            // for(var iWidth = itemLocation.x; i < itemLocation.x + itemTemplate._props.width )
         }
 
         return false;
@@ -338,6 +343,40 @@ class InventoryService {
             }
         }
         return array;
+    }
+
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} pmcProfile 
+     */
+    getStashContainerMap(pmcProfile) {
+        const stashXY = this.getPlayerStashSizeXAndY(pmcProfile);
+        const stash2d = this.create2DArray(stashXY.y, stashXY.x);
+        const templatesItemData = Database.getData(global._database["templates"]["items"]);
+        const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
+        if(pmcProfileStashItems.length > 0) {
+            for(const item of pmcProfileStashItems) {
+                const itemTemplate = templatesItemData[item._tpl];
+                let itemWidth = itemTemplate._props.Width;
+                let itemHeight = itemTemplate._props.Height;
+                for(const childItem of this.findChildItemsOfItemId(pmcProfile.Inventory.items, item._id)) {
+                    if(childItem && childItem._props && childItem._props.ExtraSizeLeft) {
+                        itemWidth += Math.max(itemWidth, childItem._props.ExtraSizeLeft + childItem._props.ExtraSizeRight);
+                        itemHeight += Math.max(itemHeight, childItem._props.ExtraSizeUp + childItem._props.ExtraSizeDown);
+                    }
+                }
+                for (let iWidth = item.location.x; iWidth < item.location.x + itemWidth; iWidth++) {
+                    for (let iHeight = item.location.y; iHeight < item.location.y + itemHeight; iHeight++) {
+                        stash2d[iHeight][iWidth] = 1
+                    }
+                }
+            }
+        }
+
+        // Note: handy if you want to debug the stash
+        // console.log(stash2d);
+        return stash2d;
     }
 
 
