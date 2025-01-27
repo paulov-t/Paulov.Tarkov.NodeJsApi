@@ -419,8 +419,10 @@ router.post('/local/end', function(req, res, next) {
 
     // =========================================================================
     // Replace Health on Player Profile
-    if (isPMC) 
+    if (isPMC) {
         myAccountByMode.characters.pmc.Health = newProfileToSave.Health;
+        AccountService.fixHealth(myAccount, myAccountByMode.characters.pmc);
+    }
     // END OF: Replace Health on Player Profile
     // =========================================================================
 

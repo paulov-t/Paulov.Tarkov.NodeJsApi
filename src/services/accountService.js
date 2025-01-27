@@ -494,6 +494,34 @@ class AccountService {
         return { newLevel: profile.Info.Level, hasChanged: profile.Info.Level !== currentLevel };
     }
 
+    /**
+     * Fixes the Health of the Character is something goes wrong. This is a strong assertion, it should never happen.
+     * @param {Account} account
+     * @param {AccountProfileCharacter} profile
+     * @returns {Boolean} hasChanged
+     */
+    fixHealth(account, profile) {
+
+        const database = DatabaseService.getDatabase();
+        const templateProfile = database.getData(database["templates"]["profiles"])[account.edition][profile.Info.Side.toLowerCase()]["character"];
+        templateProfile.Health.UpdateTime = Math.floor(new Date().getTime() / 1000);
+
+        let result = false;
+        for(const bpId in profile.Health.BodyParts) {
+            if(profile.Health.BodyParts[bpId].Health.Maximum !== templateProfile.Health.BodyParts[bpId].Health.Maximum) {
+                profile.Health.BodyParts[bpId].Health.Maximum = templateProfile.Health.BodyParts[bpId].Health.Maximum;
+                result = true;
+            }
+
+            if(!profile.Health.BodyParts[bpId].Health.Current || profile.Health.BodyParts[bpId].Health.Current == null) {
+                profile.Health.BodyParts[bpId].Health.Current =  profile.Health.BodyParts[bpId].Health.Maximum;
+                result = true;
+            }
+        }
+
+        return result;
+    }
+
 }
 
 module.exports.AccountService = new AccountService();

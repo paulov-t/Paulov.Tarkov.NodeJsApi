@@ -552,17 +552,15 @@ router.post('/profile/status', function(req, res, next) {
     );
 
 
-    // REMOVEME: Do general fixes here for any bugs or mistakes from code. I know this is a tad dumb but it helps when developing things, for now.
-    accountMode.characters.pmc.Health.BodyParts.Head.Health.Maximum = 35;
-    accountMode.characters.pmc.Health.BodyParts.Chest.Health.Maximum = 85;
-    accountMode.characters.pmc.Health.BodyParts.RightArm.Health.Maximum = 60;
-    accountMode.characters.pmc.Health.BodyParts.LeftArm.Health.Maximum = 60;
-    accountMode.characters.pmc.Health.BodyParts.Stomach.Health.Maximum = 70;
-    accountMode.characters.pmc.Health.BodyParts.RightLeg.Health.Maximum = 65;
-    accountMode.characters.pmc.Health.BodyParts.LeftLeg.Health.Maximum = 65;
+    
 
     if(AccountService.recalculateLevel(accountMode.characters.pmc).hasChanged)
         AccountService.saveAccount(account);
+
+
+    if(AccountService.fixHealth(account, accountMode.characters.pmc).hasChanged)
+        AccountService.saveAccount(account);
+    
 
     bsgHelper.addBSGBodyInResponseWithData(res, response);
     next();
