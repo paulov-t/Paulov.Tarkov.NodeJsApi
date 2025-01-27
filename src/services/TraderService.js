@@ -2,6 +2,7 @@ const { generateMongoId } = require("../bsgHelper");
 const { AccountProfileCharacter } = require("../models/Account");
 const { ECurrencyTemplates } = require("../models/Enums/ECurrencyTemplates");
 const { AccountService } = require("./AccountService");
+const { ContainerService } = require("./ContainerService");
 const { InventoryService } = require("./InventoryService");
 
 /**
@@ -47,6 +48,10 @@ class TraderService {
      * @returns {Boolean} Successfulness of the Transaction
      */
     givePlayerMoneyFromTrader(traderId, amount, accountProfileCharacter, profileChanges) {
+
+        if(amount < 1)
+            throw "parameter amount less than 1";
+
         const trader = this.getTrader(traderId);
         if (!trader)
             return false;
@@ -63,25 +68,39 @@ class TraderService {
         if (!currencyMaxStackSize)
             return false;
 
+        const stashId = accountProfileCharacter.Inventory.stash;
+
         const newCurrentItem = {
             _id: generateMongoId(),
             _tpl: currencyTemplateId,
             upd: { StackObjectsCount: Math.round(amount) },
+            slotId: 'hideout',
+            parentId: stashId
         };
 
         if (!newCurrentItem)
             return;
 
-        const stashId = InventoryService.getPlayerStashId(accountProfileCharacter);
-        const playerStashXandY = InventoryService
-                                .getPlayerStashSizeXAndY(
-                                    accountProfileCharacter);
-        const placementResult = InventoryService
-                                .placeItemIn2dContainer(
-                                    stashId
-                                    , playerStashXandY
-                                    , accountProfileCharacter.Inventory.items
-                                    , newCurrentItem);
+        const stashContainerMap = InventoryService.getStashContainerMap(accountProfileCharacter);
+        const placementResult = ContainerService
+                                .findSpotForItem(stashContainerMap,
+                                    templateItem._props.Width,
+                                    templateItem._props.Height
+                                );
+
+        if(placementResult && placementResult.success) {
+            newCurrentItem.location = {};
+            newCurrentItem.location.x = placementResult.x;
+            newCurrentItem.location.y = placementResult.y;
+            newCurrentItem.location.r = !placementResult.rotation ? 0 : 1,
+            newCurrentItem.location.rotation = placementResult.rotation 
+        }
+
+        // Finally
+        // , add the item to the Client callback
+        profileChanges.items.new.push(newCurrentItem);
+        // , add the item to the Server record
+        accountProfileCharacter.Inventory.items.push(newCurrentItem);
 
         return placementResult;
 
