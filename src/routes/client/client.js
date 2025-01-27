@@ -579,33 +579,23 @@ router.post('/profile/status', function(req, res, next) {
  */
 router.post('/weather', function(req, res, next) {
 
-    // let result = { acceleration: 1, time: "", date: "", weather: undefined, season: 1 }; 
-    const date = new Date();
-    // const year = new Date().getUTCFullYear();
-    // result.date = `${year}-01-01`
-    // result.time = bsgHelper.getInRaidTime(undefined);
-
-    const hoursText = date.getHours() < 10 ? `0${date.getHours()}` : date.getHours();
-    // result.time = `${result.date} ${hoursText}:00:00`; 
-    // result.weather = { 
-    //     cloud: 0,
-    //     wind_speed: 0,
-    //     wind_direction: 1,
-    //     wind_gustiness: 0,
-    //     rain: 0,
-    //     rain_intensity: 0,
-    //     fog: 0,
-    //     temp: 0,
-    //     pressure: 0,
-    //     time: result.time,
-    //     date: `${year}-01-01`,
-    //     timestamp: 0
-    // }
-    // console.log(result);
-
     let result = new LocationWeatherTime();
-    result.time = `${hoursText}:00:00`; 
-console.log(result);
+
+    const tomorrow = 1000 * 60 * 60 * 24;
+    const stpetersbergtime = 1000 * 60 * 60 * 3;
+    const tarkovTime = new Date((stpetersbergtime + (date.getTime() * 7)) % tomorrow);
+    
+    const hoursText = tarkovTime.getHours() < 10 ? `0${tarkovTime.getHours()}` : tarkovTime.getHours();
+    const minText = tarkovTime.getMinutes() < 10 ? `0${tarkovTime.getMinutes()}` : tarkovTime.getMinutes();
+    const secondText = tarkovTime.getSeconds() < 10 ? `0${tarkovTime.getSeconds()}` : tarkovTime.getSeconds();
+    
+    const dt = new Date();
+    const dateOnlyString = dt.toISOString().slice(0, 10);
+    result.date = `${dateOnlyString}`; 
+    result.time = `${hoursText}:${minText}:${secondText}`; 
+    result.weather.time = `${result.date} ${result.time}`;
+    result.weather.timestamp = Math.floor(tarkovTime / 1000)
+    // console.log(result);
     bsgHelper.addBSGBodyInResponseWithData(res, result);
     next();
 });

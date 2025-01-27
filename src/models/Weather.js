@@ -11,13 +11,8 @@ class Weather {
         this.temp = 2.7;
         this.pressure = 100;
         const dt = new Date();
-        // console.log(dt);
-        // console.log(dt.toISOString());
         const dateOnlyString = dt.toISOString().slice(0, 10);
-        // console.log(dateOnlyString);
         const dateTimeString = dt.toISOString().replace("T", " ").replace("Z", "").slice(0, 19);
-        // console.log(dateTimeString);
-        // this.date = `${dt.getFullYear()}-01-01`;
         this.date = `${dateOnlyString}`;
         this.time = `${dateTimeString}`;
         this.timestamp = Math.floor(dt.getTime() / 1000)
