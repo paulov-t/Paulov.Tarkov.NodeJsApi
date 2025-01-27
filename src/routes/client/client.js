@@ -876,7 +876,8 @@ router.post('/quest/list', function(req, res, next) {
 
 
     const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    const playerQuests = [];// accountMode.characters.pmc.Quests;
+    const playerQuests = [];
+    const pmcProfile = accountMode.characters.pmc;
 
     for (const questId in allQuests) {
         const quest = allQuests[questId];
@@ -910,6 +911,14 @@ router.post('/quest/list', function(req, res, next) {
                                 if(targetQuest.status !== "Success") {
                                     available = false;
                                 }
+                            }
+                            break;
+                        case 'Level':
+                            switch (afsCondition.compareMethod) {
+                                case '>=':
+                                    if (pmcProfile.Info.Level < afsCondition.value)
+                                        available = false;
+                                    break;
                             }
                             break;
                     }
