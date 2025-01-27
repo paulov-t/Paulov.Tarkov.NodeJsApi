@@ -9,6 +9,8 @@ const { TraderAssort } = require('./../../models/TraderAssort');
  * @swagger
  * /client/trading/api/getTraderAssort/{traderId}:
  *   post:
+ *     tags:
+ *      - Trading
  *     summary: 
  *     parameters:
  *      - name: traderId
@@ -64,6 +66,8 @@ router.post('/getTraderAssort/:traderId', function(req, res, next) {
 /**
  * @swagger
  * /client/trading/api/getTraders:
+ *   tags:
+ *     - Trading
  *   post:
  *     summary: Paulov's Custom Endpoint to get all trader's name and Ids
  *     responses:
