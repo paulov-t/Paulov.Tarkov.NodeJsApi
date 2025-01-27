@@ -109,6 +109,9 @@ router.post('/moving', function(req, res, next) {
             case 'HideoutUpgradeComplete':
                 processHideoutUpgradeCompleteAction(account, action, result);
                 break;
+            case 'Merge':
+                processMergeAction(account, action, result);
+                break;
             case 'Move':
                 processMoveAction(account, action, result);
                 break;
@@ -127,11 +130,17 @@ router.post('/moving', function(req, res, next) {
             case 'TradingConfirm':
                 processTradingConfirm(account, action, result);
                 break;
+            case 'Transfer':
+                processTransfer(account, action, result);
+                break;
             case 'QuestHandover':
                 processQuestHandover(account, action, result);
                 break;
         }
     }
+
+
+    result.profileChanges[account.accountId].traderRelations = updateTraderRelations(account);
 
     AccountService.saveAccount(account);
     
@@ -239,6 +248,48 @@ function processMoveAction(account, action, outputChanges) {
     // outputChanges.profileChanges[account.accountId].items.change.push(matchingInventoryItem);
     return result;
 }
+
+function processMergeAction(account, action, outputChanges) {
+
+    outputChanges.profileChanges[account.accountId].items = {};
+    const result = { success: true, error: undefined };
+    // console.log(action);
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    // const accountInventory = accountProfile.characters.pmc.Inventory;
+    // console.log(accountInventory);
+    const inventoryItems = accountProfile.characters.pmc.Inventory.items;
+
+    // From
+    const matchingInventoryItemIndex = inventoryItems.findIndex((item) => item._id === action.item);
+    const matchingInventoryItem = inventoryItems.find((item) => item._id === action.item);
+    if (!matchingInventoryItem) {
+        result.success = false;
+        result.error = "Couldn't find item in player";
+        return result;
+    }
+
+    const amountFrom = matchingInventoryItem.upd.StackObjectsCount;
+
+    // To
+    const matchingInventoryItemTo = inventoryItems.find((item) => item._id === action.with);
+    if (!matchingInventoryItemTo) {
+        result.success = false;
+        result.error = "Couldn't find item in player";
+        return result;
+    }
+
+    const amountTo = matchingInventoryItemTo.upd.StackObjectsCount;
+    const newAmount = Math.ceil(amountFrom + amountTo);
+
+    matchingInventoryItemTo.upd.StackObjectsCount = newAmount;
+
+    // finally, remove the merged from item from the player's inventory
+    inventoryItems.splice(matchingInventoryItemIndex, 1);
+
+    return result;
+}
+
 
 function processRestoreHealth(account, action, outputChanges) {
 
@@ -459,13 +510,13 @@ function sellToTrader(account, action, outputChanges) {
             money += price;
 
             // This will remove the item from the Server.
-            // inventory.splice(itemInInventory, 1);
             InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemInInventory._id);
         }
 
     }
 
     TraderService.givePlayerMoneyFromTrader(traderId, money, pmcProfile, outputChanges.profileChanges[pmcProfile._id]);
+    pmcProfile.TradersInfo[traderId].salesSum += money;
 
     return result;
 }
@@ -513,6 +564,67 @@ function processQuestHandover(account, action, outputChanges) {
             };
         }
     }
+    return result;
+}
+
+function updateTraderRelations(account) {
+
+   const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+
+    const result = {};
+    for (const traderId in accountMode.characters.pmc.TradersInfo) {
+        const baseData = accountMode.characters.pmc.TradersInfo[traderId];
+        result[traderId] = {
+            salesSum: baseData.salesSum,
+            disabled: baseData.disabled,
+            loyalty: baseData.loyaltyLevel,
+            standing: baseData.standing,
+            unlocked: baseData.unlocked,
+        };
+    }
+    return result;
+}
+
+function processTransfer(account, action, outputChanges) {
+
+    outputChanges.profileChanges[account.accountId].items = {};
+    const result = { success: true, error: undefined };
+    // console.log(action);
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    // const accountInventory = accountProfile.characters.pmc.Inventory;
+    // console.log(accountInventory);
+    const inventoryItems = accountProfile.characters.pmc.Inventory.items;
+
+    // From
+    const matchingInventoryItemIndex = inventoryItems.findIndex((item) => item._id === action.item);
+    const matchingInventoryItem = inventoryItems.find((item) => item._id === action.item);
+    if (!matchingInventoryItem) {
+        result.success = false;
+        result.error = "Couldn't find item in player";
+        return result;
+    }
+
+    const amountFrom = action.count;
+    matchingInventoryItem.upd.StackObjectsCount = Math.ceil(matchingInventoryItem.upd.StackObjectsCount - action.count);
+
+    // To
+    const matchingInventoryItemTo = inventoryItems.find((item) => item._id === action.with);
+    if (!matchingInventoryItemTo) {
+        result.success = false;
+        result.error = "Couldn't find item in player";
+        return result;
+    }
+
+    const amountTo = matchingInventoryItemTo.upd.StackObjectsCount;
+    const newAmount = Math.ceil(amountFrom + amountTo);
+
+    matchingInventoryItemTo.upd.StackObjectsCount = newAmount;
+
+    // finally, if the amount of the merged item is now 0 or less, remove the from item from the player's inventory
+    if (matchingInventoryItem.upd.StackObjectsCount < 1) 
+        inventoryItems.splice(matchingInventoryItemIndex, 1);
+
     return result;
 }
 
