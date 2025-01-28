@@ -1,52 +1,45 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Paulov Tarkov WebServer - Ammo Table</title>
-    <link rel='stylesheet' href='https://bootswatch.com/5/darkly/bootstrap.min.css' />
-    <link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
-  </head>
-  <body>
-    <%- include('navbar.ejs') %>
-    <div class="container">
-      <h1>Ammo</h1>
-      <div>
-          <table id="myTable">
-            <thead>
-              <tr>
-                  <th>Template Id</th>
-                  <th>Name</th>
-                  <th>Caliber</th>
-                  <th>Damage</th>
-                  <th>Armor Damage</th>
-                  <th>Penetration</th>
-                  <th>Rating</th>
-              </tr>
-            </thead>
-          </table>
-      </div>
-    </div>
-    
-    <!-- Add JQUERY -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="//cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
-    <script>
-        // let table = new DataTable('#myTable');
-        $('#myTable').DataTable({
-            "ajax": {
-              "url": '/itemSearch/getAmmo/',
-              "type": "POST"
-            },
-            columns: [
-              { data: 'itemId' },
-              { data: 'langItem' },
-              { data: 'caliber' },
-              { data: 'damage' },
-              { data: 'armorDamage' },
-              { data: 'penetration' },
-              { data: 'rating' }
-            ]
-        });
 
-    </script>
-  </body>
-</html>
+<link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
+<%- include('header.ejs') %>
+<div class="container">
+  <h1>Ammo</h1>
+  <div>
+      <table id="myTable">
+        <thead>
+          <tr>
+              <th>Template Id</th>
+              <th>Name</th>
+              <th>Caliber</th>
+              <th>Damage</th>
+              <th>Armor Damage</th>
+              <th>Penetration</th>
+              <th>Rating</th>
+          </tr>
+        </thead>
+      </table>
+  </div>
+</div>
+
+<!-- Add JQUERY -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="//cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+<script>
+    // let table = new DataTable('#myTable');
+    $('#myTable').DataTable({
+        "ajax": {
+          "url": '/itemSearch/getAmmo/',
+          "type": "POST"
+        },
+        columns: [
+          { data: 'itemId' },
+          { data: 'langItem' },
+          { data: 'caliber' },
+          { data: 'damage' },
+          { data: 'armorDamage' },
+          { data: 'penetration' },
+          { data: 'rating' }
+        ]
+    });
+
+</script>
+<%- include('footer.ejs') %>

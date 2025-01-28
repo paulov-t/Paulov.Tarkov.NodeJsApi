@@ -2,40 +2,50 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
-var packageJson =  require('./../package.json');
+const { getRenderViewModel } = require('../classes/shared');
+const { AccountService } = require('../services/AccountService');
+
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
   console.log(process.env);
 
-  const serverMode = process.env && process.env.ServerMode ? process.env.ServerMode : "Dev";
+  const vm = getRenderViewModel(req);
+  if (vm.loggedIn)
+    vm.loggedInUN = AccountService.getAccount(req.SessionId).username;
 
-  const appVersion = packageJson.version;
-
-  res.render('index', { title: 'Paulov-t Tarkov Web Server', serverMode: serverMode, appVersion: appVersion });
+  res.render('index', vm);
 });
 
 /* GET Item Search page. */
 router.get('/itemSearch', function(req, res, next) {
 
-  res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
+  res.render('itemSearch', getRenderViewModel(req));
 });
 
 /* GET Item Search page. */
 router.get('/ammo', function(req, res, next) {
 
-  res.render('ammo', { title: 'Paulov-t Tarkov Web Server' });
+  res.render('ammo', getRenderViewModel(req));
 });
 
 router.get('/items', function(req, res, next) {
 
-  res.render('itemSearch', { title: 'Paulov-t Tarkov Web Server' });
+  res.render('itemSearch', getRenderViewModel(req));
 });
 
 router.get('/login', function(req, res, next) {
 
-  res.render('login', { title: 'Paulov-t Tarkov Web Server' });
+  res.render('login', getRenderViewModel(req));
+});
+
+router.get('/logout', function(req, res, next) {
+
+  res.clearCookie("PHPSESSID");
+
+  res.redirect('./');
 });
 
 module.exports = router;

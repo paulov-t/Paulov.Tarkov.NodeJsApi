@@ -14,7 +14,7 @@ var { Database } = require('./../classes/database');
  *       200:
  *         description: A successful response
  */
-router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
+router.post('/getItemEnglishNameAndTpl/', async function(req, res, next) {
     
     // console.log(req.body);
     /**
@@ -116,7 +116,7 @@ router.post('/getItemEnglishNameAndTpl/', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/getAmmo/', function(req, res, next) {
+router.post('/getAmmo/', async function(req, res, next) {
     
     function calcAmmo(item) {
 

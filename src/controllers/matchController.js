@@ -213,7 +213,6 @@ router.post('/group/invite/accept', function(req, res, next) {
 router.post('/group/invite/cancel-all', function(req, res, next) {
 
     const requestBody = req.body;
-    console.log(requestBody);
     const sessionId = req.SessionId;
     const myAccount = AccountService.getAccount(sessionId);
     const myAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);

@@ -1,26 +1,36 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
-    <div class="container">
-      <a class="navbar-brand" href="/">Paulov-t</a>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/api-docs">Swagger API Docs</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/ammo">Ammo</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/items">Items</a>
-          </li>
-        </ul>
-      </div>
-      <div class="d-flex">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/login">Login</a>
-          </li>
-        </ul>
-      </form>
+  <div class="container">
+    <a class="navbar-brand" href="/">Paulov-t</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/api-docs">Swagger API Docs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/ammo">Ammo</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/items">Items</a>
+        </li>
+      </ul>
     </div>
+    <div class="d-flex">
+      <ul class="navbar-nav mr-auto">
+          <% if (!loggedIn) { %>
+            <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+          <% } else if (loggedInUN !== undefined) { %>
+          <li class="nav-item">
+          <a class="nav-link" href="/user/details"><%= loggedInUN %></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">logout</a>
+        </li>
+
+          <% } %>
+      </ul>
+    </form>
+  </div>
     
-  </nav>
+</nav>
