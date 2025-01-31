@@ -1,20 +1,17 @@
 <%- include('header.ejs') %>
-<div class="container-fluid">
+<div class="container-fluid mt-5">
   <div class="container">
-    <h1><%= title %></h1>
-    <h4>Welcome to <%= title %></h4>
-    <p>Server Mode is: <%= serverMode %></p>
-    <p>App Version is: <%= appVersion %></p>
-    <ul>
-      <li><a href="https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi">GitHub</a></li>
-      <li><a href="/api-docs">Swagger API Docs</a></li>
-      <li><a href="/ammo">Ammo</a></li>
-      <li><a href="/items">Items</a></li>
-    </ul>
+    <div class="text-center" >
+      <h1><%= title %></h1>
+      <h4>Welcome to <%= title %></h4>
+      <p>Server Mode is: <%= serverMode %></p>
+      <p>App Version is: <%= appVersion %></p>
+    </div>
+    <hr>
     <p>
       <h4>Disclaimer</h4>
       <ul>
-        <li>This is a purely a for fun / personal learning for me against a real world scenario.</li>
+        <li>This is a purely a for fun and personal learning for me against a real world scenario using NodeJS.</li>
         <li>This is not designed to replace Official Tarkov PvE. Please play Official Tarkov PvE!</li>
         <li>This is not designed to replace SP-Tarkov.</li>
         <li>Your save data is not safe and could be deleted at any time.</li>

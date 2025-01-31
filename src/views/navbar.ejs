@@ -27,11 +27,12 @@
           <a class="nav-link" href="/login">Login</a>
         </li>
           <% } else if (typeof loggedInUN !== 'undefined') { %>
-          <li class="nav-item">
-          <a class="nav-link" href="/user/details"><%= loggedInUN %></a>
+        <li class="nav-item">
+            
+            <a class="nav-link" href="/user/details"><i class="fa-solid fa-user"></i>&nbsp;<%= loggedInUN %></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/logout">logout</a>
+          <a class="nav-link" href="/logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>&nbsp;logout</a>
         </li>
 
           <% } %>

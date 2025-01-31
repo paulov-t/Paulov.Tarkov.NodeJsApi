@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Paulov Tarkov WebServer - Item Table</title>
-    <link rel='stylesheet' href='https://bootswatch.com/5/darkly/bootstrap.min.css' />
-    <link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
-  </head>
-  <body>
-    <%- include('navbar.ejs') %>
-    <div class="container">
+
+    <%- include('header.ejs') %>
+<link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
+<div class="container">
     <h1>Items</h1>
     <div>
         <table id="myTable">
@@ -47,5 +41,4 @@
         });
 
     </script>
-  </body>
-</html>
+<%- include('footer.ejs') %>
