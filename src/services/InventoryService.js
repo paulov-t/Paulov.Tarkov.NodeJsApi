@@ -390,7 +390,7 @@ class InventoryService {
         }
 
         // Note: handy if you want to debug the stash
-        console.log(stash2d);
+        // console.log(stash2d);
         return stash2d;
     }
 
