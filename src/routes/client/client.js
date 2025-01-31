@@ -20,6 +20,7 @@ const { Weather } = require('../../models/Weather');
 const { logger } = require('../../classes/logger');
 const { LootGenerationService } = require('../../services/LootGenerationService');
 const { LocationService } = require('../../services/LocationService');
+const { EQuestStatus } = require('../../models/Enums/EQuestStatus');
 
 
 /**
@@ -882,6 +883,10 @@ router.post('/quest/list', function(req, res, next) {
     for (const questId in allQuests) {
         const quest = allQuests[questId];
 
+        // if (quest.QuestName === 'Shortage') {
+        //     console.log(quest);
+        // }
+
         // quest already exists in Profile
         const questInProfile = accountMode.characters.pmc.Quests.find((x) => x.qid === quest._id);
         if (questInProfile) {
@@ -900,6 +905,7 @@ router.post('/quest/list', function(req, res, next) {
         if(quest.conditions.AvailableForStart.length > 0) {
             let available = true;
             // console.log(quest.conditions.AvailableForStart);
+            // console.log(quest.QuestName);
 
             for(const afsCondition of quest.conditions.AvailableForStart) {
                 // console.log(afsCondition);
@@ -907,9 +913,18 @@ router.post('/quest/list', function(req, res, next) {
                     switch (afsCondition.conditionType) {
                         case 'Quest':
                             if (allQuests[afsCondition.target]) {
+
                                 const targetQuest = allQuests[afsCondition.target];
-                                if(targetQuest.status !== "Success") {
+                                if (!targetQuest)
+                                    continue;
+
+                                const profileQuest = pmcProfile.Quests.find(x => x.qid == targetQuest._id);
+                                if (!profileQuest)
                                     available = false;
+                                else {
+                                    if(profileQuest.status !== "Success") {
+                                        available = false;
+                                    }
                                 }
                             }
                             break;
@@ -925,13 +940,23 @@ router.post('/quest/list', function(req, res, next) {
                 }
             }
 
-            if(available)
+            if(available) {
+                const profileQuest = pmcProfile.Quests.find(x => x.qid == quest._id);
+                if (profileQuest) {
+                    if (profileQuest.status != EQuestStatus.AvailableForStart)
+                        profileQuest.status = EQuestStatus.AvailableForStart;
+                }
+                else {
+                    logger.logError(`profileQuest ${quest.QuestName} doesn't exist.`);
+
+                }
                 playerQuests.push(quest);
+            }
             continue;
         }
     }
 
-    console.log(playerQuests);
+    // console.log(playerQuests);
 
     let updatedQuests = false;
     for(const quest of playerQuests) {
@@ -1404,65 +1429,6 @@ router.post('/getMetricsConfig', function(req, res, next) {
     next();
 });
 
-/**
- * @swagger
- * /client/match/local/start:
- *   post:
- *     tags:
- *     - Client
- *     summary: 
- *     requestBody:
- *      required: true
- *      content:
- *       application/json:
- *          schema:
- *           type: object
- *           properties:
- *            location:
- *              type: string
- *              default: factory4_day
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/match/local/start', async function(req, res, next) {
-
-    if (!req.body.location)
-        throw `expected location in request body`
-
-    const location = req.body.location.toLowerCase();
-    if (!Database.locations[location]) {
-        console.log(Database.locations);
-        throw `${location} doesn't exist in Database.locations`
-    }
-
-    const result = new LocalMatchStartResponse(location);
-    result.locationLoot = new LocationService().getLocationByLocationName(location);
-
-    // generate temporary instance
-    let lootGenService = new LootGenerationService();
-    // Add Loot
-    result.locationLoot.Loot = lootGenService.Generate(result.locationLoot);
-    // Release the instance
-    delete lootGenService;
-
-    // Add Insured Items
-    if (req.SessionId) {
-        const account = AccountService.getAccount(req.SessionId);
-        if(account) {
-            const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-            const insuredItems = accountProfile.characters?.pmc?.InsuredItems;
-            if (insuredItems)
-                result.profile.insuredItems = insuredItems;
-
-            AccountService.saveAccount(account);
-        }
-    }
-
-    bsgHelper.getBody(res, result);
-
-    next();
-});
 
 /**
  * @swagger

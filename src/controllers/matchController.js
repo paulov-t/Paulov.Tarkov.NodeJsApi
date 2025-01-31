@@ -26,6 +26,10 @@ const { ENotificationType } = require('../models/ENotificationType');
 const { WebSocketService } = require('./../services/WebSocketService');
 const { GroupInvite } = require('../models/GroupInvite');
 
+const { BotGenerationService } = require('../services/BotGenerationService');
+const { LocationService } = require('../services/LocationService');
+const { LootGenerationService } = require('../services/LootGenerationService');
+
 
 /**
  * @swagger
@@ -470,6 +474,69 @@ router.post('/local/end', function(req, res, next) {
     AccountService.saveAccount(myAccount);
     logger.logSuccess(`Saved account ${myAccount.accountId}!`)
     
+    bsgHelper.getBody(res, result);
+
+    next();
+});
+
+
+/**
+ * @swagger
+ * /client/match/local/start:
+ *   post:
+ *     tags:
+ *     - Client
+ *     summary: 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *          schema:
+ *           type: object
+ *           properties:
+ *            location:
+ *              type: string
+ *              default: factory4_day
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/local/start', async function(req, res, next) {
+
+    if (!req.body.location)
+        throw `expected location in request body`
+
+    const location = req.body.location.toLowerCase();
+    if (!Database.locations[location]) {
+        console.log(Database.locations);
+        throw `${location} doesn't exist in Database.locations`
+    }
+
+    const result = new LocalMatchStartResponse(location);
+    result.locationLoot = new LocationService().getLocationByLocationName(location);
+
+    let botGenService = BotGenerationService;
+
+    // generate temporary instance
+    let lootGenService = new LootGenerationService();
+    // Add Loot
+    result.locationLoot.Loot = lootGenService.Generate(result.locationLoot);
+    // Release the instance
+    delete lootGenService;
+
+    // Add Insured Items
+    if (req.SessionId) {
+        const account = AccountService.getAccount(req.SessionId);
+        if(account) {
+            const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+            const insuredItems = accountProfile.characters?.pmc?.InsuredItems;
+            if (insuredItems)
+                result.profile.insuredItems = insuredItems;
+
+            AccountService.saveAccount(account);
+        }
+    }
+
     bsgHelper.getBody(res, result);
 
     next();
