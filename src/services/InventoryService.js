@@ -361,17 +361,28 @@ class InventoryService {
         const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
         if(pmcProfileStashItems.length > 0) {
             for(const item of pmcProfileStashItems) {
+
+                if(item._tpl === '59984ab886f7743e98271174') {
+                    console.log(item);
+                }
+
                 const itemTemplate = templatesItemData[item._tpl];
                 let itemWidth = itemTemplate._props.Width;
                 let itemHeight = itemTemplate._props.Height;
+                let itemPositionUp = 0;
+                let itemPositionLeft = 0;
                 for(const childItem of this.findChildItemsOfItemId(pmcProfile.Inventory.items, item._id)) {
-                    if(childItem && childItem._props && childItem._props.ExtraSizeLeft) {
-                        itemWidth += Math.max(itemWidth, childItem._props.ExtraSizeLeft + childItem._props.ExtraSizeRight);
-                        itemHeight += Math.max(itemHeight, childItem._props.ExtraSizeUp + childItem._props.ExtraSizeDown);
+                    const childItemTemplate = templatesItemData[childItem._tpl];
+
+                    if(childItemTemplate && childItemTemplate._props) {
+                        itemPositionUp -= childItemTemplate._props.ExtraSizeUp ?? 0;
+                        itemPositionLeft -= childItemTemplate._props.ExtraSizeLeft ?? 0;
+                        itemWidth = Math.max(itemWidth, itemWidth + childItemTemplate._props.ExtraSizeLeft + childItemTemplate._props.ExtraSizeRight);
+                        itemHeight = Math.max(itemHeight, itemHeight + childItemTemplate._props.ExtraSizeUp + childItemTemplate._props.ExtraSizeDown);
                     }
                 }
-                for (let iWidth = item.location.x; iWidth < item.location.x + itemWidth; iWidth++) {
-                    for (let iHeight = item.location.y; iHeight < item.location.y + itemHeight; iHeight++) {
+                for (let iWidth = item.location.x - itemPositionLeft; iWidth < item.location.x + itemWidth; iWidth++) {
+                    for (let iHeight = item.location.y - itemPositionUp; iHeight < item.location.y + itemHeight; iHeight++) {
                         stash2d[iHeight][iWidth] = 1
                     }
                 }
@@ -379,7 +390,7 @@ class InventoryService {
         }
 
         // Note: handy if you want to debug the stash
-        // console.log(stash2d);
+        console.log(stash2d);
         return stash2d;
     }
 

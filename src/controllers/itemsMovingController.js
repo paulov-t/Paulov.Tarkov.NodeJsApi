@@ -492,8 +492,12 @@ function sellToTrader(account, action, outputChanges) {
                 continue;
 
             // This will remove the item from the Client.
-            if (itemInInventory.slotId == 'hideout')
+            if (itemInInventory.slotId == 'hideout') {
+                if (typeof outputChanges.profileChanges[pmcProfile._id].items.del === "undefined") 
+                    outputChanges.profileChanges[pmcProfile._id].items.del = [];
+
                 outputChanges.profileChanges[pmcProfile._id].items.del.push(itemInInventory);
+            }
 
             if (!templatePrices[itemInInventory._tpl])
                 continue;
