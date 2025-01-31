@@ -23,6 +23,14 @@ class Database {
         this.zip = undefined;
         this.databaseFilePath = "";
         this.initialised = false;
+
+        /**
+         * Cached database items. Try to avoid doing this unless necessary for performance!
+         */
+        this.cached = {
+          "templates": [],
+          "templatesByParentId": {}
+        }
     }
 
     readZipArchiveIntoMemory(filepath) {
@@ -176,8 +184,47 @@ class Database {
     getTemplateItems() {
         const db = global._database;
         const dbResult = db.getData(db["templates"]["items"]);
+        this.cacheTemplatesByParentId(dbResult);
         return dbResult;
     }
+
+    /**
+     * 
+     * @returns 
+     */
+    getTemplateItemsAsArray() {
+      
+      if(this.cached.templates.length > 0) 
+        return this.cached.templates;
+
+      const db = global._database;
+      const dbResult = db.getData(db["templates"]["items"]);
+      for(const id in dbResult) {
+        const item = dbResult[id];
+        this.cached.templates.push(item);
+      }
+      this.cacheTemplatesByParentId(dbResult);
+
+      return this.cached.templates;
+  }
+
+  cacheTemplatesByParentId(dbResult) {
+    for(const id in dbResult) {
+      const item = dbResult[id];
+
+      if(this.cached.templates.findIndex(x => x._id === id) === -1)
+        this.cached.templates.push(item);
+
+      if (item._parent === '') 
+        continue;
+
+      if (this.cached.templatesByParentId[item._parent] === undefined)
+        this.cached.templatesByParentId[item._parent] = []
+
+      if(this.cached.templatesByParentId[item._parent].findIndex(x => x === id) === -1)
+        this.cached.templatesByParentId[item._parent].push(id);
+    }
+  }
 
     /**
      * 

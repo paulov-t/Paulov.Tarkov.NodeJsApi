@@ -12,7 +12,14 @@ const { Database } = require("../classes/database");
  */
 class BotGenerationService {
     constructor() {
+        /**
+         * @type {AccountProfileCharacter}
+         */
+        this.baseBot = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString()).scav;
+    }
 
+    generateAllBots() {
+        
     }
 
     /**
@@ -22,6 +29,8 @@ class BotGenerationService {
      */
     generateBot(condition) {
 
+        const startTime = Date.now();
+
         if(condition.Role === 'playerscav') {
             condition.Role = 'assault';
         }
@@ -29,7 +38,8 @@ class BotGenerationService {
         /**
          * @type {AccountProfileCharacter}
          */
-        const bot = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString()).scav;
+        // const bot = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString()).scav;
+        const bot = JSON.parse(JSON.stringify(this.baseBot));
         bot._id = generateMongoId();
         bot.aid = generateMongoId();
         bot.Info.Side = condition.Role.includes("pmcBEAR") ? "Bear" : condition.Role.includes("pmcUSEC") ? "Usec" : "Savage";
@@ -54,7 +64,7 @@ class BotGenerationService {
         // console.log(Database.bots);
         // console.log(Database.bots.types[lowerRole]);
         const botDatabaseData = Database.getData(Database.bots.types[lowerRole]);
-        console.log(botDatabaseData);
+        // console.log(botDatabaseData);
 
         // Setup the bot's Face, Body, Hands, Feet
         const headKeys = Object.keys(botDatabaseData.appearance.head);
@@ -78,6 +88,27 @@ class BotGenerationService {
         this.generateBotLevel(bot);
 
         // Generate the bot's inventory
+
+        // Remove the Pocket 1
+        InventoryService.removeItemFromSlot(bot, "pocket1");
+        if (bot.Info.Side !== "Savage") {
+            // Add Army bandage
+            const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
+            pocket1Item.location = { 
+                x: 0
+                , y: 0
+                , r: 0
+                , "isSearched": false };
+        }
+
+        // Remove the Pocket 2
+        InventoryService.removeItemFromSlot(bot, "pocket2");
+
+        // Remove the Pocket 3
+        InventoryService.removeItemFromSlot(bot, "pocket3");
+
+        // Remove the Pocket 4
+        InventoryService.removeItemFromSlot(bot, "pocket4");
 
         // Remove the Armband
         InventoryService.removeItemFromSlot(bot, "Armband");
@@ -111,6 +142,10 @@ class BotGenerationService {
         InventoryService.updateInventoryEquipmentId(bot);
         bot.Inventory.items = InventoryService.replaceIDs(bot.Inventory.items, bot, undefined, undefined);
         
+
+        const endTime = Date.now()
+        console.log(`${endTime - startTime}ms`);
+
         return bot;
     }
 
@@ -121,6 +156,8 @@ class BotGenerationService {
      * @returns 
      */
     addBackpack(condition, bot) {
+
+        const startTime = Date.now();
        
         let backpackChance = 69;
         switch(condition.Role) {
@@ -141,7 +178,7 @@ class BotGenerationService {
 
         const availableBackpacks = InventoryService
             .getAllAvailableBackpacks()
-            .filter(x => Database.getTemplateItemPrice(x._id))
+            // .filter(x => Database.getTemplateItemPrice(x._id))
             .map(x => ({ item: x, p: Database.getTemplateItemPrice(x._id) }))
             .sort((a, b) => { return a.p < b.p ? -1 : 1 });
         
@@ -163,6 +200,11 @@ class BotGenerationService {
         // Add a new Backpack (by chance)
         // console.log(chosenBackpack);
         InventoryService.addTemplatedItemToSlot(bot, chosenBackpack.item._id, "Backpack");
+
+
+        const endTime = Date.now();
+        console.log(`addBackpack: ${endTime - startTime}ms`);
+
     }
 
     /**
@@ -210,11 +252,41 @@ class BotGenerationService {
             return;
 
         // TODO: Make this more dynamic to the Accounts on the Server
-        bot.Info.Level = this.randomInteger(1, 50);
+        // bot.Info.Level = this.randomInteger(1, 50);
+        // bot.Info.Experience = this.getNeededXPFromLvl(bot.Info.Level);
+
     }
 
     randomInteger(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * 
+     * @param {Number} level
+     * @returns {Number} 
+     */
+    getNeededXPFromLvl(level) {
+        const globalsResult = Database.getData(Database["globals"]);
+        const xpTable = globalsResult.config.exp.level.exp_table;
+       
+        return xpTable[level];
+    }
+
+    /**
+     * 
+     * @param {Number} xp
+     * @returns {Number} 
+     */
+    convertXPToLevel(xp) {
+        const globalsResult = Database.getData(Database["globals"]);
+        /**
+         * @type {Array}
+         */
+        const xpTable = globalsResult.config.exp.level.exp_table;
+       
+        const resultXP = xpTable.find(x => x == xp);
+        return resultXP;
     }
 
 }

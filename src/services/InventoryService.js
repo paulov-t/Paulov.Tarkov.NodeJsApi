@@ -60,6 +60,7 @@ class InventoryService {
      * @param {AccountProfileCharacter} profile 
      * @param {String} templateId 
      * @param {String} slotId 
+     * @returns {Object} new Inventory Item 
      */
     addTemplatedItemToSlot(profile, templateId, slotId) {
         if (!profile)
@@ -76,15 +77,18 @@ class InventoryService {
         if (!template)
             return;
 
+        const resultingNewItem = {
+            "_id": bsgHelper.generateMongoId(),
+            "_tpl": templateId,
+            "slotId": slotId,
+            "parentId": profile.Inventory.equipment
+        };
+
         profile.Inventory.items.push(
-            {
-                "_id": bsgHelper.generateMongoId(),
-                "_tpl": templateId,
-                "slotId": slotId,
-                "parentId": profile.Inventory.equipment
-            }
+            resultingNewItem
         );
 
+        return resultingNewItem;
     }
 
     /**
@@ -387,15 +391,8 @@ class InventoryService {
     }
 
     getAllAvailableItemOptionsByParentId(parentId) {
-        const templateItems = Database.getTemplateItems();
-
-        const list = [];
-        for(const itemId in templateItems) {
-            const template = templateItems[itemId];
-            if (template._parent === parentId) {
-                list.push(template);
-            }
-        }
+        Database.getTemplateItemsAsArray();
+        const list = Database.cached.templatesByParentId[parentId];
         return list;
     }
 
