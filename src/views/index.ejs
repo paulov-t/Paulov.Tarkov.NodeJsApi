@@ -2,14 +2,46 @@
 <div class="container-fluid">
   <div class="container">
     <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <h4>Welcome to <%= title %></h4>
     <p>Server Mode is: <%= serverMode %></p>
     <p>App Version is: <%= appVersion %></p>
     <ul>
+      <li><a href="https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi">GitHub</a></li>
       <li><a href="/api-docs">Swagger API Docs</a></li>
       <li><a href="/ammo">Ammo</a></li>
       <li><a href="/items">Items</a></li>
     </ul>
+    <p>
+      <h4>Disclaimer</h4>
+      <ul>
+        <li>This is a purely a for fun / personal learning for me against a real world scenario.</li>
+        <li>This is not designed to replace Official Tarkov PvE. Please play Official Tarkov PvE!</li>
+        <li>This is not designed to replace SP-Tarkov.</li>
+        <li>Your save data is not safe and could be deleted at any time.</li>
+      </ul>
+    </p>
+    <p>
+      <h4>How can I connect to this?</h4>
+      <ol>
+        <li>You need a Launcher that allows connections to online servers and supports the following endpoints
+          <ul>
+            <li>/launcher/server/connect</li>
+            <li>/launcher/ping</li>
+            <li>/launcher/profile/login</li>
+            <li>/launcher/profile/register</li>
+          </ul>
+        </li>
+        <li>
+          You need <a href="https://github.com/BepInEx/BepInEx">Bepinex</a> installed
+        </li>
+        <li>
+          You need the following Bepinex patches installed as a minimum
+          <ul>
+            <li><a href="https://github.com/paulov-t/Paulov.Tarkov.Minimal/releases">Paulov.Tarkov.Minimal</a></li>
+          </ul>
+        </li>
+      </ol>
+    </p>
   </div>
 </div>
 <%- include('footer.ejs') %>
