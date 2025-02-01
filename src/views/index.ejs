@@ -2,14 +2,22 @@
 <div class="container-fluid mt-5">
   <div class="container">
     <div class="text-center" >
-      <h1><%= title %></h1>
-      <h4>Welcome to <%= title %></h4>
+      <h1>Paulov-t's Offline Tarkov Web Server</h1>
       <p>Server Mode is: <%= serverMode %></p>
       <p>App Version is: <%= appVersion %></p>
     </div>
     <hr>
     <p>
-      <h4>Disclaimer</h4>
+      <h2>What is the purpose of this?</h4>
+      <ul>
+        <li>This is a purely a for fun and personal learning for me against a real world scenario using NodeJS. You can find the <a href="https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi">github repository here</a>.</li>
+        <li>This Website and Api can emulate Escape from Tarkov servers</li>
+        <li>This Website and Api can provide ammo ratings <a href="/ammo">here</a></li>
+        <li>This Website and Api can provide item prices and ratings <a href="/items">here</a></li>
+      </ul>
+    </p>
+    <p>
+      <h2>Disclaimer</h4>
       <ul>
         <li>This is a purely a for fun and personal learning for me against a real world scenario using NodeJS.</li>
         <li>This is not designed to replace Official Tarkov PvE. Please play Official Tarkov PvE!</li>
@@ -18,7 +26,7 @@
       </ul>
     </p>
     <p>
-      <h4>How can I connect to this?</h4>
+      <h2>How can I connect to this?</h4>
       <ol>
         <li>You need a Launcher that allows connections to online servers and supports the following endpoints
           <ul>
@@ -27,6 +35,9 @@
             <li>/launcher/profile/login</li>
             <li>/launcher/profile/register</li>
           </ul>
+        </li>
+        <li>
+          You need to Deobfuscate your Assembly-CSharp.dll
         </li>
         <li>
           You need <a href="https://github.com/BepInEx/BepInEx">Bepinex</a> installed

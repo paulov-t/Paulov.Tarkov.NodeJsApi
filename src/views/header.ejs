@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Paulov Tarkov WebServer - 
+    <title>
         <% if (typeof title !== 'undefined') { %>
             <%= title %>
-        <% }  %>
+            &nbsp;-&nbsp;
+        <% } %>
+        Paulov-t Offline Tarkov Web Server
+        <% if (typeof serverMode !== 'undefined') { %>
+        - <%= serverMode %>
+        <% } %>
     </title>
 
     <meta name="description" content="Paulov's Tarkov API for Offline 'SPT-like' play, Tarkov Ammo & Item Prices">

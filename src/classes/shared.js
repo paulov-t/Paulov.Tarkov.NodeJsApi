@@ -5,7 +5,7 @@ function getRenderViewModel(req) {
     const serverMode = process.env && process.env.ServerMode ? process.env.ServerMode : "Dev";
     const appVersion = packageJson.version;
     return { 
-      title: 'Paulov-t Tarkov Web Server'
+      title: undefined
       , serverMode: serverMode
       , appVersion: appVersion
       , loggedIn: req.SessionId !== undefined 
