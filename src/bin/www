@@ -17,13 +17,13 @@ const { certificate } = require('./../certGenerator');
 const ws = require('ws');
 const { WebSocketService } = require('./../services/WebSocketService');
 
-if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
-  console.log("detected support for Azure Insights")
-  // Import the `useAzureMonitor()` function from the `@azure/monitor-opentelemetry` package.
-  const { useAzureMonitor } = require("@azure/monitor-opentelemetry");
-  // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
-  useAzureMonitor();
-}
+// if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+//   console.log("detected support for Azure Insights")
+//   // Import the `useAzureMonitor()` function from the `@azure/monitor-opentelemetry` package.
+//   const { useAzureMonitor } = require("@azure/monitor-opentelemetry");
+//   // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
+//   useAzureMonitor();
+// }
 
 
 const localPortHttp = 80;
