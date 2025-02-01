@@ -1276,11 +1276,11 @@ router.post('/checkVersion', function(req, res, next) {
  *   post:
  *     tags:
  *     - Client
- *     summary: Called to check the Version of the game against updates, could be useful for Client updates?
+ *     summary: 
  *     parameters:
  *      - name: id
  *        in: path
- *        description: The language requested
+ *        description: Trader Id requested
  *        required: true
  *     responses:
  *       200:
@@ -1304,13 +1304,37 @@ router.post('/items/prices/:id', function(req, res, next) {
     for (const item of listOfTemplates) {
 
         let price = pricesTemplates[item._id];
-        if (!price)
-            price = 1;
+        if (!price) {
+            price = -1;
+        }
 
         prices[item._id] = Math.round(price);
     }
+
+    // TODO: This is a hack. For some reason template prices are not set for all items. We need to figure out why and provide a price.
+    for (const id in prices) {
+
+        if (prices[id] === -1) {
+            // console.log(id);
+            // const template = listOfTemplates.find(x => x._id === id);
+            // const siblingTemplates = listOfTemplates.filter(x => x._parent === template._parent);
+            // let avgPrice = 1;
+            // for(const sibling of siblingTemplates) {
+            //     avgPrice += prices[sibling._id];
+            // }
+            // if (siblingTemplates > 0)
+            //     avgPrice /= siblingTemplates.length;
+
+            // prices[id] = Math.round(avgPrice);
+            prices[id] = 1;
+
+        }
+
+    }
+    
+
     bsgHelper.addBSGBodyInResponseWithData(res, {
-        supplyNextTime: 0,
+        supplyNextTime: Math.floor(new Date().getTime() / 1000) + 1000,
         prices: prices,
         currencyCourses: {
             "5449016a4bdc2d6f028b456f": prices["5449016a4bdc2d6f028b456f"],
