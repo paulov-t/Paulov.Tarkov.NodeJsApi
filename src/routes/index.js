@@ -10,30 +10,36 @@ const { AccountService } = require('../services/AccountService');
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
-  console.log(process.env);
+  // console.log(process.env);
 
   const vm = getRenderViewModel(req);
   if (vm.loggedIn)
     vm.loggedInUN = AccountService.getAccount(req.SessionId).username;
 
+  vm.title = "Home";
   res.render('index', vm);
 });
 
 /* GET Item Search page. */
 router.get('/itemSearch', function(req, res, next) {
 
-  res.render('itemSearch', getRenderViewModel(req));
+  res.redirect('/items');
 });
 
 /* GET Item Search page. */
 router.get('/ammo', function(req, res, next) {
 
-  res.render('ammo', getRenderViewModel(req));
+  const vm = getRenderViewModel(req);
+  vm.title = "Tarkov Ammo Table";
+  res.render('ammo', vm);
 });
 
 router.get('/items', function(req, res, next) {
 
-  res.render('itemSearch', getRenderViewModel(req));
+  const vm = getRenderViewModel(req);
+  vm.title = "Tarkov Item Table";
+
+  res.render('itemSearch', vm);
 });
 
 router.get('/login', function(req, res, next) {

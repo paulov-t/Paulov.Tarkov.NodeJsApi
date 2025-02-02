@@ -1475,7 +1475,7 @@ router.post('/getMetricsConfig', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/game/bot/generate', function(req, res, next) {
+router.post('/game/bot/generate', async function(req, res, next) {
 
     console.log(req.body);
     const result = [];
