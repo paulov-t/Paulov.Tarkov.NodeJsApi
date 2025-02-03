@@ -128,20 +128,22 @@ function onError(error) {
 /// Web Socket Handling on both Servers
 
 try {
-  const wsServer = new ws.Server({ noServer: true });
-  wsServer.on('connection', socket => {
+  const wss = new ws.Server({ noServer: true });
+  wss.on('connection', socket => {
     socket.on('message', message => console.log(message));
   });
   httpServer.on('upgrade', (request, socket, head) => {
-    wsServer.handleUpgrade(request, socket, head, cb => {
-      console.log("Upgrade WebSocket Http!");
-      handleUpgrade(wsServer, request, socket, head, cb);
+    wss.handleUpgrade(request, socket, head, cb => {
+      console.log("handleUpgrade: Upgrade WebSocket Http!");
+      handleUpgrade(wss, request, socket, head, cb);
     });
   });
+  const wss2 = new ws.Server({ noServer: true,  });
   httpsServer.on('upgrade', (request, socket, head) => {
-    wsServer.handleUpgrade(request, socket, head, cb => {
-      console.log("Upgrade WebSocket Https!");
-      handleUpgrade(wsServer, request, socket, head, cb);
+    console.log("Upgrade WebSocket Https!");
+    wss2.handleUpgrade(request, socket, head, cb => {
+      console.log("Upgraded WebSocket Https!");
+      handleUpgrade(wss2, request, socket, head, cb);
     });
   });
 }
@@ -151,7 +153,7 @@ catch(err) {
 
 /**
  * 
- * @param wsServer 
+ * @param {ws.WebSocketServer} wsServer 
  * @param request 
  * @param unkSocket 
  * @param head 
@@ -160,12 +162,16 @@ catch(err) {
  */
 function handleUpgrade(wsServer, request, unkSocket, head, callbackSocket) {
 
+  /**
+   * @type {Array}
+   */
   const splitUrl = request.url.substring(0, request.url.indexOf("?")).split("/");
 
-  if(splitUrl.length < 4)
-    return;
-
-  const sessionId = splitUrl[3];
+  /**
+   * @type {string}
+   */
+  const sessionId = splitUrl.at(1);
+  console.log(`${sessionId} has connected to the Web Socket`)
   WebSocketService.connections[sessionId] = { socket: callbackSocket };
 
   wsServer.emit('connection', unkSocket, request);

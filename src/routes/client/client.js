@@ -814,12 +814,26 @@ router.post('/builds/list', function(req, res, next) {
  */
 router.post('/notifier/channel/create', function(req, res, next) {
 
+    if (typeof(req.SessionId) === 'undefined') {
+        next();
+        return;
+    }
+
+    let wsUrl = `wss://paulovtarkovnodejsapi-dev.azurewebsites.net/${req.SessionId}`;
+    // Note: This is a bit of a hack to deal with "localhost" not supporting Secure Web Sockets due to authentication issues
+    const unsupportedHostnames = [
+            'localhost',
+            '127.0.0.1'
+        ];
+    if (unsupportedHostnames.findIndex(x => x == req.hostname) !== -1)
+        wsUrl = `ws://${req.hostname}/${req.SessionId}`;
+
     bsgHelper.addBSGBodyInResponseWithData(res, {
-        server: `${req.host}`,
+        server: `${req.hostname}`,
         channel_id: req.SessionId,
-        // url: "",
-        // notifierServer: req.host,
-        ws: `ws://${req.host}/notifierServer/getwebsocket/${req.SessionId}`,
+        // ws: `ws://${req.hostname}/notifierServer/getwebsocket/${req.SessionId}`,
+        // ws: `wss://${req.hostname}/notifierServer/getwebsocket/${req.SessionId}`,
+        ws: wsUrl
     });
 
     next();
