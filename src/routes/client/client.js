@@ -148,13 +148,16 @@ router.post('/game/config', function(req, res, next) {
     const today = new Date().toUTCString();
     const startTimeStampMS = Date.parse(today);
 
+    // const protocol = req.protocol
+    const protocol = "https"
+
     // Main needs the https:// ... i think?
     const backend = {
-        Main: `${req.protocol}://${req.host}/`,
-        Messaging: `${req.protocol}://${req.host}/`,
-        Trading: `${req.protocol}://${req.host}/`,
-        RagFair: `${req.protocol}://${req.host}/`,
-        Lobby: `${req.protocol}://${req.host}/`,
+        Main: `${protocol}://${req.host}/`,
+        Messaging: `${protocol}://${req.host}/`,
+        Trading: `${protocol}://${req.host}/`,
+        RagFair: `${protocol}://${req.host}/`,
+        Lobby: `${protocol}://${req.host}/`,
     }
 
     const result = 
