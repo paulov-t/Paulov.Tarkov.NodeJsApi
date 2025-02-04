@@ -16,6 +16,7 @@ const https = require('https');
 const { certificate } = require('./../certGenerator');
 const ws = require('ws');
 const { WebSocketService } = require('./../services/WebSocketService');
+require('dotenv').config()
 
 // if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
 //   console.log("detected support for Azure Insights")

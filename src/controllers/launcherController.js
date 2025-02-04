@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 const { AccountService } = require('./../services/AccountService');
+const { ClientModService } = require('../services/ClientModService');
 
 /**
  * @swagger
@@ -97,5 +98,26 @@ function generateLauncherLoginRequestBodyForSwagger (req) {
         req.body.password = "testSwagger";
     }
 }
+
+
+/**
+ * @swagger
+ * /launcher/required-client-mods:
+ *   post:
+ *     tags:
+ *     - Launcher
+ *     summary: An endpoint to send to the user what mods are needed to fully function with this Server
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/required-client-mods', function(req, res, next) {
+
+    ClientModService.getClientMods().then((mods) => {
+        bsgHelper.getBody(res, mods);
+        next();
+    });
+});
+
 
 module.exports = router;
