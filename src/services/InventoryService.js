@@ -2,6 +2,7 @@ const bsgHelper = require('./../bsgHelper');
 const { AccountProfileCharacter, Account, AccountProfileMode } = require("../models/Account");
 const { logger } = require('../classes/logger');
 const { Database } = require('../classes/database');
+const { ContainerService } = require('./ContainerService');
 
 class InventoryService {
     constructor() {
@@ -95,9 +96,10 @@ class InventoryService {
      * 
      * @param {Object[]} items 
      * @param {String} itemId 
+     * @param {Boolean} includeParent 
      * @returns {Object[]} Items
      */
-    findChildItemsOfItemId(items, itemId) {
+    findChildItemsOfItemId(items, itemId, includeParent = false) {
         if (!items)
             return;
 
@@ -106,6 +108,12 @@ class InventoryService {
 
         const childItems = [];
         for(const it of items) {
+
+            if (includeParent && it._id === itemId) {
+                childItems.push(it);
+                continue;
+            }
+
             if (!it.parentId)
                 continue;
 
@@ -392,6 +400,38 @@ class InventoryService {
         // Note: handy if you want to debug the stash
         // console.log(stash2d);
         return stash2d;
+    }
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} profile 
+     * @param {Object} newCurrentItem 
+     * @returns {Object} the item with a location
+     */
+    placeItemIntoPlayerStash(profile, newCurrentItem) {
+
+        const templateItem = Database.getTemplateItems()[newCurrentItem._tpl];
+        const stashContainerMap = this.getStashContainerMap(profile);
+        const placementResult = ContainerService
+                                .findSpotForItem(stashContainerMap,
+                                    templateItem._props.Width,
+                                    templateItem._props.Height
+                                );
+
+        if(placementResult && placementResult.success) {
+            newCurrentItem.location = {};
+            newCurrentItem.location.x = placementResult.x;
+            newCurrentItem.location.y = placementResult.y;
+            newCurrentItem.location.r = !placementResult.rotation ? 0 : 1,
+            newCurrentItem.location.rotation = placementResult.rotation;
+
+            const stashId = profile.Inventory.stash;
+            newCurrentItem.parentId = stashId;
+            profile.Inventory.items.push(newCurrentItem);
+            return newCurrentItem;
+        }
+
+        return undefined;
     }
 
 
