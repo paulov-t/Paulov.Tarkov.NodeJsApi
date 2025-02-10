@@ -81,8 +81,10 @@ class BotGenerationService {
         bot.Info.Voice = voiceKeys[this.randomInteger(0, voiceKeys.length-1)];
 
         bot.Info.Nickname = botDatabaseData.firstName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
-        if (botDatabaseData.lastName.length > 0)
-            bot.Info.Nickname = bot.Info.Nickname + " " + botDatabaseData.lastName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
+        if (botDatabaseData.lastName && botDatabaseData.lastName.length > 0) {
+            const lastName =  botDatabaseData.lastName[this.randomInteger(0, botDatabaseData.lastName.length-1)];
+            bot.Info.Nickname = bot.Info.Nickname + " " + lastName;
+        }
 
         // Generate the bot's level (if PMC)
         this.generateBotLevel(bot);
@@ -93,12 +95,12 @@ class BotGenerationService {
         InventoryService.removeItemFromSlot(bot, "pocket1");
         if (bot.Info.Side !== "Savage") {
             // Add Army bandage
-            const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
-            pocket1Item.location = { 
-                x: 0
-                , y: 0
-                , r: 0
-                , "isSearched": false };
+            // const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
+            // pocket1Item.location = { 
+            //     x: 0
+            //     , y: 0
+            //     , r: 0
+            //     , "isSearched": false };
         }
 
         // Remove the Pocket 2
@@ -134,6 +136,9 @@ class BotGenerationService {
             const randomFacecoverId = Object.keys(botDatabaseData.inventory.equipment.FaceCover)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.FaceCover).length)];
             InventoryService.addTemplatedItemToSlot(bot, randomFacecoverId, "FaceCover");
         }
+
+        // Remove the Scabbard / Knife
+        InventoryService.removeItemFromSlot(bot, "Scabbard");
 
         if (bot.Info.Side !== "Savage")
             this.addDogtag(bot);
