@@ -607,15 +607,15 @@ class AccountService {
         if(!pmcProfile)
             return;
 
-        if(!pmcProfile.Info)
+        if(!pmcProfile.Hideout)
             return;
 
-
-        if(!pmcProfile.Info.Hideout)
-            return;
-
-        const rnd = Math.floor(Math.random() * 10);
-        pmcProfile.Info.Hideout.Seed = `${rnd}a305bcbaa18144c5153a75f3f5882ec`;
+        const rnd1 = Math.floor(Math.random() * 10);
+        const rnd2 = Math.floor(Math.random() * 10);
+        const rnd3 = Math.floor(Math.random() * 10);
+        const newSeed = `${rnd1}a${rnd3}0${rnd2}bcbaa1${rnd2}14${rnd1}c5153a75f3f${rnd3}882ec`;
+        logger.logDebug(`Updating Hideout Seed from ${pmcProfile.Hideout.Seed} to ${newSeed}`)
+        pmcProfile.Hideout.Seed = newSeed
     }
 
 }
