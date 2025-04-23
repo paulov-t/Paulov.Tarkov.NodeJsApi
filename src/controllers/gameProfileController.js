@@ -68,6 +68,9 @@ router.post('/list', function(req, res, next) {
     if (sessionId === undefined)
         throw "SessionId is not defined!";
 
+    // Run an account fix
+    AccountService.fixAccountsAfterUpdate();
+
     const output = [];
     /**
      * @type {AccountProfileMode}
