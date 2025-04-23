@@ -16,7 +16,7 @@ This is a personal project to learn NodeJs Express Api & Website against a real-
 - Attempt to use the Model-View-Controller design within NodeJs
 - Use Swagger Open Api
 - Use username/password authorization
-- Use web token authorization
+- Use web token authorization - NOT YET IMPLEMENTED
 - Create a NodeJs that will work in the free Azure Web Service. 
   - The free tier of the Azure Web Service has a very low memory size threshold and very low hard disk space threshold. If you exceed the threshold, the app will not start or crash. 
   - The main aim is to keep the footprint very low 
@@ -44,7 +44,7 @@ For development you will need to:
 
 1. Clone the repository: `git clone https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi.git`
 2. Get Large File System files: `git lfs pull`
-3. Open `WebServer.code-workspace` in Visual Studio Code.
+3. Open `PaulovWebServer.code-workspace` in Visual Studio Code.
 4. Run `npm install` in Visual Studio Code Terminal.
 5. Press F5 and select Node.js
 
@@ -52,7 +52,6 @@ For development you will need to:
 
 - This project is licensed under the Attribution-NonCommercial-NoDerivatives 4.0 International License. See [LICENSE](LICENSE.md)
 - This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
- 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [contributors-shield]: https://img.shields.io/github/contributors/paulov-t/Paulov.Tarkov.NodeJsApi.svg?style=for-the-badge
