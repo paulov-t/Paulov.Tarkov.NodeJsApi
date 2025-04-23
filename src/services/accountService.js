@@ -104,8 +104,8 @@ class AccountService {
          */
         const account = sessionId !== undefined ? this.getAccount(sessionId) : new Account();
         if (data.username !== undefined) {
-            const newAccountId = bsgHelper.generateMongoId();
-            account.accountId = newAccountId;
+            // const newAccountId = bsgHelper.generateMongoId();
+            // account.accountId = newAccountId;
             account.username = data.username;
             var hashedPassword = bcrypt.hashSync(data.password, 8);
             account.password = hashedPassword;
@@ -157,6 +157,7 @@ class AccountService {
                 TotalSessionExperience: 0,
                 Victims: [],
             },
+            // Include empty Arena stats -- May be useful for future dev work
             Arena: {
                 CarriedQuestItems: [],
                 DamageHistory: { LethalDamagePart: "Head", LethalDamage: undefined, BodyParts: [] },
@@ -175,14 +176,24 @@ class AccountService {
             }
         };
         profile.Info.NeedWipeOptions = [];
+        // Set the head to selected head from the UI
         profile.Customization.Head = data.headId;
+        // Set the update time to now
         profile.Health.UpdateTime = Math.floor(new Date().getTime() / 1000);
-        profile.Quests = [];
+        // Hideout requires a "Seed" of 32 characters. 
         profile.Hideout.Seed = "5a305bcbaa18144c5153a75f3f5882ec"; // = Math.floor(new Date().getTime() / 1000) + (8 * 60 * 60 * 24 * 365);
+        // Empty the quests of the profile
+        profile.Quests = [];
         profile.RepeatableQuests = [];
+        // Empty the counts of the profile
         profile.CarExtractCounts = {};
         profile.CoopExtractCounts = {};
+
+        // Keep the achievements even after a wipe (if they exist)
         profile.Achievements = {};
+        if (account.modes[account.currentMode]?.characters?.pmc?.Achievements) {
+            profile.Achievements = account.characters.pmc.Achievements;
+        }
 
         // Update EquipmentId
         InventoryService.updateInventoryEquipmentId(profile);
@@ -191,7 +202,7 @@ class AccountService {
             profile.UnlockedInfo = { unlockedProductionRecipe: [] };
         }
 
-        this.addMissingInternalContainersToProfile(profile);
+        this.addMissingContainersToProfile(profile);
 
         let accountMode = new AccountProfileMode();
         accountMode = account.modes[account.currentMode];
@@ -241,31 +252,31 @@ class AccountService {
         return account;
     }
 
-    addMissingInternalContainersToProfile(pmcData) {
-        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.hideoutCustomizationStashId)) {
-            pmcData.Inventory.items.push({
-                _id: pmcData.Inventory.hideoutCustomizationStashId,
+    addMissingContainersToProfile(profile) {
+        if (!profile.Inventory.items.find((item) => item._id === profile.Inventory.hideoutCustomizationStashId)) {
+            profile.Inventory.items.push({
+                _id: profile.Inventory.hideoutCustomizationStashId,
                 _tpl: "673c7b00cbf4b984b5099181"
             });
         }
 
-        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.sortingTable)) {
-            pmcData.Inventory.items.push({
-                _id: pmcData.Inventory.sortingTable,
+        if (!profile.Inventory.items.find((item) => item._id === profile.Inventory.sortingTable)) {
+            profile.Inventory.items.push({
+                _id: profile.Inventory.sortingTable,
                 _tpl: "602543c13fee350cd564d032"
             });
         }
 
-        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.questStashItems)) {
-            pmcData.Inventory.items.push({
-                _id: pmcData.Inventory.questStashItems,
+        if (!profile.Inventory.items.find((item) => item._id === profile.Inventory.questStashItems)) {
+            profile.Inventory.items.push({
+                _id: profile.Inventory.questStashItems,
                 _tpl: "5963866b86f7747bfa1c4462"
             });
         }
 
-        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.questRaidItems)) {
-            pmcData.Inventory.items.push({
-                _id: pmcData.Inventory.questRaidItems,
+        if (!profile.Inventory.items.find((item) => item._id === profile.Inventory.questRaidItems)) {
+            profile.Inventory.items.push({
+                _id: profile.Inventory.questRaidItems,
                 _tpl:  "5963866286f7747bf429b572"
             });
         }
