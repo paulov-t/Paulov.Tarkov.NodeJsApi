@@ -11,6 +11,7 @@ const { UpdatableChatMemberInfo } = require('./../models/UpdatableChatMemberInfo
 const { logger } = require('./../classes/logger');
 const { InventoryService } = require('./InventoryService');
 const { DatabaseService } = require('./DatabaseService');
+const { Database } = require('../classes/database');
 
 class AccountService {
     constructor() {
@@ -129,11 +130,11 @@ class AccountService {
         /**
          * @type {Database}
          */
-        const db = global._database;
+        const db = Database;
         // clone the template
         const profile = db.getData(db["templates"]["profiles"])[account.edition][data.side.toLowerCase()]["character"];
         profile._id = sessionId;
-        profile.aid = "1";// bsgHelper.generateMongoId();
+        profile.aid = Math.floor(Math.random() * 1000000);
         profile.savage = undefined;
         profile.Info.Nickname = data.nickname;
         profile.Info.LowerNickname = data.nickname.toLowerCase();
@@ -177,7 +178,7 @@ class AccountService {
         profile.Customization.Head = data.headId;
         profile.Health.UpdateTime = Math.floor(new Date().getTime() / 1000);
         profile.Quests = [];
-        profile.Hideout.Seed = Math.floor(new Date().getTime() / 1000) + (8 * 60 * 60 * 24 * 365);
+        profile.Hideout.Seed = "5a305bcbaa18144c5153a75f3f5882ec"; // = Math.floor(new Date().getTime() / 1000) + (8 * 60 * 60 * 24 * 365);
         profile.RepeatableQuests = [];
         profile.CarExtractCounts = {};
         profile.CoopExtractCounts = {};
@@ -189,6 +190,8 @@ class AccountService {
         if (!profile.UnlockedInfo) {
             profile.UnlockedInfo = { unlockedProductionRecipe: [] };
         }
+
+        this.addMissingInternalContainersToProfile(profile);
 
         let accountMode = new AccountProfileMode();
         accountMode = account.modes[account.currentMode];
@@ -238,6 +241,35 @@ class AccountService {
         return account;
     }
 
+    addMissingInternalContainersToProfile(pmcData) {
+        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.hideoutCustomizationStashId)) {
+            pmcData.Inventory.items.push({
+                _id: pmcData.Inventory.hideoutCustomizationStashId,
+                _tpl: "673c7b00cbf4b984b5099181"
+            });
+        }
+
+        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.sortingTable)) {
+            pmcData.Inventory.items.push({
+                _id: pmcData.Inventory.sortingTable,
+                _tpl: "602543c13fee350cd564d032"
+            });
+        }
+
+        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.questStashItems)) {
+            pmcData.Inventory.items.push({
+                _id: pmcData.Inventory.questStashItems,
+                _tpl: "5963866b86f7747bfa1c4462"
+            });
+        }
+
+        if (!pmcData.Inventory.items.find((item) => item._id === pmcData.Inventory.questRaidItems)) {
+            pmcData.Inventory.items.push({
+                _id: pmcData.Inventory.questRaidItems,
+                _tpl:  "5963866286f7747bf429b572"
+            });
+        }
+    }
      
 
     /**

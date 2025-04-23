@@ -17,8 +17,10 @@ const { logger } = require('./../classes/logger');
 const { TraderService } = require('../services/TraderService');
 const { Database } = require('../classes/database');
 const { InventoryService } = require('../services/InventoryService');
-const { AccountProfileCharacterQuestItem } = require('../models/Account');
+const { AccountProfileCharacterQuestItem, Account } = require('../models/Account');
 const { DatabaseService } = require('../services/DatabaseService');
+const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../models/ItemMovingActions/BuyFromTraderAction');
+const { ContainerService } = require('../services/ContainerService');
 
 /**
  * @swagger
@@ -462,8 +464,89 @@ function processTradingConfirm(account, action, outputChanges) {
     return result;
 }
 
-function buyFromTrader(account, action) {
+/**
+ * 
+ * @param {Account} account 
+ * @param {BuyFromTraderAction} action 
+ * @returns 
+ */
+function buyFromTrader(account, action, outputChanges) {
     const result = { success: true, error: undefined };
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+    const inventoryEquipmentId = pmcProfile.Inventory.equipment;
+    const inventoryItems = pmcProfile.Inventory.items;
+
+    const traderId = action.tid;
+    const trader = TraderService.getTrader(traderId);
+    const templatePrices = Database.getData(Database.templates.prices);
+
+    const userItemsToUse = action.scheme_items;
+    const buyingItemId = action.item_id;
+    const template = Database.getTemplateItems()[buyingItemId];
+
+    let moneySalesSum = 0;
+
+    const itemsToRemoveFromInventory = [];
+    for(const userItemToUse of userItemsToUse) {
+
+        const invItem = inventoryItems.find(x => userItemToUse.id == x._id);
+        // console.log(invItem);
+        // A stack of something, likely money in this case
+        if (invItem.upd && invItem.upd.StackObjectsCount) {
+            invItem.StackObjectsCount -= userItemToUse.count;
+            if (invItem.upd.StackObjectsCount <= 0)
+                itemsToRemoveFromInventory.push(invItem);
+
+            moneySalesSum += userItemToUse.count;
+
+        } else {
+            itemsToRemoveFromInventory.push(invItem);
+        }
+
+    }
+
+    // Remove the items from the Inventory
+    for(const item of itemsToRemoveFromInventory) {
+        const indexToRemove = inventoryItems.findIndex(x => x._id === item._id);
+        if (indexToRemove !== -1)
+            inventoryItems.splice(indexToRemove, 1);
+    }
+
+    const clonedParentItem = JSON.parse(JSON.stringify(trader.assort.items.find(x => x._id == action.item_id)));
+    clonedParentItem._id = bsgHelper.generateMongoId();
+    clonedParentItem.parentId = undefined;
+    const newParentItemId = clonedParentItem._id;
+
+    const childItems = InventoryService.findChildItemsOfItemId(trader.assort.items, action.item_id, false);
+    if (childItems && childItems.length > 0) {
+        // Buy and Transfer the item from Trader to Player
+        for(const item of childItems) {
+            
+            const clonedItem = JSON.parse(JSON.stringify(item));
+            clonedItem.parentId = newParentItemId;
+            clonedItem._id = bsgHelper.generateMongoId();
+            InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedItem);
+
+            console.log(clonedItem);
+
+            inventoryItems.push(indexToRemove, 1);
+        }
+    }
+    else {
+        if(InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedParentItem)) {
+
+            if (!outputChanges.profileChanges[pmcProfile._id].items.new)
+                outputChanges.profileChanges[pmcProfile._id].items.new = [];
+
+            outputChanges.profileChanges[pmcProfile._id].items.new.push(clonedParentItem);
+        }
+    }
+
+    if (moneySalesSum)
+        pmcProfile.TradersInfo[traderId].salesSum += moneySalesSum;
+
     return result;
 }
 
