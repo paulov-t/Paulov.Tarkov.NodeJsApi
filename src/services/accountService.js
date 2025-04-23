@@ -181,7 +181,8 @@ class AccountService {
         // Set the update time to now
         profile.Health.UpdateTime = Math.floor(new Date().getTime() / 1000);
         // Hideout requires a "Seed" of 32 characters. 
-        profile.Hideout.Seed = "5a305bcbaa18144c5153a75f3f5882ec"; // = Math.floor(new Date().getTime() / 1000) + (8 * 60 * 60 * 24 * 365);
+        // profile.Hideout.Seed = "5a305bcbaa18144c5153a75f3f5882ec"; // = Math.floor(new Date().getTime() / 1000) + (8 * 60 * 60 * 24 * 365);
+        this.updateHideoutSeed(profile);
         // Empty the quests of the profile
         profile.Quests = [];
         profile.RepeatableQuests = [];
@@ -253,6 +254,16 @@ class AccountService {
     }
 
     addMissingContainersToProfile(profile) {
+
+        if(!profile)
+            return;
+
+        if(!profile.Inventory)
+            return;
+
+        if(!profile.Inventory.items)
+            return;
+
         if (!profile.Inventory.items.find((item) => item._id === profile.Inventory.hideoutCustomizationStashId)) {
             profile.Inventory.items.push({
                 _id: profile.Inventory.hideoutCustomizationStashId,
@@ -563,6 +574,48 @@ class AccountService {
         }
 
         return result;
+    }
+
+    /**
+     * This is designed to fix any account issues after an official update to the game broke something
+     */
+    fixAccountsAfterUpdate() {
+
+        for(var account of this.getAllAccounts()) {
+
+            if (!account)
+                continue;
+
+            for(const mode in account.modes) {
+                const accountProfile = this.getAccountProfileByModeFromAccount(account, mode);
+                if (!accountProfile)
+                    continue;
+
+                // Seed 
+                this.updateHideoutSeed(accountProfile.characters.pmc);
+                this.addMissingContainersToProfile(accountProfile.characters.pmc);
+            }
+        }
+    }
+
+    /**
+     * Attempts to update the Hideout Seed
+     * @param {AccountProfileCharacter} pmcProfile 
+     */
+    updateHideoutSeed(pmcProfile) {
+
+        if(!pmcProfile)
+            return;
+
+        if(!pmcProfile.Info)
+            return;
+
+
+        if(!pmcProfile.Info.Hideout)
+            return;
+
+        const rnd = Math.floor(Math.random() * 10);
+        pmcProfile.Info.Hideout.Seed = `${rnd}a305bcbaa18144c5153a75f3f5882ec`;
     }
 
 }

@@ -19,6 +19,7 @@ var fs = require('fs');
 var bsgHelper =  require('./bsgHelper');
 const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
+const { AccountService } = require('./services/AccountService');
 
 var app = express();
 
@@ -154,5 +155,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
+AccountService.fixAccountsAfterUpdate();
 
 module.exports = app;
