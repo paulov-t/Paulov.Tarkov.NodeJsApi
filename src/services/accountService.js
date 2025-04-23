@@ -595,6 +595,8 @@ class AccountService {
                 this.updateHideoutSeed(accountProfile.characters.pmc);
                 this.addMissingContainersToProfile(accountProfile.characters.pmc);
             }
+
+            this.saveAccount(account);
         }
     }
 
