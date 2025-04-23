@@ -98,9 +98,7 @@ router.post('/moving', function(req, res, next) {
         console.log(action);
         switch(action.Action) {
             case 'Examine':
-                const examinedItem = InventoryService.findItemInInventory(accountProfile.characters.pmc, action.item);
-                if (examinedItem)
-                    accountProfile.characters.pmc.Encyclopedia[examinedItem._tpl] = true
+                processExamine(account, action, result);
                 break;
             case 'Heal':
                 processHealAction(account, action, result);
@@ -152,6 +150,49 @@ router.post('/moving', function(req, res, next) {
     bsgHelper.getBody(res, result);
     next();
 });
+
+function processExamine(account, action, outputChanges) {
+
+    const result = { success: true, error: undefined };
+    logger.logDebug("processExamine");
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    logger.logDebug(`Examining item for ${account.accountId}`);
+
+    const pmcProfile = accountProfile.characters.pmc;
+    const pmcProfileEncyclopedia = accountProfile.characters.pmc.Encyclopedia;
+
+    let itemTpl = "";
+
+    if (action.fromOwner) {
+        if (action.fromOwner.type === 'Trader') {
+            const traderAssort = TraderService.getTrader(action.fromOwner.id).assort;
+            /**
+             * @type {Array}
+             */
+            const assortItems = traderAssort.items;
+            const assortItem = assortItems.find(x => x._id === action.item);
+            if (assortItem) {
+                itemTpl = assortItem._tpl;
+            }
+        }
+    }
+    else if (action.item) {
+        const examinedItem = InventoryService.findItemInInventory(accountProfile.characters.pmc, action.item);
+        if (examinedItem) {
+            itemTpl = examinedItem._tpl;
+        }
+    }
+
+    if (itemTpl !== "") {
+        logger.logDebug(` ${account.accountId} examined item ${itemTpl}`);
+        pmcProfileEncyclopedia[itemTpl] = true;
+    }
+
+
+    return result;
+}
+
 
 function processHealAction(account, action, outputChanges) {
 
