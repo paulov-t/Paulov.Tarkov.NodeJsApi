@@ -27,6 +27,11 @@ class Logger {
   }
 
   log(type, data, colorFront = "", colorBack = "") {
+
+    const LoggingService = require("../services/LoggingService");
+    LoggingService.log(data);
+
+    
     let setColors = "";
     let colors = ["", ""];
 

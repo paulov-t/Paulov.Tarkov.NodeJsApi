@@ -1,0 +1,40 @@
+<%- include('header.ejs') %>
+<link rel='stylesheet' href="//cdn.datatables.net/2.2.1/css/dataTables.dataTables.min.css" />
+<div class="container-fluid mt-5">
+  <div class="container">
+    <div class="text-center" >
+      <h1>Logging History</h1>
+      <div>
+        <table id="myTable">
+          <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Entry</th>
+            </tr>
+          </thead>
+        </table>
+    </div>
+    
+  </div>
+</div>
+
+
+<!-- Add JQUERY -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="//cdn.datatables.net/2.2.1/js/dataTables.min.js"></script>
+<script>
+    $('#myTable').DataTable({
+        "ajax": {
+          "url": '/v1/logging/getTodaysLog/',
+          "type": "POST"
+        },
+        columns: [
+          { data: 'date' },
+          { data: 'time' },
+          { data: 'text' },
+        ]
+    });
+
+</script>
+<%- include('footer.ejs') %>

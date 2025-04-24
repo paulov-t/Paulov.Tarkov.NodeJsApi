@@ -117,6 +117,7 @@ app.use('/itemSearch', require('./routes/itemSearch'));
 /** Paulov API v1 */
 app.use('/v1/auth', require('./routes/v1/auth'));
 app.use('/v1/user', require('./routes/v1/user'));
+app.use('/v1/logging', require('./routes/v1/logging'));
 
 /** User Views */
 app.use('/user', require('./controllers/userController'));

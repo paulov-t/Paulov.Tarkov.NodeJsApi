@@ -1,5 +1,5 @@
 *.env
-
+*MatchLocalEnd.json
 #
 offraid.json
 ragfairRequest.json

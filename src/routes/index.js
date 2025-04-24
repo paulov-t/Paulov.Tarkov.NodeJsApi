@@ -54,4 +54,12 @@ router.get('/logout', function(req, res, next) {
   res.redirect('./');
 });
 
+/* GET Item Search page. */
+router.get('/logging', function(req, res, next) {
+
+  const vm = getRenderViewModel(req);
+  vm.title = "Logging";
+  res.render('loggingHistory', vm);
+});
+
 module.exports = router;
