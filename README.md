@@ -15,13 +15,19 @@ This is a personal project to learn NodeJs Express Api & Website against a real-
 - Learn and use Express
 - Attempt to use the Model-View-Controller design within NodeJs
 - Use Swagger Open Api
-- Use username/password authorization
+- Use username & hashed password authorization
 - Use web token authorization - NOT YET IMPLEMENTED
 - Create a NodeJs that will work in the free Azure Web Service. 
   - The free tier of the Azure Web Service has a very low memory size threshold and very low hard disk space threshold. If you exceed the threshold, the app will not start or crash. 
   - The main aim is to keep the footprint very low 
   - Do not load anything permanently into memory
   - Do not have large loose files in the project
+ 
+## Disclaimer
+- This is a purely a for fun and personal learning for me against a real world scenario using NodeJS.
+- This is not designed to replace Official Tarkov PvE. Please play Official Tarkov PvE!
+- This is not designed to replace [SP-Tarkov](https://github.com/sp-tarkov/server)
+- If you use the Url's below to play the game your save is not safe and could be deleted at any time.
   
 ## Current running live example Website and Api
 - [Dev-Test](https://paulovtarkovnodejsapi-dev.azurewebsites.net/)
