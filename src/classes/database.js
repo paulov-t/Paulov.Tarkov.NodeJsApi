@@ -171,7 +171,6 @@ class Database {
       // this.readZipArchiveIntoMemory(dbFilePath);
       this.databaseFilePath = dbFilePath;
       this.readZipArchiveDatabaseIntoDbEntryNames(dbFilePath);
-      // console.log(global._database);
       console.log("loaded database!");
       this.initialised = true;
     
@@ -186,6 +185,22 @@ class Database {
         const dbResult = db.getData(db["templates"]["items"]);
         this.cacheTemplatesByParentId(dbResult);
         return dbResult;
+    }
+
+    getTemplateItemById(templateId) {
+
+      if(this.cached.templates.length > 0) {
+        const item = this.cached.templates.find(x => x._id === templateId);
+        if(item !== undefined)
+          return item;
+      }
+
+      const db = global._database;
+      const dbResult = db.getData(db["templates"]["items"]);
+      if (dbResult[templateId] === undefined)
+        return null;
+
+      return dbResult[templateId];
     }
 
     /**

@@ -16,7 +16,20 @@ class BotGenerationService {
          * @type {AccountProfileCharacter}
          */
         this.baseBot = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString()).scav;
+        this.availableBackpacks = [];
     }
+
+    cacheAllBots() { 
+
+        if(this.availableBackpacks.length === 0) {
+            this.availableBackpacks = InventoryService
+            .getAllAvailableBackpacks()
+            .map(x => ({ item: x, p: Database.getTemplateItemPrice(x._id) }))
+            .sort((a, b) => { return a.p < b.p ? -1 : 1 });
+        }
+
+    }
+
 
     generateAllBots() {
         
@@ -29,6 +42,8 @@ class BotGenerationService {
      */
     generateBot(condition) {
 
+        this.cacheAllBots();
+
         const startTime = Date.now();
 
         if(condition.Role === 'playerscav') {
@@ -38,7 +53,6 @@ class BotGenerationService {
         /**
          * @type {AccountProfileCharacter}
          */
-        // const bot = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "scav.json")).toString()).scav;
         const bot = JSON.parse(JSON.stringify(this.baseBot));
         bot._id = generateMongoId();
         bot.aid = generateMongoId();
@@ -48,23 +62,13 @@ class BotGenerationService {
         if (condition.Difficulty)
             bot.Info.Settings.BotDifficulty = condition.Difficulty;
 
-        if(bot.Info.Side != "Savage") 
-            logger.logInfo(`Generating ${condition.Role} on ${bot.Info.Side}`);
-
         // Update if a playerScav to the player's name
         bot.Info.MainProfileNickname = undefined;
         if (condition.playerProfileName)
             bot.Info.MainProfileNickname = condition.playerProfileName;
 
-
-        // console.log(Database);
-
         const lowerRole = condition.Role.toLowerCase();
-        // console.log(condition.Role);
-        // console.log(Database.bots);
-        // console.log(Database.bots.types[lowerRole]);
         const botDatabaseData = Database.getData(Database.bots.types[lowerRole]);
-        // console.log(botDatabaseData);
 
         // Setup the bot's Face, Body, Hands, Feet
         const headKeys = Object.keys(botDatabaseData.appearance.head);
@@ -117,28 +121,51 @@ class BotGenerationService {
 
         // Remove the Backpack (and all its items within it)
         InventoryService.removeItemFromSlot(bot, "Backpack");
+
         // Add a new backpack based on chance
         this.addBackpack(condition, bot);
         
         // Remove the Headwear
         InventoryService.removeItemFromSlot(bot, "Headwear");
-        if (Object.keys(botDatabaseData.inventory.equipment.Headwear).length === 1) {
-            const firstKey = Object.keys(botDatabaseData.inventory.equipment.Headwear)[0];
-            InventoryService.addTemplatedItemToSlot(bot, firstKey, "Headwear");
+        if (Object.keys(botDatabaseData.inventory.equipment.Headwear).length > 0) {
+            const randomHeadwearId = Object.keys(botDatabaseData.inventory.equipment.Headwear)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Headwear).length-1)];
+            InventoryService.addTemplatedItemToSlot(bot, randomHeadwearId, "Headwear");
         }
 
         // Remove the Eyewear
         InventoryService.removeItemFromSlot(bot, "Eyewear");
+        if (Object.keys(botDatabaseData.inventory.equipment.Eyewear).length > 0) {
+            const randomEyewearId = Object.keys(botDatabaseData.inventory.equipment.Eyewear)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Eyewear).length-1)];
+            InventoryService.addTemplatedItemToSlot(bot, randomEyewearId, "Eyewear");
+        }
 
         // Remove the FaceCover
         InventoryService.removeItemFromSlot(bot, "FaceCover");
         if (Object.keys(botDatabaseData.inventory.equipment.FaceCover).length > 0) {
-            const randomFacecoverId = Object.keys(botDatabaseData.inventory.equipment.FaceCover)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.FaceCover).length)];
-            InventoryService.addTemplatedItemToSlot(bot, randomFacecoverId, "FaceCover");
+            const randomFaceCoverId = Object.keys(botDatabaseData.inventory.equipment.FaceCover)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.FaceCover).length-1)];
+            InventoryService.addTemplatedItemToSlot(bot, randomFaceCoverId, "FaceCover");
+        }
+
+        // Remove the Earpiece
+        InventoryService.removeItemFromSlot(bot, "Earpiece");
+        if (Object.keys(botDatabaseData.inventory.equipment.Earpiece).length > 0) {
+            const randomEarpieceId = Object.keys(botDatabaseData.inventory.equipment.Earpiece)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Earpiece).length-1)];
+            InventoryService.addTemplatedItemToSlot(bot, randomEarpieceId, "Earpiece");
         }
 
         // Remove the Scabbard / Knife
         InventoryService.removeItemFromSlot(bot, "Scabbard");
+        if (Object.keys(botDatabaseData.inventory.equipment.Scabbard).length > 0) {
+            const randomScabbardId = Object.keys(botDatabaseData.inventory.equipment.Scabbard)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Scabbard).length-1)];
+            InventoryService.addTemplatedItemToSlot(bot, randomScabbardId, "Scabbard");
+        }
+
+        // Remove the Vest
+        // InventoryService.removeItemFromSlot(bot, "Vest");
+        // if (Object.keys(botDatabaseData.inventory.equipment.Vest).length > 0) {
+        //     const randomVestId = Object.keys(botDatabaseData.inventory.equipment.Vest)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Vest).length-1)];
+        //     // InventoryService.addTemplatedItemToSlot(bot, randomVestId, "Vest");
+        // }
 
         if (bot.Info.Side !== "Savage")
             this.addDogtag(bot);
@@ -149,7 +176,7 @@ class BotGenerationService {
         
 
         const endTime = Date.now()
-        console.log(`${endTime - startTime}ms`);
+        logger.logDebug(`Bot generation for ${condition.Role} on ${bot.Info.Side} took: ${endTime - startTime}ms`);
 
         return bot;
     }
@@ -162,8 +189,6 @@ class BotGenerationService {
      */
     addBackpack(condition, bot) {
 
-        const startTime = Date.now();
-       
         let backpackChance = 69;
         switch(condition.Role) {
             case "marksman":
@@ -177,18 +202,11 @@ class BotGenerationService {
 
         // if the backpackChance is under the random number, do not generate the backpack
         const randomChance = this.randomInteger(1, 99);
-        // console.log(`${backpackChance} : ${randomChance}`);
         if(backpackChance < randomChance)
             return;
 
-        const availableBackpacks = InventoryService
-            .getAllAvailableBackpacks()
-            // .filter(x => Database.getTemplateItemPrice(x._id))
-            .map(x => ({ item: x, p: Database.getTemplateItemPrice(x._id) }))
-            .sort((a, b) => { return a.p < b.p ? -1 : 1 });
-        
-        const lowestPrice = availableBackpacks[0].p;
-        const highestPrice = availableBackpacks[availableBackpacks.length-1].p;
+        const lowestPrice = this.availableBackpacks[0].p;
+        const highestPrice = this.availableBackpacks[this.availableBackpacks.length-1].p;
         let randomPrice = this.randomInteger(lowestPrice * 0.7, highestPrice * 0.75);
         switch(condition.Role) {
             case "pmcUSEC":
@@ -196,19 +214,13 @@ class BotGenerationService {
                 randomPrice *= 1.15;
                 break;
         }
-        // console.log(randomPrice);
-        const filteredBackpacks = availableBackpacks.filter(x => x.p <= randomPrice);
+        const filteredBackpacks = this.availableBackpacks.filter(x => x.p <= randomPrice);
         if (filteredBackpacks.length === 0)
             return;
 
         const chosenBackpack = filteredBackpacks[this.randomInteger(0, filteredBackpacks.length-1)];
         // Add a new Backpack (by chance)
-        // console.log(chosenBackpack);
         InventoryService.addTemplatedItemToSlot(bot, chosenBackpack.item._id, "Backpack");
-
-
-        const endTime = Date.now();
-        console.log(`addBackpack: ${endTime - startTime}ms`);
 
     }
 

@@ -73,8 +73,7 @@ class InventoryService {
         if (!slotId)
             return;
 
-        const templateItems = Database.getTemplateItems();
-        const template = templateItems[templateId];
+        const template = Database.getTemplateItemById(templateId);
         if (!template)
             return;
 

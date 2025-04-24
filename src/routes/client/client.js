@@ -1494,7 +1494,6 @@ router.post('/getMetricsConfig', function(req, res, next) {
  */
 router.post('/game/bot/generate', async function(req, res, next) {
 
-    console.log(req.body);
     const result = [];
 
     /**
