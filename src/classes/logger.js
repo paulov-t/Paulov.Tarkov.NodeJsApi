@@ -71,7 +71,11 @@ class Logger {
   }
 
   logError(text) {
-    this.log("!", text, "white", "red");
+    if(text.message) {
+      this.log("!", text.message, "white", "red");
+    }
+    else
+      this.log("!", text, "white", "red");
   }
 
   logWarning(text) {

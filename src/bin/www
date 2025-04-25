@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * The www is designed so that the app can be deployed to Containers like Azure Web Service
  * The app will listen on both http (80) and https (443) with a self-signed generated certificate
@@ -18,13 +16,6 @@ const ws = require('ws');
 const { WebSocketService } = require('./../services/WebSocketService');
 require('dotenv').config()
 
-// if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
-//   console.log("detected support for Azure Insights")
-//   // Import the `useAzureMonitor()` function from the `@azure/monitor-opentelemetry` package.
-//   const { useAzureMonitor } = require("@azure/monitor-opentelemetry");
-//   // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
-//   useAzureMonitor();
-// }
 
 
 const localPortHttp = 80;

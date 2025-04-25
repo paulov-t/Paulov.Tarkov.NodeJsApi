@@ -21,6 +21,27 @@ const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
 const { AccountService } = require('./services/AccountService');
 
+
+const appInsights = require('applicationinsights');
+
+// Check if the Application Insights connection string is set in the environment variables
+if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+    console.log("Initializing Azure Application Insights...");
+
+    // Set up Application Insights
+    appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
+        .setAutoCollectRequests(true) // Automatically track HTTP requests
+        .setAutoCollectPerformance(true) // Automatically track performance metrics
+        .setAutoCollectExceptions(true) // Automatically track exceptions
+        .setAutoCollectDependencies(true) // Automatically track dependencies
+        .setAutoCollectConsole(true, true) // Automatically track console logs
+        .start();
+
+    console.log("Azure Application Insights initialized successfully.");
+} else {
+    console.warn("APPLICATIONINSIGHTS_CONNECTION_STRING is not set. Skipping Application Insights initialization.");
+}
+
 var app = express();
 
 // view engine setup
@@ -48,14 +69,43 @@ app.use(function(req, res, next) {
   bsgHelper.extractSessionId(req, res, next);
 });
 
-/** Middleware: Detects and store Uri calls for metrics */
-app.use(function(req, res, next) {
+// Middleware to track Express page loads
+app.use((req, res, next) => {
+  const start = Date.now();
 
-  // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
-  let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
-  ownLogger.logger.logInfo(responseText);
+  res.on('finish', () => {
+      const duration = Date.now() - start;
+
+      if (appInsights) {
+        const appInsightsClient = appInsights.defaultClient;
+        // Track the request with Application Insights 
+        appInsightsClient.trackRequest({
+            name: `${req.method} ${req.url}`,
+            url: req.url,
+            duration: duration,
+            resultCode: res.statusCode,
+            success: res.statusCode >= 200 && res.statusCode < 400,
+            properties: {
+                method: req.method,
+                route: req.route ? req.route.path : req.url,
+            },
+        });
+
+        console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+      }
+  });
+
   next();
 });
+
+/** Middleware: Detects and store Uri calls for metrics */
+// app.use(function(req, res, next) {
+
+//   // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
+//   let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
+//   ownLogger.logger.logInfo(responseText);
+//   next();
+// });
 
 
 app.use(function(req, res, next) {
@@ -150,6 +200,31 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   ownLogger.logger.logError(res.locals.error);
+
+  const start = Date.now();
+
+  res.on('finish', () => {
+      const duration = Date.now() - start;
+
+      if (appInsights) {
+        const appInsightsClient = appInsights.defaultClient;
+        // Track the exception with Application Insights 
+        appInsightsClient.trackException({
+          exception: err,
+          properties: {
+            method: req.method,
+            route: req.route ? req.route.path : req.url,
+            statusCode: res.statusCode,
+            duration: duration,
+          },
+          measurements: {
+            duration: duration,
+          },
+        });
+
+        console.error(`Tracked Exception: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+      }
+  });
 
   // render the error page
   res.status(err.status || 500);
