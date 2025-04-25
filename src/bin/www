@@ -7,8 +7,7 @@
  * Module dependencies.
  */
 
-const app = require('../app');
-const appHttps = require('../app');
+
 const http = require('http');
 const https = require('https');
 const { certificate } = require('./../certGenerator');
@@ -16,7 +15,8 @@ const ws = require('ws');
 const { WebSocketService } = require('./../services/WebSocketService');
 require('dotenv').config()
 
-
+const app = require('../app');
+const appHttps = require('../app');
 
 const localPortHttp = 80;
 const localPortHttps = 443;

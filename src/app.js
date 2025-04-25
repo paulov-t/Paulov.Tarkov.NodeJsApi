@@ -27,14 +27,27 @@ let appInsights = require('applicationinsights');
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     console.log("Initializing Azure Application Insights...");
 
-    // Set up Application Insights
-    appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
-        .setAutoCollectRequests(true) // Automatically track HTTP requests
-        .setAutoCollectPerformance(true) // Automatically track performance metrics
-        .setAutoCollectExceptions(true) // Automatically track exceptions
-        .setAutoCollectDependencies(true) // Automatically track dependencies
-        .setAutoCollectConsole(true, true) // Automatically track console logs
-        .start();
+    try {
+      // Set up Application Insights
+      appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
+          .setAutoCollectRequests(false) // Automatically track HTTP requests
+          .setAutoCollectPerformance(false) // Automatically track performance metrics
+          .setAutoCollectExceptions(false) // Automatically track exceptions
+          .setAutoCollectDependencies(false) // Automatically track dependencies
+          .setAutoCollectConsole(false, false) // Automatically track console logs
+          .setAutoCollectHeartbeat(false) // Automatically track heartbeats
+          .setAutoCollectPreAggregatedMetrics(false) // Automatically track pre-aggregated metrics 
+          .setInternalLogging(false) // Disable internal logging
+          .setSendLiveMetrics(false) // Disable live metrics
+          .setUseDiskRetryCaching(false) // Disable disk retry caching
+          .setAutoDependencyCorrelation(false) // Disable automatic dependency correlation
+          .enableWebInstrumentation(false) // Disable web instrumentation
+          .start();
+    }
+    catch (error) {
+      console.error("Error initializing Application Insights:", error);
+      appInsights = undefined;
+    }
 
     console.log("Azure Application Insights initialized successfully.");
 } else {
