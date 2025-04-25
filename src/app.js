@@ -30,26 +30,36 @@ if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     try {
       // Set up Application Insights
       appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
-          .setAutoCollectRequests(false) // Automatically track HTTP requests
-          .setAutoCollectPerformance(false) // Automatically track performance metrics
-          .setAutoCollectExceptions(false) // Automatically track exceptions
-          .setAutoCollectDependencies(false) // Automatically track dependencies
-          .setAutoCollectConsole(false, false) // Automatically track console logs
-          .setAutoCollectHeartbeat(false) // Automatically track heartbeats
-          .setAutoCollectPreAggregatedMetrics(false) // Automatically track pre-aggregated metrics 
-          .setInternalLogging(false) // Disable internal logging
-          .setSendLiveMetrics(false) // Disable live metrics
-          .setUseDiskRetryCaching(false) // Disable disk retry caching
-          .setAutoDependencyCorrelation(false) // Disable automatic dependency correlation
-          .enableWebInstrumentation(false) // Disable web instrumentation
+        .setAutoCollectRequests(true)
+        .setAutoCollectPerformance(true, true)
+        .setAutoCollectExceptions(true)
+        .setAutoCollectDependencies(true)
+        .setAutoCollectConsole(false, false)
+        .setAutoCollectPreAggregatedMetrics(true)
+        .setSendLiveMetrics(false)
+        .setInternalLogging(false, true)
+        .enableWebInstrumentation(false)
+          // .setAutoCollectRequests(false) // Automatically track HTTP requests
+          // .setAutoCollectPerformance(false) // Automatically track performance metrics
+          // .setAutoCollectExceptions(false) // Automatically track exceptions
+          // .setAutoCollectDependencies(false) // Automatically track dependencies
+          // .setAutoCollectConsole(false, false) // Automatically track console logs
+          // .setAutoCollectHeartbeat(true) // Automatically track heartbeats
+          // .setAutoCollectPreAggregatedMetrics(true) // Automatically track pre-aggregated metrics 
+          // .setInternalLogging(false) // Disable internal logging
+          // .setSendLiveMetrics(false) // Disable live metrics
+          // .setUseDiskRetryCaching(false) // Disable disk retry caching
+          // .setAutoDependencyCorrelation(false) // Disable automatic dependency correlation
+          // .enableWebInstrumentation(false) // Disable web instrumentation
           .start();
+      console.log("Started Azure Application Insights.");
+
     }
     catch (error) {
       console.error("Error initializing Application Insights:", error);
       appInsights = undefined;
     }
 
-    console.log("Azure Application Insights initialized successfully.");
 } else {
     // If the connection string is not set, skip Application Insights initialization
     // and log a warning message
@@ -91,22 +101,20 @@ app.use((req, res, next) => {
   res.on('finish', () => {
       const duration = Date.now() - start;
 
-      if (appInsights) {
+      if (appInsights && appInsights.defaultClient) {
+        // Track the request with Application Insights)
         const appInsightsClient = appInsights.defaultClient;
-        if (appInsightsClient) { 
-          // Track the request with Application Insights 
-          appInsightsClient.trackRequest({
-              name: `${req.method} ${req.url}`,
-              url: req.url,
-              duration: duration,
-              resultCode: res.statusCode,
-              success: res.statusCode >= 200 && res.statusCode < 400,
-              properties: {
-                  method: req.method,
-                  route: req.route ? req.route.path : req.url,
-              },
-          });
-        }
+        appInsightsClient.trackRequest({
+            name: `${req.method} ${req.url}`,
+            url: req.url,
+            duration: duration,
+            resultCode: res.statusCode,
+            success: res.statusCode >= 200 && res.statusCode < 400,
+            properties: {
+                method: req.method,
+                route: req.route ? req.route.path : req.url,
+            },
+        });
 
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
