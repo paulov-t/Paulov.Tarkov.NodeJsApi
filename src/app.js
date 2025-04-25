@@ -39,6 +39,9 @@ if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
 
     console.log("Azure Application Insights initialized successfully.");
 } else {
+    // If the connection string is not set, skip Application Insights initialization
+    // and log a warning message
+    appInsights = undefined;
     console.warn("APPLICATIONINSIGHTS_CONNECTION_STRING is not set. Skipping Application Insights initialization.");
 }
 
@@ -78,18 +81,20 @@ app.use((req, res, next) => {
 
       if (appInsights) {
         const appInsightsClient = appInsights.defaultClient;
-        // Track the request with Application Insights 
-        appInsightsClient.trackRequest({
-            name: `${req.method} ${req.url}`,
-            url: req.url,
-            duration: duration,
-            resultCode: res.statusCode,
-            success: res.statusCode >= 200 && res.statusCode < 400,
-            properties: {
-                method: req.method,
-                route: req.route ? req.route.path : req.url,
-            },
-        });
+        if (appInsightsClient) { 
+          // Track the request with Application Insights 
+          appInsightsClient.trackRequest({
+              name: `${req.method} ${req.url}`,
+              url: req.url,
+              duration: duration,
+              resultCode: res.statusCode,
+              success: res.statusCode >= 200 && res.statusCode < 400,
+              properties: {
+                  method: req.method,
+                  route: req.route ? req.route.path : req.url,
+              },
+          });
+        }
 
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
@@ -208,19 +213,21 @@ app.use(function(err, req, res, next) {
 
       if (appInsights) {
         const appInsightsClient = appInsights.defaultClient;
-        // Track the exception with Application Insights 
-        appInsightsClient.trackException({
-          exception: err,
-          properties: {
-            method: req.method,
-            route: req.route ? req.route.path : req.url,
-            statusCode: res.statusCode,
-            duration: duration,
-          },
-          measurements: {
-            duration: duration,
-          },
-        });
+        if (appInsightsClient) { 
+          // Track the exception with Application Insights 
+          appInsightsClient.trackException({
+            exception: err,
+            properties: {
+              method: req.method,
+              route: req.route ? req.route.path : req.url,
+              statusCode: res.statusCode,
+              duration: duration,
+            },
+            measurements: {
+              duration: duration,
+            },
+          });
+        }
 
         console.error(`Tracked Exception: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
