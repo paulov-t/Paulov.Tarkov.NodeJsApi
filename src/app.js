@@ -21,8 +21,7 @@ const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
 const { AccountService } = require('./services/AccountService');
 
-
-const appInsights = require('applicationinsights');
+let appInsights = require('applicationinsights');
 
 // Check if the Application Insights connection string is set in the environment variables
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
