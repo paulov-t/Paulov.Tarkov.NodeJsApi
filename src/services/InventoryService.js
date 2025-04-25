@@ -455,6 +455,23 @@ class InventoryService {
         return character.Inventory.items.find(x=> x._id === itemId);
     }
 
+    /**
+     * 
+     * @param {AccountProfileCharacter} character 
+     * @param {any} item 
+     */
+    addItemToInventory(bot, item) {
+        if (!bot.Inventory.items) {
+            bot.Inventory.items = [];
+        }
+
+        if (!bot.Inventory.items.find(x => x._id === item._id)) {
+            bot.Inventory.items.push(item);
+        } else {
+            logger.logWarning(`Item ${item._id} already exists in inventory`);
+        }
+    }
+
 }
 
 module.exports.InventoryService = new InventoryService();

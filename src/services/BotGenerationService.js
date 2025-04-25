@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const { InventoryService } = require("./InventoryService");
 const { Database } = require("../classes/database");
+const { DatabaseService } = require("./DatabaseService");
 
 /**
  * A service to generate bots for a player scav or raids
@@ -94,18 +95,20 @@ class BotGenerationService {
         this.generateBotLevel(bot);
 
         // Generate the bot's inventory
+        const templateItemList = DatabaseService.getDatabase().getTemplateItems();
+        
 
         // Remove the Pocket 1
-        InventoryService.removeItemFromSlot(bot, "pocket1");
-        if (bot.Info.Side !== "Savage") {
-            // Add Army bandage
-            // const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
-            // pocket1Item.location = { 
-            //     x: 0
-            //     , y: 0
-            //     , r: 0
-            //     , "isSearched": false };
-        }
+        // InventoryService.removeItemFromSlot(bot, "pocket1");
+        // // if (bot.Info.Side !== "Savage") {
+        //     // Add Army bandage
+        //     const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
+        //     pocket1Item.location = { 
+        //         x: 0
+        //         , y: 0
+        //         , r: 0
+        //         , "isSearched": false };
+        // // }
 
         // Remove the Pocket 2
         InventoryService.removeItemFromSlot(bot, "pocket2");
@@ -128,15 +131,13 @@ class BotGenerationService {
         // Remove the Headwear
         InventoryService.removeItemFromSlot(bot, "Headwear");
         if (Object.keys(botDatabaseData.inventory.equipment.Headwear).length > 0) {
-            const randomHeadwearId = Object.keys(botDatabaseData.inventory.equipment.Headwear)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Headwear).length-1)];
-            InventoryService.addTemplatedItemToSlot(bot, randomHeadwearId, "Headwear");
+            this.addRandomItemToSlot(bot, "Headwear", Object.keys(botDatabaseData.inventory.equipment.Headwear));
         }
 
         // Remove the Eyewear
         InventoryService.removeItemFromSlot(bot, "Eyewear");
         if (Object.keys(botDatabaseData.inventory.equipment.Eyewear).length > 0) {
-            const randomEyewearId = Object.keys(botDatabaseData.inventory.equipment.Eyewear)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Eyewear).length-1)];
-            InventoryService.addTemplatedItemToSlot(bot, randomEyewearId, "Eyewear");
+            this.addRandomItemToSlot(bot, "Eyewear", Object.keys(botDatabaseData.inventory.equipment.Eyewear));
         }
 
         // Remove the FaceCover
@@ -167,6 +168,15 @@ class BotGenerationService {
         //     // InventoryService.addTemplatedItemToSlot(bot, randomVestId, "Vest");
         // }
 
+
+        // Remove the Holster
+        InventoryService.removeItemFromSlot(bot, "Holster");
+        if (Object.keys(botDatabaseData.inventory.equipment.Holster).length > 0) {
+            let newItem = this.addRandomItemToSlot(bot, "Holster", Object.keys(botDatabaseData.inventory.equipment.Holster));
+           
+
+        }
+
         if (bot.Info.Side !== "Savage")
             this.addDogtag(bot);
 
@@ -180,6 +190,71 @@ class BotGenerationService {
 
         return bot;
     }
+
+    addRandomItemToSlot(bot, slotId, randomItems) {
+        const randomId = randomItems[this.randomInteger(0, randomItems.length-1)];
+        const newItem = InventoryService.addTemplatedItemToSlot(bot, randomId, slotId);
+        const presetItems = DatabaseService.getDatabase().getItemPresetArrayByEncyclopedia(randomId);
+
+        const allItems = [];
+        allItems.push(newItem);
+
+        if (presetItems.length > 0) {
+            const presetItem = presetItems[this.randomInteger(0, presetItems.length-1)];
+            for (let i = 1 ; i < presetItem._items.length; i++) {
+                const item = presetItem._items[i];
+                if (item) {
+                    item._id = generateMongoId();
+                    item.parentId = newItem._id;
+                    InventoryService.addItemToInventory(bot, item);
+                    allItems.push(item);
+                }
+            }
+        }
+
+        if (slotId === "Holster") {
+            newItem.upd = {
+                "Repairable": {
+                    "Durability": this.randomInteger(50, 90),
+                    "MaxDurability": this.randomInteger(91, 99),
+                },
+                "FireMode": {
+                    "FireMode": "single"
+                }
+            }
+
+            // const cartridges = DatabaseService.getDatabase().getTemplateItemsByCategory("cartridges");
+            // InventoryService.addItemToInventory(bot, item);
+            const templateItem = DatabaseService.getDatabase().getTemplateItemById(newItem._tpl);
+            const ammoCaliber = templateItem._props.ammoCaliber;
+            if (ammoCaliber) {
+                const templatesItems = DatabaseService.getDatabase().getTemplateItemsAsArray();
+                const ammos = templatesItems.filter(x => x._props.ammoType === "bullet" && x._props.Caliber == ammoCaliber && x._props.Damage > 0);
+                if (ammos.length > 0) {
+                    const magazine = allItems.find(x => x.slotId == "mod_magazine");
+                    const magazineTemplate = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
+                    if (magazine && magazineTemplate._props.Cartridges && magazineTemplate._props.Cartridges.length > 0) {
+                        const randomAmmo = 
+                            {
+                                _tpl: ammos[this.randomInteger(0, ammos.length-1)]._id,
+                                _id: generateMongoId(),
+                                parentId: magazine._id,
+                                slotId: "cartridges",
+                                upd: {
+                                    "StackObjectsCount": magazineTemplate._props.Cartridges[0]._max_count,
+                                    "SpawnedInSession": false
+                                }
+                            }
+                        InventoryService.addItemToInventory(bot, randomAmmo);
+                    }
+                }
+            }
+        }
+
+
+        return newItem;
+    }
+
 
     /**
      * 

@@ -277,7 +277,10 @@ class Database {
   }
 
   getItemPresetArrayByEncyclopedia(filterByEncyclopediaTpl, properties) {
+
+    // If we have not loaded the database yet, do it now
     this.loadCompressedDatabase();
+
     let dbResult = Object.values(this.getData(this["globals"])["ItemPresets"]);
     dbResult = dbResult.filter(x => x._encyclopedia === filterByEncyclopediaTpl);
     if (dbResult.length === 0)

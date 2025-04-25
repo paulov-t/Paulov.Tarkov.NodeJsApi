@@ -346,8 +346,6 @@ class LootGenerationService
                   const newPresetParentId = bsgHelper.generateMongoId();
                   containerItems.push({ _id: newPresetParentId, _tpl: presetParent._tpl, parentId: parentId });
 
-
-                  // console.log(presetParent);
                   const presetParentTemplate = templateItemList[presetParent._tpl];
                  
                   let extraWidth = 0;
