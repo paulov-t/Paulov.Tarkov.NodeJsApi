@@ -21,49 +21,70 @@ const database = require('./classes/database');
 const ownLogger = require('./classes/logger');
 const { AccountService } = require('./services/AccountService');
 
-let appInsights = require('applicationinsights');
+
+// Import the `useAzureMonitor()` function from the `@azure/monitor-opentelemetry` package.
+const { useAzureMonitor, AzureMonitorOpenTelemetryOptions } = require("@azure/monitor-opentelemetry");
+const opentelemetryapi = require("@opentelemetry/api");
+let usingAppInsights = false;
 
 // Check if the Application Insights connection string is set in the environment variables
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     console.log("Initializing Azure Application Insights...");
 
-    try {
-      // Set up Application Insights
-      appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
-        .setAutoCollectRequests(true)
-        .setAutoCollectPerformance(true, true)
-        .setAutoCollectExceptions(true)
-        .setAutoCollectDependencies(true)
-        .setAutoCollectConsole(false, false)
-        .setAutoCollectPreAggregatedMetrics(true)
-        .setSendLiveMetrics(false)
-        .setInternalLogging(false, true)
-        .enableWebInstrumentation(false)
-          // .setAutoCollectRequests(false) // Automatically track HTTP requests
-          // .setAutoCollectPerformance(false) // Automatically track performance metrics
-          // .setAutoCollectExceptions(false) // Automatically track exceptions
-          // .setAutoCollectDependencies(false) // Automatically track dependencies
-          // .setAutoCollectConsole(false, false) // Automatically track console logs
-          // .setAutoCollectHeartbeat(true) // Automatically track heartbeats
-          // .setAutoCollectPreAggregatedMetrics(true) // Automatically track pre-aggregated metrics 
-          // .setInternalLogging(false) // Disable internal logging
-          // .setSendLiveMetrics(false) // Disable live metrics
-          // .setUseDiskRetryCaching(false) // Disable disk retry caching
-          // .setAutoDependencyCorrelation(false) // Disable automatic dependency correlation
-          // .enableWebInstrumentation(false) // Disable web instrumentation
-          .start();
-      console.log("Started Azure Application Insights.");
+     // Filter using HTTP instrumentation configuration
+     const httpInstrumentationConfig = {
+      enabled: true,
+      ignoreIncomingRequestHook: (request) => {
+          // Ignore OPTIONS incoming requests
+          if (request.method === 'OPTIONS') {
+              return true;
+          }
+          return false;
+      },
+      ignoreOutgoingRequestHook: (options) => {
+          // Ignore outgoing requests with /test path
+          if (options.path === '/test') {
+              return true;
+          }
+          return false;
+      }
+  };
 
-    }
-    catch (error) {
-      console.error("Error initializing Application Insights:", error);
-      appInsights = undefined;
-    }
+  const { Resource } = require('@opentelemetry/resources');
+  const { SEMATTRS_ENDUSER_ID, SEMATTRS_HTTP_CLIENT_IP, SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_NAMESPACE, SemanticAttributes, SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
+  const customResource =  Resource.EMPTY;
+  // ----------------------------------------
+  // Setting role name and role instance
+  // ----------------------------------------
+  customResource.attributes[SEMRESATTRS_SERVICE_NAME] = "my-helloworld-service";
+  customResource.attributes[SEMRESATTRS_SERVICE_NAMESPACE] = "my-namespace";
+  customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = "my-instance";
+  if (process.env.OPEN_TELEMETRY_INSTANCE_NAME)
+    customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = process.env.OPEN_TELEMETRY_INSTANCE_NAME;
+
+   
+    // Create a new AzureMonitorOpenTelemetryOptions object.
+    /**
+     * @type {AzureMonitorOpenTelemetryOptions}
+     */
+    const options = {
+      azureMonitorExporterOptions: {
+        connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING
+      }
+      , resource: customResource // Set the custom resource
+      , samplingRatio: 1 // Set the sampling ratio to 1 (100%)
+      , liveMetrics: true // Enable live metrics
+      , instrumentationOptions: {
+        azureSdk: { enabled: true }, // Enable Azure SDK instrumentation
+        http: httpInstrumentationConfig
+      }
+    };
+    // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
+    useAzureMonitor(options);
+    usingAppInsights = true;
+    console.log("Azure Application Insights initialized successfully.");
 
 } else {
-    // If the connection string is not set, skip Application Insights initialization
-    // and log a warning message
-    appInsights = undefined;
     console.warn("APPLICATIONINSIGHTS_CONNECTION_STRING is not set. Skipping Application Insights initialization.");
 }
 
@@ -101,21 +122,32 @@ app.use((req, res, next) => {
   res.on('finish', () => {
       const duration = Date.now() - start;
 
-      if (appInsights && appInsights.defaultClient) {
-        // Track the request with Application Insights)
-        const appInsightsClient = appInsights.defaultClient;
-        appInsightsClient.trackRequest({
-            name: `${req.method} ${req.url}`,
-            url: req.url,
-            duration: duration,
-            resultCode: res.statusCode,
-            success: res.statusCode >= 200 && res.statusCode < 400,
-            properties: {
-                method: req.method,
-                route: req.route ? req.route.path : req.url,
-            },
-        });
-
+      if (usingAppInsights) {
+      //   // Track the request with Application Insights)
+      //   const appInsightsClient = appInsights.defaultClient;
+      //   appInsightsClient.trackRequest({
+      //       name: `${req.method} ${req.url}`,
+      //       url: req.url,
+      //       duration: duration,
+      //       resultCode: res.statusCode,
+      //       success: res.statusCode >= 200 && res.statusCode < 400,
+      //       properties: {
+      //           method: req.method,
+      //           route: req.route ? req.route.path : req.url,
+      //       },
+      //   });
+      const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
+      if (currentSpan) {
+        // display traceid in the terminal
+        console.log(`traceid: ${currentSpan.spanContext().traceId}`);
+      }
+      const span = opentelemetryapi.trace.getTracer("something").startSpan("handleRequest", {
+        kind: opentelemetryapi.SpanKind.SERVER, // server
+        attributes: { key: "value" }
+      });
+      // Annotate our span to capture metadata about the operation
+      span.addEvent("invoking handleRequest");
+      span.end();
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
   });
@@ -230,26 +262,26 @@ app.use(function(err, req, res, next) {
   res.on('finish', () => {
       const duration = Date.now() - start;
 
-      if (appInsights) {
-        const appInsightsClient = appInsights.defaultClient;
-        if (appInsightsClient) { 
-          // Track the exception with Application Insights 
-          appInsightsClient.trackException({
-            exception: err,
-            properties: {
-              method: req.method,
-              route: req.route ? req.route.path : req.url,
-              statusCode: res.statusCode,
-              duration: duration,
-            },
-            measurements: {
-              duration: duration,
-            },
-          });
-        }
+      // if (appInsights) {
+      //   const appInsightsClient = appInsights.defaultClient;
+      //   if (appInsightsClient) { 
+      //     // Track the exception with Application Insights 
+      //     appInsightsClient.trackException({
+      //       exception: err,
+      //       properties: {
+      //         method: req.method,
+      //         route: req.route ? req.route.path : req.url,
+      //         statusCode: res.statusCode,
+      //         duration: duration,
+      //       },
+      //       measurements: {
+      //         duration: duration,
+      //       },
+      //     });
+      //   }
 
-        console.error(`Tracked Exception: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
-      }
+      //   console.error(`Tracked Exception: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+      // }
   });
 
   // render the error page
