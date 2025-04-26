@@ -48,11 +48,12 @@ This project has been built in [Visual Studio Code](https://code.visualstudio.co
 
 For development you will need to:
 
-1. Clone the repository: `git clone https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi.git`
-2. Get Large File System files: `git lfs pull`
-3. Open `PaulovWebServer.code-workspace` in Visual Studio Code.
-4. Run `npm install` in Visual Studio Code Terminal.
-5. Press F5 and select Node.js
+1. Install `node v20.19.1 LTS`
+2. Clone the repository: `git clone https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi.git`
+3. Get Large File System files: `git lfs pull`
+4. Open `PaulovWebServer.code-workspace` in Visual Studio Code.
+5. Run `npm install` in Visual Studio Code Terminal.
+6. Press F5 and select Node.js
 
 ## License
 
