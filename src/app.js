@@ -106,33 +106,30 @@ app.use((req, res, next) => {
       const duration = Date.now() - start;
 
       if (usingAppInsights) {
-      //   // Track the request with Application Insights)
-      //   const appInsightsClient = appInsights.defaultClient;
-      //   appInsightsClient.trackRequest({
-      //       name: `${req.method} ${req.url}`,
-      //       url: req.url,
-      //       duration: duration,
-      //       resultCode: res.statusCode,
-      //       success: res.statusCode >= 200 && res.statusCode < 400,
-      //       properties: {
-      //           method: req.method,
-      //           route: req.route ? req.route.path : req.url,
-      //       },
-      //   });
-      const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
-      if (currentSpan) {
-        // display traceid in the terminal
-        console.log(`traceid: ${currentSpan.spanContext().traceId}`);
-      }
-      
-      const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(`${req.method} ${req.url}`, {
-        kind: opentelemetryapi.SpanKind.SERVER, // server
-        attributes: { key: "value", duration: duration },
-      });
+     
+        const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
+        if (currentSpan) {
+          // display traceid in the terminal
+          console.log(`traceid: ${currentSpan.spanContext().traceId}`);
+        }
+        
+        const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(`${req.method} ${req.url}`, {
+          kind: opentelemetryapi.SpanKind.SERVER, // server
+          attributes: { key: "value", duration: duration },
+        });
 
-      // Annotate our span to capture metadata about the operation
-      span.addEvent(`${req.method} ${req.url}`);
-      span.end();
+        // Annotate our span to capture metadata about the operation
+        span.addEvent(`trackRequest`
+          , {
+            statusCode: res.statusCode,
+            message: res.statusMessage,
+            duration: duration,
+            method: req.method,
+            url: req.url,
+            sessionId: req.SessionId
+          }
+          , start);
+        span.end();
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
   });
@@ -247,26 +244,30 @@ app.use(function(err, req, res, next) {
   res.on('finish', () => {
       const duration = Date.now() - start;
 
-      // if (appInsights) {
-      //   const appInsightsClient = appInsights.defaultClient;
-      //   if (appInsightsClient) { 
-      //     // Track the exception with Application Insights 
-      //     appInsightsClient.trackException({
-      //       exception: err,
-      //       properties: {
-      //         method: req.method,
-      //         route: req.route ? req.route.path : req.url,
-      //         statusCode: res.statusCode,
-      //         duration: duration,
-      //       },
-      //       measurements: {
-      //         duration: duration,
-      //       },
-      //     });
-      //   }
+      if (usingAppInsights) {
 
-      //   console.error(`Tracked Exception: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
-      // }
+        const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
+        if (currentSpan) {
+          // display traceid in the terminal
+          console.log(`traceid: ${currentSpan.spanContext().traceId}`);
+        }
+        
+        const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(`${req.method} ${req.url}`, {
+          kind: opentelemetryapi.SpanKind.SERVER, // server
+          attributes: { key: "value", duration: duration },
+        });
+
+        // Annotate our span to capture metadata about the operation
+        span.addEvent(`trackFailedRequest`
+          , {
+            statusCode: err.status || 500,
+            message: err.message,
+          }
+          , start
+        );
+        span.end();
+      }
+      
   });
 
   // render the error page
