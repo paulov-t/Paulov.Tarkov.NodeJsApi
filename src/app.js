@@ -124,12 +124,14 @@ app.use((req, res, next) => {
         // display traceid in the terminal
         console.log(`traceid: ${currentSpan.spanContext().traceId}`);
       }
-      const span = opentelemetryapi.trace.getTracer("something").startSpan("handleRequest", {
+      
+      const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(`${req.method} ${req.url}`, {
         kind: opentelemetryapi.SpanKind.SERVER, // server
-        attributes: { key: "value" }
+        attributes: { key: "value", duration: duration },
       });
+
       // Annotate our span to capture metadata about the operation
-      span.addEvent("invoking handleRequest");
+      span.addEvent(`${req.method} ${req.url}`);
       span.end();
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
