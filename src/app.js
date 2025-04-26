@@ -31,24 +31,7 @@ let usingAppInsights = false;
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     console.log("Initializing Azure Application Insights...");
 
-     // Filter using HTTP instrumentation configuration
-     const httpInstrumentationConfig = {
-      enabled: true,
-      ignoreIncomingRequestHook: (request) => {
-          // Ignore OPTIONS incoming requests
-          if (request.method === 'OPTIONS') {
-              return true;
-          }
-          return false;
-      },
-      ignoreOutgoingRequestHook: (options) => {
-          // Ignore outgoing requests with /test path
-          if (options.path === '/test') {
-              return true;
-          }
-          return false;
-      }
-  };
+     
 
   const { Resource } = require('@opentelemetry/resources');
   const { SEMATTRS_ENDUSER_ID, SEMATTRS_HTTP_CLIENT_IP, SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_NAMESPACE, SemanticAttributes, SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
@@ -75,8 +58,8 @@ if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
       , samplingRatio: 1 // Set the sampling ratio to 1 (100%)
       , liveMetrics: true // Enable live metrics
       , instrumentationOptions: {
-        azureSdk: { enabled: true }, // Enable Azure SDK instrumentation
-        http: httpInstrumentationConfig
+        azureSdk: { enabled: false },   // Disable Azure SDK instrumentation
+        http: { enabled: false },      // Disable HTTP instrumentation
       }
     };
     // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
