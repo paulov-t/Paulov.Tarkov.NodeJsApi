@@ -232,20 +232,22 @@ class BotGenerationService {
                 const ammos = templatesItems.filter(x => x._props.ammoType === "bullet" && x._props.Caliber == ammoCaliber && x._props.Damage > 0);
                 if (ammos.length > 0) {
                     const magazine = allItems.find(x => x.slotId == "mod_magazine");
-                    const magazineTemplate = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
-                    if (magazine && magazineTemplate._props.Cartridges && magazineTemplate._props.Cartridges.length > 0) {
-                        const randomAmmo = 
-                            {
-                                _tpl: ammos[this.randomInteger(0, ammos.length-1)]._id,
-                                _id: generateMongoId(),
-                                parentId: magazine._id,
-                                slotId: "cartridges",
-                                upd: {
-                                    "StackObjectsCount": magazineTemplate._props.Cartridges[0]._max_count,
-                                    "SpawnedInSession": false
+                    if (magazine) {
+                        const magazineTemplate = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
+                        if (magazine && magazineTemplate._props.Cartridges && magazineTemplate._props.Cartridges.length > 0) {
+                            const randomAmmo = 
+                                {
+                                    _tpl: ammos[this.randomInteger(0, ammos.length-1)]._id,
+                                    _id: generateMongoId(),
+                                    parentId: magazine._id,
+                                    slotId: "cartridges",
+                                    upd: {
+                                        "StackObjectsCount": magazineTemplate._props.Cartridges[0]._max_count,
+                                        "SpawnedInSession": false
+                                    }
                                 }
-                            }
-                        InventoryService.addItemToInventory(bot, randomAmmo);
+                            InventoryService.addItemToInventory(bot, randomAmmo);
+                        }
                     }
                 }
             }
