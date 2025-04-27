@@ -199,8 +199,9 @@ app.use('/client/ragfair', require('./routes/client/ragfair'));
 app.use('/client/mail', require('./controllers/mailController'));
 app.use('/client/match', require('./controllers/matchController'));
 app.use('/client/game/profile', require('./controllers/gameProfileController'));
+app.use('/client/friend', require('./controllers/friendController'));
 
-app.use('/itemSearch', require('./routes/itemSearch'));
+app.use('/client/quest', require('./controllers/questController'));
 
 /** Paulov API v1 */
 app.use('/v1/auth', require('./routes/v1/auth'));
