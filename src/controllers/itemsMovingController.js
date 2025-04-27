@@ -21,6 +21,7 @@ const { AccountProfileCharacterQuestItem, Account } = require('../models/Account
 const { DatabaseService } = require('../services/DatabaseService');
 const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../models/ItemMovingActions/BuyFromTraderAction');
 const { ContainerService } = require('../services/ContainerService');
+const { QuestService } = require('../services/QuestService');
 
 /**
  * @swagger
@@ -368,34 +369,7 @@ function processRestoreHealth(account, action, outputChanges) {
 
 function processQuestAccept(account, action, outputChanges) {
 
-    const result = { success: true, error: undefined };
-
-    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    const pmcProfile = accountProfile.characters.pmc;
-    const allQuests = Database.getTemplateQuests();
-    const questToAccept = allQuests[action.qid];
-    if (questToAccept) {
-        logger.logInfo(`Accepting ${questToAccept._id}`);
-        const index = pmcProfile.Quests.findIndex(x => x.qid === questToAccept._id);
-        if (index === -1) {
-            logger.logWarning(`Could not find ${questToAccept._id}. Adding the item.`);
-            let profileQuestItem = new AccountProfileCharacterQuestItem();
-            profileQuestItem.qid = questToAccept._id;
-            profileQuestItem.startTime = Math.round(Date.now() / 1000);
-            pmcProfile.Quests.push(profileQuestItem);
-        }
-        else {
-            let profileQuestItem = pmcProfile.Quests[index];
-            logger.logDebug(`Found ${questToAccept._id} at index ${index}`);
-            if (profileQuestItem) {
-                profileQuestItem.status = "Started";
-            }
-        }
-
-
-    }
-
-    return result;
+    return QuestService.acceptQuestForAccount(account, action.qid, outputChanges);
 }
 
 function processQuestComplete(account, action, outputChanges) {
