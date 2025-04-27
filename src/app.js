@@ -113,10 +113,12 @@ app.use((req, res, next) => {
           console.log(`traceid: ${currentSpan.spanContext().traceId}`);
         }
         
-        const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(`${req.method} ${req.url}`, {
-          kind: opentelemetryapi.SpanKind.SERVER, // server
-          attributes: { key: "value", duration: duration },
-        });
+        const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(
+          `${req.method} ${req.url}`,
+            {
+              kind: opentelemetryapi.SpanKind.SERVER, // server
+              attributes: { Duration: duration, responseCode: res.statusCode },
+            });
 
         // Annotate our span to capture metadata about the operation
         span.addEvent(`trackRequest`
@@ -126,10 +128,11 @@ app.use((req, res, next) => {
             duration: duration,
             method: req.method,
             url: req.url,
-            sessionId: req.SessionId
+            sessionId: req.SessionId,
+            responseCode: res.statusCode
           }
           , start);
-        span.end();
+        span.end(Date.now());
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
   });
@@ -150,7 +153,7 @@ app.use((req, res, next) => {
 app.use(function(req, res, next) {
 
   if(req.url.includes("files/")) {
-    let filePath = req.url.replace(req.host, "");
+    let filePath = req.url.replace(req.hostname, "");
     filePath = filePath.substring(1, filePath.length);
     filePath = path.join(__dirname, 'public', filePath);
 
@@ -200,7 +203,6 @@ app.use('/client/mail', require('./controllers/mailController'));
 app.use('/client/match', require('./controllers/matchController'));
 app.use('/client/game/profile', require('./controllers/gameProfileController'));
 app.use('/client/friend', require('./controllers/friendController'));
-
 app.use('/client/quest', require('./controllers/questController'));
 
 /** Paulov API v1 */
@@ -211,6 +213,8 @@ app.use('/v1/logging', require('./routes/v1/logging'));
 /** User Views */
 app.use('/user', require('./controllers/userController'));
 
+/** Item Search Api */
+app.use('/itemSearch', require('./routes/itemSearch'));
 
 /** Middleware: Deflates the Response Body using Zlib to a standard BSG expects */
 app.use(function(req, res, next) {
