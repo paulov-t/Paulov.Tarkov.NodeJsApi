@@ -869,7 +869,10 @@ router.post('/server/list', function(req, res, next) {
  */
 router.post('/mail/dialog/list', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
+    const account = AccountService.getAccount(req.SessionId);
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    
+    bsgHelper.addBSGBodyInResponseWithData(res, accountProfile.socialNetwork.dialogues);
 
     next();
 });

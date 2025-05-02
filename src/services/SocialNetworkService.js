@@ -1,5 +1,8 @@
 const { AccountService } = require("./AccountService");
 const { AccountProfileMode, Account } = require("../models/Account");
+const { Message } = require("../models/Message");
+const { Dialogue } = require("../models/Dialogue");
+const { EMessageType } = require("../models/Enums/EMessageType");
 
 /**
  * A service to manage friendship, grouping and messages in the app
@@ -57,6 +60,46 @@ class SocialNetworkService {
         AccountService.saveAccount(myAccount);
         return true;
 
+    }
+
+    /**
+     * 
+     * @param {*} fromId 
+     * @param {*} targetAccountId 
+     * @param {*} mode 
+     * @param {Message} message 
+     * @param {*} items 
+     * @returns 
+     */
+    sendMessageToAccount(fromId, targetAccountId, mode, message, items) {
+        const targetAccount = AccountService.getAccount(targetAccountId);
+        if (!targetAccount) {
+            return false;
+        }
+
+        const targetAccountByMode = AccountService.getAccountProfileByCurrentModeFromAccount(targetAccount, mode);
+        if (!targetAccountByMode) {
+            return false;
+        }
+
+        // Ensure messages exists
+        if (!targetAccountByMode.socialNetwork.dialogues)
+            targetAccountByMode.socialNetwork.dialogues = [];
+
+        const dialogue = new Dialogue();
+        dialogue.message = message;
+        dialogue.attachmentsNew = 0;
+        dialogue.new = 1;
+        // dialogue.messages = [message];
+        dialogue.type = EMessageType.NpcTraderMessage;
+        dialogue.Users = [fromId];
+        targetAccountByMode.socialNetwork.dialogues.push(dialogue);
+
+        // if (targetAccountByMode.socialNetwork.dialogues.findIndex((v) => { return v.uid == message.uid; }) === -1) 
+        //     targetAccountByMode.socialNetwork.dialogues.push(message);
+
+        AccountService.saveAccount(targetAccount);
+        return true;
     }
 }
 

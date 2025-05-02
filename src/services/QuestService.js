@@ -1,9 +1,14 @@
-const { Account } = require("../models/Account");
+const { Account, AccountProfileCharacterQuestItem } = require("../models/Account");
 var { AccountService } = require('./AccountService');
 const { getBody } = require('../bsgHelper');
 const { getRenderViewModel, getRenderViewModelWithUsername } = require('../classes/shared');
 const { Database } = require('../classes/database');
 var bsgHelper =  require('../bsgHelper');
+const { logger } = require('./../classes/logger');
+const { SocialNetworkService } = require('./SocialNetworkService');
+const { Message } = require("../models/Message");
+const { EMessageType } = require("../models/Enums/EMessageType");
+const { mongoid } = require("mongoid-js");
 
 class QuestService {
     constructor() {
@@ -122,6 +127,14 @@ class QuestService {
 
     acceptQuestForAccount(account, questId, outputChanges) {
 
+        if (questId === undefined) {
+            throw new Error("Quest ID is undefined. Cannot accept quest.");
+        }
+
+        if (typeof(questId) !== 'string') {
+            throw new Error("Quest ID is not a string. Cannot accept quest.");
+        }
+
         const result = { success: true, error: undefined };
     
         const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
@@ -137,6 +150,8 @@ class QuestService {
                 profileQuestItem.qid = questToAccept._id;
                 profileQuestItem.startTime = Math.round(Date.now() / 1000);
                 pmcProfile.Quests.push(profileQuestItem);
+
+                
             }
             else {
                 let profileQuestItem = pmcProfile.Quests[index];
@@ -146,12 +161,46 @@ class QuestService {
                 }
             }
     
+            this.sendStartedMessageToClient(account, questToAccept);
     
         }
     
         return result;
     }
 
+    /**
+     * 
+     * @param {Account} account 
+     * @param {*} quest 
+     */
+    sendStartedMessageToClient(account, quest) {
+
+        /**
+         * @type {Database}
+         */
+        const db = global._database;
+        const localeEntries = db["locales"];
+        const localeEntry = localeEntries.global['en'];
+        const localeDb = db.getData(localeEntry);
+        const messageText = localeDb[quest.startedMessageText] !== undefined ? localeDb[quest.startedMessageText] : localeDb[quest.description];
+        if (messageText) {
+            const startedRewards = quest.rewards.Started;
+            const items = [];
+            for (const reward of startedRewards) {
+                for (const item of reward.items) {
+                    items.push(item);
+                }
+            }
+            const message = new Message();
+            message.type = EMessageType.QuestStart;
+            message.text = messageText;
+            message.items = items;
+            message.hasRewards = message.items.length > 0;
+            message.uid = mongoid()
+            SocialNetworkService.sendMessageToAccount(quest.traderId, account.accountId, account.currentMode, message, items);
+        }
+
+    }
 
 }
 

@@ -30,7 +30,14 @@ router.post('/dialog/view', function(req, res, next) {
 
   const sessionId = req.SessionId;
 
-  bsgHelper.getBody(res, {});
+  const account = AccountService.getAccount(req.SessionId);
+  const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+
+  bsgHelper.getBody(res,  {
+    messages: accountProfile.socialNetwork.dialogues,
+    profiles: [],
+    hasMessagesWithRewards: false,
+  });
   
   next();
 });

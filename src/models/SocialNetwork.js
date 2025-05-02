@@ -1,6 +1,7 @@
 const { FriendRequest } = require('./FriendRequest');
 const { MatchGroup } = require('./MatchGroup');
 const { GroupInvite } = require('./GroupInvite');
+const { Dialogue } = require('./Dialogue');
 
 class SocialNetwork {
     constructor() {
@@ -27,6 +28,11 @@ class SocialNetwork {
           * @type {GroupInvite}
           */
          this.groupInvite = undefined
+
+         /**
+          * @type {Array<Dialogue>}
+          */
+         this.dialogues = []
     }
 }
 
