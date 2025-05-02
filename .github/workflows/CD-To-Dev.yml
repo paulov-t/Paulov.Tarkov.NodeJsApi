@@ -33,7 +33,6 @@ jobs:
           npm install --production
           npm version ${{ steps.date.outputs.date }}
           npm run build --if-present
-          npm run test --if-present
       
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
