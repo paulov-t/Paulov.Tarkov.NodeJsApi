@@ -204,6 +204,7 @@ app.use('/client/match', require('./controllers/matchController'));
 app.use('/client/game/profile', require('./controllers/gameProfileController'));
 app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/quest', require('./controllers/questController'));
+app.use('/client/survey', require('./controllers/surveyController'));
 
 /** Paulov API v1 */
 app.use('/v1/auth', require('./routes/v1/auth'));

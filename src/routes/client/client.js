@@ -66,7 +66,7 @@ router.post('/game/mode', function(req, res, next) {
     account.currentMode = sessionMode;
     AccountService.saveAccount(account);
 
-    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: sessionMode, backendUrl: req.host });
+    bsgHelper.addBSGBodyInResponseWithData(res, { gameMode: sessionMode, backendUrl: req.hostname });
     next();
   });
 
@@ -84,6 +84,10 @@ router.post('/game/mode', function(req, res, next) {
 router.post('/game/start', function(req, res, next) {
     const today = new Date().toUTCString();
     const startTimeStampMS = Date.parse(today);
+
+    const requestIp = require('request-ip');
+    const clientIp = requestIp.getClientIp(req);
+    console.log(`Client IP: ${clientIp}`);
 
     bsgHelper.addBSGBodyInResponseWithData(res, { utc_time: startTimeStampMS / 1000 });
     next();
@@ -852,7 +856,8 @@ router.post('/notifier/channel/create', function(req, res, next) {
  */
 router.post('/server/list', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, [{ ip: `https://${req.host}`, port: 443 }]);
+    // bsgHelper.addBSGBodyInResponseWithData(res, [{ ip: `https://${req.host}`, port: 443 }]);
+    bsgHelper.addBSGBodyInResponseWithData(res, []);
     next();
 });
 
@@ -956,182 +961,7 @@ router.post('/repeatalbeQuests/activityPeriods', function(req, res, next) {
     next();
 });
 
-/**
- * @swagger
- * /client/survey:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 41
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/survey', function(req, res, next) {
 
-    const surveyResult = {
-        "locale": {
-            "en": {
-                "question_1": "How off-topic is general chat on the SPT discord?",
-                "question_1_answer_1": "Not at all",
-                "question_1_answer_2": "A little",
-                "question_1_answer_3": "Sometimes",
-                "question_1_answer_4": "Somewhat often",
-                "question_1_answer_5": "Quite often",
-                "question_1_answer_6": "Most of the time",
-                "question_1_answer_7": "Almost always",
-                "question_1_answer_8": "Always",
-                "question_1_answer_9": "NOT OFF TOPIC ENOUGH",
-                "question_1_answer_10": "I LIVE TO MAKE GENERAL CHAT OFF TOPIC",
-                "question_1_answer_11": "I am posting gifs to general chat as we speak",
-                "question_2": "When you download a mod from the hub do you read the readme/mod description?",
-                "question_2_answer_1": "What's a description",
-                "question_2_answer_2": "I can't read",
-                "question_2_answer_3": "I am illiterate",
-                "question_2_answer_4": "I am too busy making general chat off-topic to read",
-                "question_2_answer_5": "YOU WILL NEVER MAKE ME READ TEXT I WILL ASK IN GENERAL CHAT INSTEAD",
-                "title": "Feedback survey",
-                "time": "About 1 minute",
-                "description": "This is the first SPT survey! Your survey doesn't get sent anywhere, its just for modders to see how it works and maybe make use of.",
-                "farewell": "I told you at the start the survey doesn't get sent anywhere and yet you still completed it, curious."
-            }
-        },
-        "survey": {
-            "id": 1,
-            "welcomePageData": {
-                "titleLocaleKey": "title",
-                "timeLocaleKey": "time",
-                "descriptionLocaleKey": "description"
-            },
-            "farewellPageData": {
-                "textLocaleKey": "farewell"
-            },
-            "pages": [[0, 1]],
-            "questions": [
-                {
-                    "id": 0,
-                    "sortIndex": 1,
-                    "titleLocaleKey": "question_1",
-                    "hintLocaleKey": "",
-                    "answerLimit": 10,
-                    "answerType": "MultiOption",
-                    "answers": [
-                        {
-                            "id": 0,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_1"
-                        },
-                        {
-                            "id": 1,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_2"
-                        },
-                        {
-                            "id": 2,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_3"
-                        },
-                        {
-                            "id": 3,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_4"
-                        },
-                        {
-                            "id": 4,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_5"
-                        },
-                        {
-                            "id": 5,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_6"
-                        },
-                        {
-                            "id": 6,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_7"
-                        },
-                        {
-                            "id": 7,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_8"
-                        },
-                        {
-                            "id": 8,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_9"
-                        },
-                        {
-                            "id": 9,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_10"
-                        },
-                        {
-                            "id": 10,
-                            "questionId": 0,
-                            "sortIndex": 1,
-                            "localeKey": "question_1_answer_11"
-                        }
-                    ]
-                },
-                {
-                    "id": 1,
-                    "sortIndex": 1,
-                    "titleLocaleKey": "question_2",
-                    "hintLocaleKey": "",
-                    "answerLimit": 5,
-                    "answerType": "SingleOption",
-                    "answers": [
-                        {
-                            "id": 0,
-                            "questionId": 1,
-                            "sortIndex": 1,
-                            "localeKey": "question_2_answer_1"
-                        },
-                        {
-                            "id": 1,
-                            "questionId": 1,
-                            "sortIndex": 1,
-                            "localeKey": "question_2_answer_2"
-                        },
-                        {
-                            "id": 2,
-                            "questionId": 1,
-                            "sortIndex": 1,
-                            "localeKey": "question_2_answer_3"
-                        },
-                        {
-                            "id": 3,
-                            "questionId": 1,
-                            "sortIndex": 1,
-                            "localeKey": "question_2_answer_4"
-                        },
-                        {
-                            "id": 4,
-                            "questionId": 1,
-                            "sortIndex": 1,
-                            "localeKey": "question_2_answer_5"
-                        }
-                    ]
-                }
-            ],
-            "isNew": false
-        }
-    };
-    bsgHelper.addBSGBodyInResponseWithData(res, surveyResult);
-
-    next();
-});
 
 /**
  * @swagger
