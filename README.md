@@ -27,13 +27,13 @@ This is a personal project to learn NodeJs Express Api & Website against a real-
 - This is a purely a for fun and personal learning for me against a real world scenario using NodeJS.
 - This is not designed to replace Official Tarkov PvE. Please play Official Tarkov PvE!
 - This is not designed to replace [SP-Tarkov](https://github.com/sp-tarkov/server)
-- If you use the Url's below to play the game your save is not safe and could be deleted at any time.
+- If you use the Url's below to play the game, please remember that your data could be deleted at any time.
   
 ## Current running live example Website and Api
 - [Dev-Test](https://paulovtarkovnodejsapi-dev.azurewebsites.net/)
-- [Production](https://paulovtarkovnodejsapi.azurewebsites.net/)
-- [Hardcore](https://paulovtarkovnodejsapi-hc.azurewebsites.net/) - Not live
-- [Zombies](https://paulovtarkovnodejsapi-zombies.azurewebsites.net/) - Not live
+- ~~[Production](https://paulovtarkovnodejsapi.azurewebsites.net/)~~ - Not live
+- ~~[Hardcore](https://paulovtarkovnodejsapi-hc.azurewebsites.net/)~~ - Not live
+- ~~[Zombies](https://paulovtarkovnodejsapi-zombies.azurewebsites.net/)~~ - Not live
 - [Swagger Api UI](https://paulovtarkovnodejsapi-dev.azurewebsites.net/api-docs)
 - [Ammo Table - including custom rating calculation](https://paulovtarkovnodejsapi-dev.azurewebsites.net/ammo)
 - [Item Table - including custom rating calculation](https://paulovtarkovnodejsapi-dev.azurewebsites.net/items)
