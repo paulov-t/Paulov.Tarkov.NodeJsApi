@@ -194,17 +194,18 @@ app.use('/', require('./routes/index'));
 // app.use('/users', usersRouter);
 app.use('/launcher', require('./controllers/launcherController'));
 app.use('/client', require('./routes/client/client'));
+app.use('/client/friend', require('./controllers/friendController'));
+app.use('/client/game/profile', require('./controllers/gameProfileController'));
+app.use('/client/game/profile/items', require('./controllers/itemsMovingController'));
 app.use('/client/menu', require('./routes/client/menu/locale'));
 app.use('/client/trading/api', require('./routes/client/trading'));
-app.use('/client/game/profile/items', require('./controllers/itemsMovingController'));
-app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/ragfair', require('./routes/client/ragfair'));
 app.use('/client/mail', require('./controllers/mailController'));
 app.use('/client/match', require('./controllers/matchController'));
-app.use('/client/game/profile', require('./controllers/gameProfileController'));
-app.use('/client/friend', require('./controllers/friendController'));
 app.use('/client/quest', require('./controllers/questController'));
+app.use('/client/server', require('./controllers/serverController'));
 app.use('/client/survey', require('./controllers/surveyController'));
+
 
 /** Paulov API v1 */
 app.use('/v1/auth', require('./routes/v1/auth'));

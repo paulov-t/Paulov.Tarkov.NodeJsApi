@@ -845,24 +845,6 @@ router.post('/notifier/channel/create', function(req, res, next) {
 
 /**
  * @swagger
- * /client/server/list:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 31
- *     responses:
- *       200:
- *         description: A successful response
- */
-router.post('/server/list', function(req, res, next) {
-
-    // bsgHelper.addBSGBodyInResponseWithData(res, [{ ip: `https://${req.host}`, port: 443 }]);
-    bsgHelper.addBSGBodyInResponseWithData(res, []);
-    next();
-});
-
-/**
- * @swagger
  * /client/mail/dialog/list:
  *   post:
  *     tags:

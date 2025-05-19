@@ -263,45 +263,47 @@ router.post('/group/exit_from_menu', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/join', function(req, res, next) {
+router.post('/join', async function(req, res, next) {
 
-    let account = AccountService.getAccount(req.SessionId);
-    // if we are running via Swagger UI and SessionId is null. Get first account to test with.
-    if(!req.SessionId) {
-        account = AccountService.getAllAccounts()[0];
-    }
+console.log(req.body);
+
+//     let account = AccountService.getAccount(req.SessionId);
+//     // if we are running via Swagger UI and SessionId is null. Get first account to test with.
+//     if(!req.SessionId) {
+//         account = AccountService.getAllAccounts()[0];
+//     }
     
-    const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+//     const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     
-    if(!accountMode.characters || !accountMode.characters.pmc)
-        throw new "PMC is missing!";
+//     if(!accountMode.characters || !accountMode.characters.pmc)
+//         throw new "PMC is missing!";
 
-    // Get the desired Raid details
-    const raidConfig = accountMode.raidConfiguration;
-    console.log(raidConfig);
+//     // Get the desired Raid details
+//     const raidConfig = accountMode.raidConfiguration;
+//     console.log(raidConfig);
 
-    const savageStatus = new ProfileStatus();
-    savageStatus.profileid = accountMode.characters.scav._id;
-    const pmcStatus = new ProfileStatus();
-    pmcStatus.profileid = accountMode.characters.pmc._id;
+//     const savageStatus = new ProfileStatus();
+//     savageStatus.profileid = accountMode.characters.scav._id;
+//     const pmcStatus = new ProfileStatus();
+//     pmcStatus.profileid = accountMode.characters.pmc._id;
 
-    // From what I can gather from Client
-    // MatchWait or Free will immediately abort the matching
-    // So we must set it to "Busy"?
-    pmcStatus.status = "Busy";
-    pmcStatus.ip = "127.0.0.1";
-    pmcStatus.port = 443;
+//     // From what I can gather from Client
+//     // MatchWait or Free will immediately abort the matching
+//     // So we must set it to "Busy"?
+//     pmcStatus.status = "Busy";
+//     pmcStatus.ip = "127.0.0.1";
+//     pmcStatus.port = 17002;
 
-    const response = new ProfileStatusResponse(
-        false,
-        [
-            savageStatus,
-            pmcStatus
-        ]
-    );
-    bsgHelper.addBSGBodyInResponseWithData(res, response);
+//     const response = new ProfileStatusResponse(
+//         false,
+//         [
+//             savageStatus,
+//             pmcStatus
+//         ]
+//     );
+//     bsgHelper.addBSGBodyInResponseWithData(res, response);
 
-    next();
+//     next();
 });
 
 /**
@@ -320,8 +322,8 @@ router.post('/available', function(req, res, next) {
     // If we respond true here whilst in PvP (and without any client mods in the mix), the vanilla client will attempt to call client/match/join with a requested set of params. 
     // Unless the client has a Network host at the other end to connect to, it will fail after 4 seconds and kick back to main menu
 
-    bsgHelper.getBody(res, false);
-    // bsgHelper.getBody(res, true);
+    // bsgHelper.getBody(res, false);
+    bsgHelper.getBody(res, true);
 
     next();
 });
