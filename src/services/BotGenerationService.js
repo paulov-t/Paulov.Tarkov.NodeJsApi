@@ -297,7 +297,7 @@ class BotGenerationService {
 
         const chosenBackpack = filteredBackpacks[this.randomInteger(0, filteredBackpacks.length-1)];
         // Add a new Backpack (by chance)
-        InventoryService.addTemplatedItemToSlot(bot, chosenBackpack.item._id, "Backpack");
+        InventoryService.addTemplatedItemToSlot(bot, chosenBackpack.item, "Backpack");
 
     }
 
