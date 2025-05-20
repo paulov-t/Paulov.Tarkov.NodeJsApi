@@ -346,8 +346,11 @@ class BotGenerationService {
             return;
 
         // TODO: Make this more dynamic to the Accounts on the Server
-        // bot.Info.Level = this.randomInteger(1, 50);
-        // bot.Info.Experience = this.getNeededXPFromLvl(bot.Info.Level);
+        let level = this.randomInteger(1, 50);
+        let xp = this.getNeededXPFromLvl(level); 
+        // console.log("XP: ", xp);
+        bot.Info.Experience = this.getNeededXPFromLvl(level);
+        bot.Info.Level = level;
 
     }
 
@@ -364,7 +367,11 @@ class BotGenerationService {
         const globalsResult = Database.getData(Database["globals"]);
         const xpTable = globalsResult.config.exp.level.exp_table;
        
-        return xpTable[level];
+        let exp = 0; 
+        for (let i = 0; i < level; i++) {
+            exp += xpTable[i].exp;
+        }
+        return exp;
     }
 
     /**
