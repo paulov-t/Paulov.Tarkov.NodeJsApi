@@ -412,7 +412,7 @@ router.post('/local/end', function(req, res, next) {
     }
 
     // =========================================================================
-    // Update Experience on Player Profile
+    // Update Insured Items on Player Profile
     if (isPMC) 
         myAccountByMode.characters.pmc.InsuredItems = newProfileToSave.InsuredItems;
 
@@ -420,6 +420,7 @@ router.post('/local/end', function(req, res, next) {
     // Replace Inventory on Player Profile
 
     if (isPMC) {
+
         /**
          * WARNING Inventory.items is NOT the full Inventory
          * @type {Inventory} 
@@ -433,6 +434,31 @@ router.post('/local/end', function(req, res, next) {
             const indexOf = myAccountByMode.characters.pmc.Inventory.items.findIndex(x => x._id === newInvItem._id);
             if (indexOf === -1)
                 myAccountByMode.characters.pmc.Inventory.items.push(newInvItem);
+        }
+
+        if (isKilled) {
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Headwear");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Eyewear");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "FaceCover");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Earpiece");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "ArmorVest");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Holster");
+
+            // Remove all items from the pockets 
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "pocket1");
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "pocket2");
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "pocket3");
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "pocket4");
+
+            // 
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Backpack");
+
         }
     }
 
