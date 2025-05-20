@@ -98,18 +98,21 @@ class BotGenerationService {
         // Generate the bot's inventory
         const templateItemList = DatabaseService.getDatabase().getTemplateItems();
         
-
         // Remove the Pocket 1
-        // InventoryService.removeItemFromSlot(bot, "pocket1");
-        // // if (bot.Info.Side !== "Savage") {
-        //     // Add Army bandage
-        //     const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
-        //     pocket1Item.location = { 
-        //         x: 0
-        //         , y: 0
-        //         , r: 0
-        //         , "isSearched": false };
-        // // }
+        InventoryService.removeItemFromSlot(bot, "pocket1");
+        if (bot.Info.Side !== "Savage") {
+            // Add Army bandage
+             const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
+             pocket1Item.location = { 
+                 x: 0
+                 , y: 0
+                 , r: 0
+                 };
+              pocket1Item.upd = {
+                "StackObjectsCount": 60,
+                "SpawnedInSession": false
+            }
+        }
 
         // Remove the Pocket 2
         InventoryService.removeItemFromSlot(bot, "pocket2");
@@ -158,17 +161,14 @@ class BotGenerationService {
         // Remove the Scabbard / Knife
         InventoryService.removeItemFromSlot(bot, "Scabbard");
         if (Object.keys(botDatabaseData.inventory.equipment.Scabbard).length > 0) {
-            const randomScabbardId = Object.keys(botDatabaseData.inventory.equipment.Scabbard)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Scabbard).length-1)];
-            InventoryService.addTemplatedItemToSlot(bot, randomScabbardId, "Scabbard");
+            this.addRandomItemToSlot(bot, "Scabbard", Object.keys(botDatabaseData.inventory.equipment.Scabbard));
         }
 
-        // Remove the Vest
-        // InventoryService.removeItemFromSlot(bot, "Vest");
-        // if (Object.keys(botDatabaseData.inventory.equipment.Vest).length > 0) {
-        //     const randomVestId = Object.keys(botDatabaseData.inventory.equipment.Vest)[this.randomInteger(0, Object.keys(botDatabaseData.inventory.equipment.Vest).length-1)];
-        //     // InventoryService.addTemplatedItemToSlot(bot, randomVestId, "Vest");
-        // }
-
+        // Remove the ArmorVest
+        InventoryService.removeItemFromSlot(bot, "ArmorVest");
+        if (Object.keys(botDatabaseData.inventory.equipment.ArmorVest).length > 0) {
+            this.addRandomItemToSlot(bot, "ArmorVest", Object.keys(botDatabaseData.inventory.equipment.ArmorVest));
+        }
 
         // Remove the Holster
         InventoryService.removeItemFromSlot(bot, "Holster");
