@@ -12,6 +12,11 @@ class LocationService
 
     }
 
+    /**
+     * 
+     * @returns {Object} - All locations data
+     * @description This function retrieves all locations data from the database and processes it. 
+     */
     getAllLocationData() {
 
         const locations = {};
