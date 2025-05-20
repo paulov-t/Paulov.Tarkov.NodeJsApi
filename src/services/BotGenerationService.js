@@ -88,7 +88,8 @@ class BotGenerationService {
         bot.Info.Nickname = botDatabaseData.firstName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
         if (botDatabaseData.lastName && botDatabaseData.lastName.length > 0) {
             const lastName =  botDatabaseData.lastName[this.randomInteger(0, botDatabaseData.lastName.length-1)];
-            bot.Info.Nickname = bot.Info.Nickname + " " + lastName;
+            if (lastName !== "Durkey")
+                bot.Info.Nickname = bot.Info.Nickname + " " + lastName;
         }
 
         // Generate the bot's level (if PMC)
