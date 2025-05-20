@@ -47,7 +47,7 @@ const ServerItemRequestBody = require('../models/Server/ServerItemRequestBody');
  */
 router.post('/list', function(req, res, next) {
 
-    console.log(req.body);
+    // console.log(req.body);
     
     bsgHelper.addBSGBodyInResponseWithData(res, ClientGameServerService.gameServers.filter(server => server.status === 2));
     next();
@@ -77,6 +77,7 @@ router.post('/add', function(req, res, next) {
     next();
 });
 
+
 /**
  * @swagger
  * /client/server/remove:
@@ -91,6 +92,12 @@ router.post('/add', function(req, res, next) {
 router.post('/remove', function(req, res, next) {
 
     console.log(req.body);
+
+     /**
+     * @type {ServerItemRequestBody} 
+     */
+    let serverItemRequestBody = req.body;
+    ClientGameServerService.stopMatchmaking(serverItemRequestBody);
     
     bsgHelper.addBSGBodyInResponseWithData(res, null);
     next();

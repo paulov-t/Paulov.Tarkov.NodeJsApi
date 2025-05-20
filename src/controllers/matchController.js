@@ -265,45 +265,62 @@ router.post('/group/exit_from_menu', function(req, res, next) {
  */
 router.post('/join', async function(req, res, next) {
 
-console.log(req.body);
+    console.log(req.body);
+    if (!req.body.servers || req.body.servers.length < 2)
+        throw "No servers found in request body";
 
-//     let account = AccountService.getAccount(req.SessionId);
-//     // if we are running via Swagger UI and SessionId is null. Get first account to test with.
-//     if(!req.SessionId) {
-//         account = AccountService.getAllAccounts()[0];
-//     }
+    const chosenServer = req.body.servers[1]; 
+
+    let account = AccountService.getAccount(req.SessionId);
+    // if we are running via Swagger UI and SessionId is null. Get first account to test with.
+    if(!req.SessionId) {
+        account = AccountService.getAllAccounts()[0];
+    }
     
-//     const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     
-//     if(!accountMode.characters || !accountMode.characters.pmc)
-//         throw new "PMC is missing!";
+    if(!accountMode.characters || !accountMode.characters.pmc)
+        throw new "PMC is missing!";
 
-//     // Get the desired Raid details
-//     const raidConfig = accountMode.raidConfiguration;
-//     console.log(raidConfig);
+    // Get the desired Raid details
+    const raidConfig = accountMode.raidConfiguration;
+    console.log(raidConfig);
 
-//     const savageStatus = new ProfileStatus();
-//     savageStatus.profileid = accountMode.characters.scav._id;
-//     const pmcStatus = new ProfileStatus();
-//     pmcStatus.profileid = accountMode.characters.pmc._id;
+    const savageStatus = new ProfileStatus();
+    savageStatus.profileid = accountMode.characters.scav._id;
+    const pmcStatus = new ProfileStatus();
+    pmcStatus.profileid = accountMode.characters.pmc._id;
 
-//     // From what I can gather from Client
-//     // MatchWait or Free will immediately abort the matching
-//     // So we must set it to "Busy"?
-//     pmcStatus.status = "Busy";
-//     pmcStatus.ip = "127.0.0.1";
-//     pmcStatus.port = 17002;
+    if (raidConfig) {
+        if (raidConfig.side  == 'Pmc') {
+            // From what I can gather from Client
+            // MatchWait or Free will immediately abort the matching
+            // So we must set it to "Busy"
+            pmcStatus.status = "Busy";
+            pmcStatus.ip = chosenServer.ip;
+            pmcStatus.port = chosenServer.port;
+            pmcStatus.sid = "PMC001";
+            pmcStatus.shortId = "PMC001";
+        }
+        else {
+            savageStatus.status = "Busy";
+            savageStatus.ip = chosenServer.ip;
+            savageStatus.port = chosenServer.port;
+            pmcStatus.sid = "SCV001";
+            pmcStatus.shortId = "SCV001";
+        }
+    }
+   
+    const response = new ProfileStatusResponse(
+        false,
+        [
+            savageStatus,
+            pmcStatus
+        ]
+    );
+    bsgHelper.addBSGBodyInResponseWithData(res, response);
 
-//     const response = new ProfileStatusResponse(
-//         false,
-//         [
-//             savageStatus,
-//             pmcStatus
-//         ]
-//     );
-//     bsgHelper.addBSGBodyInResponseWithData(res, response);
-
-//     next();
+    next();
 });
 
 /**
