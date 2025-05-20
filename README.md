@@ -60,6 +60,11 @@ For development you will need to:
 - This project is licensed under the Attribution-NonCommercial-NoDerivatives 4.0 International License. See [LICENSE](LICENSE.md)
 - This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
 
+## Environment Variables
+You can set the following environment variables for quick changes to the server (use a .env file if testing locally):
+- LABS_REQUIRES_KEYCARD=false - turns off the keycard requirement for a Labs keycard
+
+
 <!-- MARKDOWN LINKS & IMAGES -->
 [contributors-shield]: https://img.shields.io/github/contributors/paulov-t/Paulov.Tarkov.NodeJsApi.svg?style=for-the-badge
 

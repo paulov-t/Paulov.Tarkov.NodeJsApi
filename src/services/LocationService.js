@@ -33,6 +33,14 @@ class LocationService
             if (!mapBase) {
                 continue;
             }
+
+            if (process.env.LABS_REQUIRES_KEYCARD) {
+                if (process.env.LABS_REQUIRES_KEYCARD === 'false') {
+                    mapBase.AccessKeys = [];
+                    mapBase.AccessKeysPvE = [];
+                }
+            }
+
     
             // This should fix the forced online for most scenarios
             mapBase.ForceOnlineRaidInPVE = false;
