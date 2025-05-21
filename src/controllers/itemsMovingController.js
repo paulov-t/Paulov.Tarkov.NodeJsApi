@@ -80,14 +80,18 @@ router.post('/moving', function(req, res, next) {
         equipmentBuilds: [],
         items: { new: [], change: [], del: [] },
         production: {},
-        improvements: {},
-        skills: { Common: [], Mastering: [], Points: 0 },
+        improvements: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Hideout.Improvements)),
+        skills: { 
+            Common: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Common))
+            , Mastering: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Mastering))
+            , Points: 0 
+        },
         health: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Health)),
-        traderRelations: {},
+        traderRelations: updateTraderRelations(account),
         recipeUnlocked: {},
         questsStatus: []
     }
-
+ 
     /**
      * Example of data
      * data: [{ }]
