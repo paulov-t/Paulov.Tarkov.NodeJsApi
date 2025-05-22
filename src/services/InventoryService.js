@@ -61,9 +61,10 @@ class InventoryService {
      * @param {AccountProfileCharacter} profile 
      * @param {String} templateId 
      * @param {String} slotId 
+     * @param {String} parentId the parentId of the item (can be undefined)  
      * @returns {Object} new Inventory Item 
      */
-    addTemplatedItemToSlot(profile, templateId, slotId) {
+    addTemplatedItemToSlot(profile, templateId, slotId, parentId) {
         if (!profile)
             return;
 
@@ -81,7 +82,7 @@ class InventoryService {
             "_id": bsgHelper.generateMongoId(),
             "_tpl": templateId,
             "slotId": slotId,
-            "parentId": profile.Inventory.equipment
+            "parentId": parentId !== undefined ? parentId : profile.Inventory.equipment
         };
 
         profile.Inventory.items.push(

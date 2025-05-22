@@ -207,6 +207,9 @@ class AccountProfileCharacterInfo {
     constructor() {
         this.Nickname = "";
         this.Side = "";
+        /**
+         * @type {Number}
+         */
         this.Level = 0;
         this.PrestigeLevel = 0;
         this.MemberCategory = "";
@@ -216,6 +219,10 @@ class AccountProfileCharacterInfo {
         this.GameVersion = "";
         this.HasCoopExtension = true;
         this.Health = {};
+        /**
+         * @type {Number}
+         */
+        this.Experience = 0;
     }
 }
 

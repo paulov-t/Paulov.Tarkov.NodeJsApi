@@ -99,21 +99,8 @@ class BotGenerationService {
         const templateItemList = DatabaseService.getDatabase().getTemplateItems();
         
         // Remove the Pocket 1
-        InventoryService.removeItemFromSlot(bot, "pocket1");
-        if (bot.Info.Side !== "Savage") {
-            // Add Army bandage
-             const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1");
-             pocket1Item.location = { 
-                 x: 0
-                 , y: 0
-                 , r: 0
-                 };
-              pocket1Item.upd = {
-                "StackObjectsCount": 60,
-                "SpawnedInSession": false
-            }
-        }
-
+        // InventoryService.removeItemFromSlot(bot, "pocket1");
+        
         // Remove the Pocket 2
         InventoryService.removeItemFromSlot(bot, "pocket2");
 
@@ -170,13 +157,28 @@ class BotGenerationService {
             this.addRandomItemToSlot(bot, "ArmorVest", Object.keys(botDatabaseData.inventory.equipment.ArmorVest));
         }
 
+        InventoryService.removeItemFromSlot(bot, "FirstPrimaryWeapon");
+        if (Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon).length > 0) {
+            let newItem = this.addRandomItemToSlot(
+                bot
+                , "FirstPrimaryWeapon"
+                , Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon)
+                , botDatabaseData
+            );
+        }
+
         // Remove the Holster
         InventoryService.removeItemFromSlot(bot, "Holster");
         if (Object.keys(botDatabaseData.inventory.equipment.Holster).length > 0) {
-            let newItem = this.addRandomItemToSlot(bot, "Holster", Object.keys(botDatabaseData.inventory.equipment.Holster));
-           
-
+            let newItem = this.addRandomItemToSlot(
+                bot
+                , "Holster"
+                , Object.keys(botDatabaseData.inventory.equipment.Holster)
+                , botDatabaseData
+            );
         }
+
+        this.generatePocketItems(bot, botDatabaseData.inventory.equipment);
 
         if (bot.Info.Side !== "Savage")
             this.addDogtag(bot);
@@ -185,77 +187,146 @@ class BotGenerationService {
         InventoryService.updateInventoryEquipmentId(bot);
         bot.Inventory.items = InventoryService.replaceIDs(bot.Inventory.items, bot, undefined, undefined);
         
-
         const endTime = Date.now()
         logger.logDebug(`Bot generation for ${condition.Role} on ${bot.Info.Side} took: ${endTime - startTime}ms`);
 
         return bot;
     }
 
-    addRandomItemToSlot(bot, slotId, randomItems) {
+    generatePocketItems(bot, databaseEquipment) {
+
+         if (bot.Info.Side !== "Savage") {
+
+            // Pockets
+            const pocketsId = bot.Inventory.items.find(x => x.slotId === "Pockets")._id;
+
+            // Add Army bandage
+            InventoryService.removeItemFromSlot(bot, "pocket1");
+            const pocket1Item = InventoryService.addTemplatedItemToSlot(bot, "5751a25924597722c463c472", "pocket1", pocketsId);
+                pocket1Item.location = { 
+                x: 0
+                , y: 0
+                , r: 0
+                };
+
+            // Add splint
+            InventoryService.removeItemFromSlot(bot, "pocket2");
+            const pocket2Item = InventoryService.addTemplatedItemToSlot(bot, "544fb3364bdc2d34748b456a", "pocket2", pocketsId);
+            pocket2Item.location = { 
+                x: 0
+                , y: 0
+                , r: 0
+            };
+          
+        }
+    }
+
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} bot 
+     * @param {String} slotId 
+     * @param {Array} randomItems 
+     * @returns 
+     */
+    addRandomItemToSlot(bot, slotId, randomItems, botDatabaseData) {
         const randomId = randomItems[this.randomInteger(0, randomItems.length-1)];
-        const newItem = InventoryService.addTemplatedItemToSlot(bot, randomId, slotId);
         const presetItems = DatabaseService.getDatabase().getItemPresetArrayByEncyclopedia(randomId);
 
         const allItems = [];
-        allItems.push(newItem);
+        const weaponSlots = ["FirstPrimaryWeapon", "SecondPrimaryWeapon", "Holster"];
+        const isWeapon = weaponSlots.includes(slotId); 
 
-        if (presetItems.length > 0) {
-            const presetItem = presetItems[this.randomInteger(0, presetItems.length-1)];
-            for (let i = 1 ; i < presetItem._items.length; i++) {
-                const item = presetItem._items[i];
-                if (item) {
-                    item._id = generateMongoId();
-                    item.parentId = newItem._id;
-                    InventoryService.addItemToInventory(bot, item);
-                    allItems.push(item);
+        // If the item is not a weapon, add it to the inventory with all its mods normally
+        if (!isWeapon) {
+            const newItem = InventoryService.addTemplatedItemToSlot(bot, randomId, slotId);
+            allItems.push(newItem);
+            if (presetItems.length > 0) {
+                const presetItem = presetItems[this.randomInteger(0, presetItems.length-1)];
+                for (let i = 1 ; i < presetItem._items.length; i++) {
+                    const item = presetItem._items[i];
+                    if (item) {
+                        item._id = generateMongoId();
+                        item.parentId = newItem._id;
+                        InventoryService.addItemToInventory(bot, item);
+                        allItems.push(item);
+                    }
                 }
             }
+            return newItem;
         }
+        else {
 
-        if (slotId === "Holster") {
-            newItem.upd = {
+            const globalsData = DatabaseService.getDatabase().getGlobals();
+
+            let weaponItem = undefined;
+            for( const presetId in globalsData.ItemPresets ) {
+                const presetItem = globalsData.ItemPresets[presetId];
+                if (presetItem._items.findIndex(x => x._tpl == randomId) !== -1) {
+                    for (let i = 0 ; i < presetItem._items.length; i++) {
+                        const item = JSON.parse(JSON.stringify(presetItem._items[i]));
+                        if (i === 0) {
+                            weaponItem = item;
+                            item.slotId = slotId; 
+                            item.parentId = bot.Inventory.equipment;
+                        }
+
+                        InventoryService.addItemToInventory(bot, item);
+                        allItems.push(item);
+                    }
+                }
+              
+            }
+
+            if (!weaponItem) {
+                throw new Error("Weapon not found in preset");
+            }
+
+            weaponItem.upd = {
                 "Repairable": {
-                    "Durability": this.randomInteger(50, 90),
-                    "MaxDurability": this.randomInteger(91, 99),
+                    "Durability": bot.Info.Side == 'Usec' || bot.Info.Side == 'Bear' ? this.randomInteger(87, 94) : this.randomInteger(50, 90),
+                    "MaxDurability": bot.Info.Side == 'Usec' || bot.Info.Side == 'Bear' ? this.randomInteger(95, 99) : this.randomInteger(91, 99),
                 },
                 "FireMode": {
                     "FireMode": "single"
                 }
             }
 
-            // const cartridges = DatabaseService.getDatabase().getTemplateItemsByCategory("cartridges");
-            // InventoryService.addItemToInventory(bot, item);
-            const templateItem = DatabaseService.getDatabase().getTemplateItemById(newItem._tpl);
+            const templateItem = DatabaseService.getDatabase().getTemplateItemById(weaponItem._tpl);
             const ammoCaliber = templateItem._props.ammoCaliber;
-            if (ammoCaliber) {
-                const templatesItems = DatabaseService.getDatabase().getTemplateItemsAsArray();
-                const ammos = templatesItems.filter(x => x._props.ammoType === "bullet" && x._props.Caliber == ammoCaliber && x._props.Damage > 0);
-                if (ammos.length > 0) {
-                    const magazine = allItems.find(x => x.slotId == "mod_magazine");
-                    if (magazine) {
-                        const magazineTemplate = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
-                        if (magazine && magazineTemplate._props.Cartridges && magazineTemplate._props.Cartridges.length > 0) {
-                            const randomAmmo = 
-                                {
-                                    _tpl: ammos[this.randomInteger(0, ammos.length-1)]._id,
-                                    _id: generateMongoId(),
-                                    parentId: magazine._id,
-                                    slotId: "cartridges",
-                                    upd: {
-                                        "StackObjectsCount": magazineTemplate._props.Cartridges[0]._max_count,
-                                        "SpawnedInSession": false
-                                    }
-                                }
-                            InventoryService.addItemToInventory(bot, randomAmmo);
+            if (!ammoCaliber)
+                return weaponItem;
+            
+            const templatesItems = DatabaseService.getDatabase().getTemplateItemsAsArray();
+            const ammos = templatesItems.filter(x => x._props.ammoType === "bullet" && x._props.Caliber == ammoCaliber && x._props.Damage > 0);
+            if (ammos.length == 0) 
+                return weaponItem;
+
+            const magazine = allItems.find(x => x.slotId == "mod_magazine");
+            if (!magazine) 
+                return weaponItem;
+
+            const magazineTemplate = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
+            if (magazineTemplate._props.Cartridges && magazineTemplate._props.Cartridges.length > 0) {
+                const randomAmmo = 
+                    {
+                        _tpl: ammos[this.randomInteger(0, ammos.length-1)]._id,
+                        _id: generateMongoId(),
+                        parentId: magazine._id,
+                        slotId: "cartridges",
+                        upd: {
+                            "StackObjectsCount": magazineTemplate._props.Cartridges[0]._max_count,
+                            "SpawnedInSession": false
                         }
                     }
-                }
+                InventoryService.addItemToInventory(bot, randomAmmo);
             }
+
+            return weaponItem;
+
         }
 
 
-        return newItem;
     }
 
 

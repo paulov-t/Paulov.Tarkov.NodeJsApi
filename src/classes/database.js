@@ -180,6 +180,17 @@ class Database {
      * 
      * @returns 
      */
+    getGlobals() {
+        const db = global._database;
+        const dbResult = db.getData(db["globals"]);
+        return dbResult;
+    }
+
+
+    /**
+     * 
+     * @returns 
+     */
     getTemplateItems() {
         const db = global._database;
         const dbResult = db.getData(db["templates"]["items"]);
