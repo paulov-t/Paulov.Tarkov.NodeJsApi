@@ -6,18 +6,39 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a class="nav-link" href="/api-docs">Swagger API Docs</a>
+          <a class="nav-link" href="/api-docs">
+            <i class="fa-solid fa-file-code"></i>&nbsp;
+            Swagger API Docs
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/ammo">Ammo</a>
+          <a class="nav-link" href="/ammo">
+            <i class="fa-solid fa-bullseye"></i>&nbsp;
+            Ammo
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/items">Items</a>
+          <a class="nav-link" href="/items">
+            <i class="fa-solid fa-box"></i>&nbsp;
+            Items
+          </a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="/traders">
+            <i class="fa-solid fa-user-tie"></i>&nbsp;
+            Traders
+          </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi">
-            <i class="fa fa-github" aria-hidden="true"></i>
+            <i class="fa fa-github" aria-hidden="true"></i>&nbsp;
             GitHub
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://ko-fi.com/paulovt">
+            <i class="fa fa-coffee" aria-hidden="true"></i>&nbsp;
+            Ko-Fi
           </a>
         </li>
       </ul>
@@ -26,7 +47,10 @@
       <ul class="navbar-nav mr-auto">
           <% if (typeof loggedIn !== 'undefined' && !loggedIn) { %>
             <li class="nav-item">
-          <a class="nav-link" href="/login">Login</a>
+          <a class="nav-link" href="/login">
+            <i class="fa-solid fa-right-to-bracket"></i>&nbsp;
+            Login
+          </a>
         </li>
           <% } else if (typeof loggedInUN !== 'undefined') { %>
         <li class="nav-item">

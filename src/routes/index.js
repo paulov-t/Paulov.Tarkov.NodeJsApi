@@ -42,6 +42,14 @@ router.get('/items', function(req, res, next) {
   res.render('itemSearch', vm);
 });
 
+router.get('/traders', function(req, res, next) {
+
+  const vm = getRenderViewModel(req);
+  vm.title = "Tarkov Trader Table";
+
+  res.render('traders', vm);
+});
+
 router.get('/login', function(req, res, next) {
 
   res.render('login', getRenderViewModel(req));
