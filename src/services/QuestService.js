@@ -9,6 +9,7 @@ const { SocialNetworkService } = require('./SocialNetworkService');
 const { Message } = require("../models/Message");
 const { EMessageType } = require("../models/Enums/EMessageType");
 const { mongoid } = require("mongoid-js");
+const { DatabaseService } = require('./DatabaseService');
 
 class QuestService {
     constructor() {
@@ -178,7 +179,7 @@ class QuestService {
         /**
          * @type {Database}
          */
-        const db = global._database;
+        const db = DatabaseService.getDatabase();
         const localeEntries = db["locales"];
         const localeEntry = localeEntries.global['en'];
         const localeDb = db.getData(localeEntry);

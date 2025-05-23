@@ -413,7 +413,7 @@ function processTraderRepair(account, action, outputChanges) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const traderEntry = db["traders"][traderId];
     const assortEntry = traderEntry.assort;
     /**
@@ -463,7 +463,7 @@ function processTradingConfirm(account, action, outputChanges) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const traderEntry = db["traders"][traderId];
     const assortEntry = traderEntry.assort;
     /**

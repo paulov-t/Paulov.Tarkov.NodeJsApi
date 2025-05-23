@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 const { LocationService } = require('../services/LocationService');
+const { DatabaseService } = require('../services/DatabaseService');
 
 /**
  * @swagger
@@ -19,7 +20,7 @@ router.post('/areas', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbAreas = db.getData(db.hideout.areas);
     if(!dbAreas)
         throw "Hideout Areas not found";
@@ -45,7 +46,7 @@ router.post('/qte/list', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbHideoutQte = db.getData(db.hideout.qte);
     if(!dbHideoutQte)
         throw "Hideout QTE not found";
@@ -71,7 +72,7 @@ router.post('/settings', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbHideoutSettings = db.getData(db.hideout.settings);
     if(!dbHideoutSettings)
         throw "Hideout Settings not found";
@@ -97,7 +98,7 @@ router.post('/production/recipes', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbHideoutProduction = db.getData(db.hideout.production);
     if(!dbHideoutProduction)
         throw "Hideout Production not found";
@@ -123,7 +124,7 @@ router.post('/customization/offer/list', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbHideoutCustomisation = db.getData(db.hideout.customisation);
     if(!dbHideoutCustomisation)
         throw "Hideout Customisation not found";

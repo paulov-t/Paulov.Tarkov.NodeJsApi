@@ -3,6 +3,7 @@ var fs = require('fs');
 var router = express.Router();
 var bsgHelper =  require('../../../bsgHelper');
 var zlib =  require('zlib');
+const { DatabaseService } = require('../../../services/DatabaseService');
 
 /**
  * @swagger
@@ -23,11 +24,11 @@ router.post('/locale/:lang', function(req, res, next) {
     if(lang === undefined)
         lang = "en";
     
-    const entry = global._database["locales"]["menu"][lang];
+    const entry = DatabaseService.getDatabase()["locales"]["menu"][lang];
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbResult = db.getData(entry);
 
     const bodyResult = { "err": 0, "errmsg": null, "data": dbResult }

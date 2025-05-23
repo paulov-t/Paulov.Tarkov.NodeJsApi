@@ -4,6 +4,7 @@ const { ECurrencyTemplates } = require("../models/Enums/ECurrencyTemplates");
 const { AccountService } = require("./AccountService");
 const { ContainerService } = require("./ContainerService");
 const { InventoryService } = require("./InventoryService");
+const { DatabaseService } = require("./DatabaseService");
 
 /**
  * A service for anything trader or "ragfair" (flea market) related
@@ -14,7 +15,7 @@ class TraderService {
     }
 
     /**
-     * 
+     * Get trader data by TraderId. Returns the base data (name etc) and assort data (items for sale).
      * @param {String} traderId 
      */
     getTrader(traderId) {
@@ -22,7 +23,7 @@ class TraderService {
          /**
          * @type {Database}
          */
-        const db = global._database;
+        const db = DatabaseService.getDatabase();
         const traderEntry = db["traders"][traderId];
         const baseEntry = traderEntry.base;
         const assortEntry = traderEntry.assort;

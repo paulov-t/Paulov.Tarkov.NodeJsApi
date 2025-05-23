@@ -3,6 +3,7 @@ const { AccountProfileCharacter, Account, AccountProfileMode } = require("../mod
 const { logger } = require('../classes/logger');
 const { Database } = require('../classes/database');
 const { ContainerService } = require('./ContainerService');
+const { DatabaseService } = require('./DatabaseService');
 
 class InventoryService {
     constructor() {
@@ -319,7 +320,7 @@ class InventoryService {
         // TODO: Find a way to make this a much more performant 2D UInt8Array instead
         const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
         console.log(array2d);
-        const templatesItemData = _database.getData(global._database["templates"]["items"]);
+        const templatesItemData = _database.getData(DatabaseService.getDatabase()["templates"]["items"]);
 
         // Fill 2D Array with current Items
         for(const item of currentItems) {
@@ -365,7 +366,7 @@ class InventoryService {
     getStashContainerMap(pmcProfile) {
         const stashXY = this.getPlayerStashSizeXAndY(pmcProfile);
         const stash2d = this.create2DArray(stashXY.y, stashXY.x);
-        const templatesItemData = Database.getData(global._database["templates"]["items"]);
+        const templatesItemData = Database.getData(DatabaseService.getDatabase()["templates"]["items"]);
         const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
         if(pmcProfileStashItems.length > 0) {
             for(const item of pmcProfileStashItems) {

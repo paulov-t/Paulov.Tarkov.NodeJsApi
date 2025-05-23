@@ -596,9 +596,9 @@ class LootGenerationService
           return;
         } else {
           _items[0].upd = { FireMode: { FireMode: "fullauto" } };
-          // stationary gun is actually a container...
-          const GunTempalte = global._database.items[_items[0]._tpl]; // template object
-          const MagazineTemplate = global._database.items[GunTempalte._props.Slots[0]._props.filters[0].Filter[0]]; // template object
+
+          const GunTempalte = DatabaseService.getDatabase().items[_items[0]._tpl]; // template object
+          const MagazineTemplate = DatabaseService.getDatabase().items[GunTempalte._props.Slots[0]._props.filters[0].Filter[0]]; // template object
           const Magazine_Size = MagazineTemplate._props.Cartridges[0]._max_count; // number
           const AmmoTemplates = MagazineTemplate._props.Cartridges[0]._props.filters[0].Filter; // array
           const magazine = {
@@ -693,7 +693,7 @@ class LootGenerationService
               let newInnerItemId = bsgHelper.generateMongoId();
               newForcedInnerItem._id = newInnerItemId;
               newForcedInnerItem._tpl = thisForcedItem.Items[iDataItem];
-              const itemTemplateForNaming = global._database.items[newForcedInnerItem._tpl];
+              const itemTemplateForNaming = DatabaseService.getDatabase().items[newForcedInnerItem._tpl];
               newForcedInnerItem.itemNameForDebug = itemTemplateForNaming._props.ShortName;
               newForcedInnerItem.parentId = newParentId;
               newForcedInnerItem.slotId = "main";

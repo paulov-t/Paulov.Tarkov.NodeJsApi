@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 var { Database } = require('./../classes/database');
+const { DatabaseService } = require('../services/DatabaseService');
 
 /**
  * @swagger
@@ -20,11 +21,11 @@ router.post('/getItemEnglishNameAndTpl/', async function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     // console.log(db);
-    const languageLocaleData = db.getData(global._database["locales"]["global"]["en"]);
-    const templatesItemData = db.getData(global._database["templates"]["items"]);
-    const templatesPricesData = db.getData(global._database["templates"]["prices"]);
+    const languageLocaleData = db.getData(db["locales"]["global"]["en"]);
+    const templatesItemData = db.getData(db["templates"]["items"]);
+    const templatesPricesData = db.getData(db["templates"]["prices"]);
     let highestPrice = 0;
     for(const itemId in templatesPricesData)
     {
@@ -135,10 +136,10 @@ router.post('/getAmmo/', async function(req, res, next) {
     }
 
 
-    const db = Database;
+    const db = DatabaseService.getDatabase();
     // console.log(db);
-    const languageLocaleData = db.getData(global._database["locales"]["global"]["en"]);
-    const templatesItemData = db.getData(global._database["templates"]["items"]);
+    const languageLocaleData = db.getData(db["locales"]["global"]["en"]);
+    const templatesItemData = db.getData(db["templates"]["items"]);
 
     const ammoParentId = '5485a8684bdc2da71d8b4567';
     const ammoIdsToIgnore = ['5996f6d686f77467977ba6cc', '5d2f2ab648f03550091993ca', '5cde8864d7f00c0010373be1'];
@@ -243,8 +244,8 @@ router.post('/itemSearchByTpl/:tpl', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
-    const templatesItems = db.getData(global._database["templates"]["items"]);
+    const db = DatabaseService.getDatabase();
+    const templatesItems = db.getData(db["templates"]["items"]);
     const dbResult = templatesItems[tpl];
     if(dbResult)
         bsgHelper.getBody(res, dbResult);

@@ -3,6 +3,7 @@ var router = express.Router();
 var bsgHelper =  require('../../bsgHelper');
 const { AccountService } = require('../../services/AccountService');
 const { BotGenerationService } = require('../../services/BotGenerationService');
+const { DatabaseService } = require('../../services/DatabaseService');
 const { BotGenerationCondition } = require("./../../models/BotGenerationCondition");
 const { ProfileStatus } = require('../../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../../models/ProfileStatusResponse');
@@ -128,7 +129,7 @@ router.post('/languages', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db =  DatabaseService.getDatabase();
     const dbResult = db.getData(db["locales"]["languages"]);
 
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
@@ -204,7 +205,7 @@ router.post('/items', function(req, res, next) {
      /**
      * @type {Database}
      */
-      const db = global._database;
+      const db = DatabaseService.getDatabase();
       const dbResult = db.getData(db["templates"]["items"]);
 
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
@@ -227,7 +228,7 @@ router.post('/customization', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbResult = db.getData(db["templates"]["customization"]);
     bsgHelper.getBody(res, dbResult);
     next();
@@ -255,7 +256,7 @@ router.post('/customization/storage', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbResult = db.getData(db["templates"]["customisationStorage"]);
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
@@ -277,7 +278,7 @@ router.post('/globals', function(req, res, next) {
      /**
      * @type {Database}
      */
-     const db = global._database;
+     const db = DatabaseService.getDatabase();
      const dbResult = db.getData(db["globals"]);
      dbResult.time = Date.now() / 1000;
 
@@ -301,7 +302,7 @@ router.post('/settings', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbResult = db.getData(db["settings"]);
 
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
@@ -330,7 +331,7 @@ router.post('/prestige/list', function(req, res, next) {
    /**
      * @type {Database}
      */
-   const db = global._database;
+   const db = DatabaseService.getDatabase();
    const dbResult = db.getData(db["templates"]["prestige"]);
    bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
    next();
@@ -352,7 +353,7 @@ router.post('/trading/api/traderSettings', function(req, res, next) {
      /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const traderEntries = db["traders"];
     const traderBases = [];
     for (const traderId in traderEntries) {
@@ -388,7 +389,7 @@ router.post('/locale/:lang', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const localeEntries = db["locales"];
     const localeEntry = localeEntries.global[lang];
     const result = db.getData(localeEntry);
@@ -643,7 +644,7 @@ router.post('/handbook/templates', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbHandbook = db.getData(db.templates.handbook);
 
     if(!dbHandbook)
@@ -666,10 +667,6 @@ router.post('/handbook/templates', function(req, res, next) {
  *         description: A successful response
  */
 router.post('/builds/list', function(req, res, next) {
-
-    // const dbHideoutCustomisation = global._database.hideout.customisation;
-    // if(!dbHideoutCustomisation)
-    //     throw "Hideout Customisation not found";
 
     bsgHelper.addBSGBodyInResponseWithData(res, { equipmentBuilds: [], weaponBuilds: [], magazineBuilds: [] });
 
@@ -753,7 +750,7 @@ router.post('/achievement/statistic', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbAchievements = db.getData(db.templates.achievements);
     if(!dbAchievements)
         throw "Achievements not found";
@@ -785,7 +782,7 @@ router.post('/achievement/list', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const dbAchievements = db.getData(db.templates.achievements);
     if(!dbAchievements)
         throw "Achievements not found";
@@ -877,7 +874,7 @@ router.post('/items/prices/:id', function(req, res, next) {
     /**
      * @type {Database}
      */
-    const db = global._database;
+    const db = DatabaseService.getDatabase();
     const itemsTemplates = db.getData(db.templates.items);
     const pricesTemplates = db.getData(db.templates.prices);
 
