@@ -21,6 +21,7 @@ const { logger } = require('../../classes/logger');
 const { LootGenerationService } = require('../../services/LootGenerationService');
 const { LocationService } = require('../../services/LocationService');
 const { EQuestStatus } = require('../../models/Enums/EQuestStatus');
+const { ECurrencyTemplates } = require('../../models/Enums/ECurrencyTemplates');
 
 
 /**
@@ -913,14 +914,14 @@ router.post('/items/prices/:id', function(req, res, next) {
 
     }
     
-
     bsgHelper.addBSGBodyInResponseWithData(res, {
         supplyNextTime: Math.floor(new Date().getTime() / 1000) + 1000,
         prices: prices,
         currencyCourses: {
-            "5449016a4bdc2d6f028b456f": prices["5449016a4bdc2d6f028b456f"],
-            "569668774bdc2da2298b4568": prices["569668774bdc2da2298b4568"],
-            "5696686a4bdc2da3298b456a": prices["5696686a4bdc2da3298b456a"],
+            "5449016a4bdc2d6f028b456f": prices[ECurrencyTemplates.RUB],
+            "569668774bdc2da2298b4568": prices[ECurrencyTemplates.EUR],
+            "5696686a4bdc2da3298b456a": prices[ECurrencyTemplates.USD],
+            "5d235b4d86f7742e017bc88a": prices[ECurrencyTemplates.GP],
         },
     });
 
