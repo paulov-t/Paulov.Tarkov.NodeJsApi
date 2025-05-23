@@ -619,12 +619,12 @@ router.post('/weather', function(req, res, next) {
  *       200:
  *         description: A successful response
  */
-router.post('/locations', function(req, res, next) {
+// router.post('/locations', function(req, res, next) {
 
-    bsgHelper.addBSGBodyInResponseWithData(res, new LocationService().getAllLocationData());
+//     bsgHelper.addBSGBodyInResponseWithData(res, new LocationService().getAllLocationData());
 
-    next();
-});
+//     next();
+// });
 
 /**
  * @swagger
