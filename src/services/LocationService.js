@@ -2,6 +2,7 @@ const { logger } = require('./../classes/logger');
 const { Database } = require('./../classes/database');
 const bsgHelper = require('./../bsgHelper');
 const { DatabaseService } = require('./DatabaseService');
+const { EnvironmentVariableService } = require('./EnvironmentVariableService');
 
 /**
  * A service to get and process all Location's in Tarkov database.
@@ -39,10 +40,20 @@ class LocationService
                 continue;
             }
 
-            if (process.env.LABS_REQUIRES_KEYCARD) {
-                if (process.env.LABS_REQUIRES_KEYCARD === 'false') {
-                    mapBase.AccessKeys = [];
-                    mapBase.AccessKeysPvE = [];
+            const envVars = EnvironmentVariableService.getEnvironmentVariables();
+
+            if (envVars.LABS_REQUIRES_KEYCARD == 'false') {
+                mapBase.AccessKeys = [];
+                mapBase.AccessKeysPvE = [];
+            }
+
+            if (envVars.BOTS_ENABLED == 'false') {
+                // If bots are disabled, remove all bot types from the map
+                mapBase.BossLocationSpawn = [];
+                mapBase.BotMax = 0;
+                mapBase.BotMaxPvE = 0;
+                for (const spawnPointParam of mapBase.SpawnPointParams) {
+                    spawnPointParam.Sides = [];
                 }
             }
 
