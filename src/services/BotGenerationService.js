@@ -279,7 +279,9 @@ class BotGenerationService {
             }
 
             if (!weaponItem) {
-                throw new Error("Weapon not found in preset");
+                // throw new Error("Weapon not found in preset");
+                logger.logError(`Weapon not found in presets for ${randomId} in slot ${slotId}`);
+                return;
             }
 
             weaponItem.upd = {
