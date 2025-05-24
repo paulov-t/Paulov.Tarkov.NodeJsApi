@@ -442,6 +442,19 @@ function processTraderRepair(account, action, outputChanges) {
         if(itemToRepair.upd.Repairable.Durability > itemToRepair.upd.Repairable.MaxDurability)
             itemToRepair.upd.Repairable.Durability = itemToRepair.upd.Repairable.MaxDurability;
 
+        // Convert the item in to the correct format to send back to the client
+        const itemToSendBack = JSON.parse(JSON.stringify(itemToRepair));
+        itemToSendBack.id = itemToSendBack.id;
+        itemToSendBack.parent = itemToSendBack.parentId;
+        itemToSendBack.slot = itemToSendBack.slotId;
+
+        if (!outputChanges.profileChanges[account.accountId].items)
+            outputChanges.profileChanges[account.accountId].items = { new: [], change: [], del: [] };
+
+        if (!outputChanges.profileChanges[account.accountId].items.change)
+            outputChanges.profileChanges[account.accountId].items.change = [];
+        
+        outputChanges.profileChanges[account.accountId].items.change.push(itemToRepair);
     }
 }
 
