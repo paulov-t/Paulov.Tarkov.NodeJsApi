@@ -448,6 +448,12 @@ router.post('/local/end', function(req, res, next) {
 
             InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "ArmorVest");
 
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "TacticalVest");
+
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "FirstPrimaryWeapon");
+            
+            InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "SecondPrimaryWeapon");
+
             InventoryService.removeItemFromSlot(myAccountByMode.characters.pmc, "Holster");
 
             // Remove all items from the pockets 
