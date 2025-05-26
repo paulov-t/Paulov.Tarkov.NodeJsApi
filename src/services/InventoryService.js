@@ -5,6 +5,7 @@ const { Database } = require('../classes/database');
 const { ContainerService } = require('./ContainerService');
 const { DatabaseService } = require('./DatabaseService');
 const Vector2d = require('../models/Vector2d');
+const { Item } = require('../models/Item');
 
 class InventoryService {
     constructor() {
@@ -516,6 +517,7 @@ return map;
      * 
      * @param {AccountProfileCharacter} character 
      * @param {String} itemId 
+     * @return {Item} Item from the inventory or undefined if not found
      */
     findItemInInventory(character, itemId) {
         return character.Inventory.items.find(x=> x._id === itemId);
