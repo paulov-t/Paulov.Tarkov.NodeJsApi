@@ -130,9 +130,12 @@ class InventoryService {
 
     /**
      * TODO: Look into this! Seems overly complicated...
-     * Regenerate all GUIDs with new IDs, for the exception of special item types (e.g. quest, sorting table, etc.) This
+     * Regenerate all Unique Identifiers with new IDs, for the exception of special item types (e.g. quest, sorting table, etc.) This
      * function will not mutate the original items array, but will return a new array with new GUIDs.
-     *
+     * 
+     * This function was originally created by SP-Tarkov (credits to SP-Tarkov for the original code).
+     * https://github.com/sp-tarkov/server/blob/7cda4d567a33aee1c6b5ae25b125e1914236cffd/project/src/helpers/ItemHelper.ts#L823
+     * 
      * @param originalItems Items to adjust the IDs of
      * @param pmcData Player profile
      * @param insuredItems Insured items that should not have their IDs replaced
@@ -369,7 +372,7 @@ class InventoryService {
         const stashXY = this.getPlayerStashSizeXAndY(pmcProfile);
 
 
-        const map = this.getContainerMap(pmcProfile.Inventory.stash, stashXY, pmcProfile.Inventory.items.filter(x => x.slotId == 'hideout'));
+        const map = this.getContainerArray(pmcProfile.Inventory.stash, stashXY, pmcProfile.Inventory.items.filter(x => x.slotId == 'hideout'));
         // console.log(map);
 return map;
         // const stash2d = this.create2DArray(stashXY.y, stashXY.x);
@@ -408,13 +411,13 @@ return map;
     }
 
     /**
-     * 
+     * TODO: This does not work in the current state, needs to be fixed
      * @param {*} containerId 
      * @param {Vector2d} containerSizeXandY 
      * @param {*} currentItems 
      * @returns 
      */
-    getContainerMap(containerId, containerSizeXandY, currentItems) {
+    getContainerArray(containerId, containerSizeXandY, currentItems) {
         // Create the array as designated by the container size X and Y variables
         // 0 means nothing is in that spot, 1 means there is
         const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
