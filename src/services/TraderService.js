@@ -5,6 +5,9 @@ const { AccountService } = require("./AccountService");
 const { ContainerService } = require("./ContainerService");
 const { InventoryService } = require("./InventoryService");
 const { DatabaseService } = require("./DatabaseService");
+const { BuyFromTraderAction } = require("../models/ItemMovingActions/BuyFromTraderAction");
+const bsgHelper = require("./../bsgHelper");
+const { logger } = require("../classes/logger");
 
 /**
  * A service for anything trader or "ragfair" (flea market) related
@@ -105,6 +108,140 @@ class TraderService {
 
         return placementResult;
 
+    }
+
+    /**
+     * 
+     * @param {Account} account 
+     * @param {BuyFromTraderAction} action 
+     * @returns 
+     */
+    buyFromTrader(account, action, outputChanges) {
+        const result = { success: true, error: undefined };
+    
+        const Database = DatabaseService.getDatabase();
+        const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+        const pmcProfile = accountProfile.characters.pmc;
+        const inventoryEquipmentId = pmcProfile.Inventory.equipment;
+        const inventoryItems = pmcProfile.Inventory.items;
+    
+        const traderId = action.tid;
+        const trader = this.getTrader(traderId);
+        const templatePrices = DatabaseService.getDatabase().getData(Database.templates.prices);
+    
+        const userItemsToUse = action.scheme_items;
+        const buyingItemId = action.item_id;
+        // const template = DatabaseService.getDatabase().getTemplateItems()[buyingItemId];
+    
+        let moneySalesSum = 0;
+    
+        const itemsToRemoveFromInventory = [];
+        for(const userItemToUse of userItemsToUse) {
+
+            const foundItemIndex = inventoryItems.findIndex(x => userItemToUse.id == x._id);
+            if (foundItemIndex === -1) {
+                let invItems = inventoryItems.filter(x => userItemToUse.id == x._tpl);
+                console.log(invItems);
+            }
+            const invItem = inventoryItems.find(x => userItemToUse.id == x._id || userItemToUse.id == x._tpl);
+            if (!invItem) {
+                logger.logError(`TraderService.buyFromTrader: Item with id ${userItemToUse.id} not found in inventory`);
+                // If the item is not found in the inventory, we return an error
+                result.success = false;
+                result.error = `Item with id ${userItemToUse.id} not found in inventory`;
+                return result;
+            }
+            // console.log(invItem);
+            // A stack of something, likely money in this case
+            if (invItem.upd && invItem.upd.StackObjectsCount) {
+                invItem.StackObjectsCount -= userItemToUse.count;
+                if (invItem.upd.StackObjectsCount <= 0)
+                    itemsToRemoveFromInventory.push(invItem);
+    
+                moneySalesSum += userItemToUse.count;
+    
+            } else {
+                itemsToRemoveFromInventory.push(invItem);
+            }
+    
+        }
+    
+        // Remove the items from the Inventory
+        for(const item of itemsToRemoveFromInventory) {
+            const indexToRemove = inventoryItems.findIndex(x => x._id === item._id);
+            if (indexToRemove !== -1)
+                inventoryItems.splice(indexToRemove, 1);
+        }
+    
+        const clonedParentItem = JSON.parse(JSON.stringify(trader.assort.items.find(x => x._id == action.item_id)));
+        clonedParentItem._id = bsgHelper.generateMongoId();
+        clonedParentItem.parentId = undefined;
+        const newParentItemId = clonedParentItem._id;
+        clonedParentItem.upd = {};
+    
+        const childItems = InventoryService.findChildItemsOfItemId(trader.assort.items, action.item_id, false);
+        if (childItems && childItems.length > 0) {
+            // Buy and Transfer the item from Trader to Player
+            for(const item of childItems) {
+                
+                const clonedItem = JSON.parse(JSON.stringify(item));
+                clonedItem.parentId = newParentItemId;
+                clonedItem._id = bsgHelper.generateMongoId();
+                InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedItem);
+    
+                // console.log(clonedItem);
+    
+                inventoryItems.push(indexToRemove, 1);
+            }
+        }
+        else {
+            if(InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedParentItem)) {
+    
+                if (!outputChanges.profileChanges[pmcProfile._id].items.new)
+                    outputChanges.profileChanges[pmcProfile._id].items.new = [];
+    
+                const itemToSendBack = JSON.parse(JSON.stringify(clonedParentItem));
+                // itemToSendBack.id = itemToSendBack._id;
+                itemToSendBack.parent = itemToSendBack.parentId;
+                itemToSendBack.slot = itemToSendBack.slotId;
+                console.log(itemToSendBack);
+    
+                outputChanges.profileChanges[pmcProfile._id].items.new.push(itemToSendBack);
+            }
+        }
+    
+        if (moneySalesSum) {
+            pmcProfile.TradersInfo[traderId].salesSum += moneySalesSum;
+            pmcProfile.TradersInfo[traderId].salesSum = Math.round(pmcProfile.TradersInfo[traderId].salesSum);
+        }
+    
+        return result;
+    }
+
+    updateTraderRelations(account) {
+
+        const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+        for( const traderId in accountMode.characters.pmc.TradersInfo) {
+                const traderInfo = accountMode.characters.pmc.TradersInfo[traderId];
+                
+                if (traderInfo.salesSum < 0) {
+                    traderInfo.salesSum = 0;
+                }
+                traderInfo.salesSum = Math.round(traderInfo.salesSum);
+            }
+
+            const result = {};
+            for (const traderId in accountMode.characters.pmc.TradersInfo) {
+                const baseData = accountMode.characters.pmc.TradersInfo[traderId];
+                result[traderId] = {
+                    salesSum: baseData.salesSum,
+                    disabled: baseData.disabled,
+                    loyalty: baseData.loyaltyLevel,
+                    standing: baseData.standing,
+                    unlocked: baseData.unlocked,
+                };
+        }
+        return result;
     }
 
 }

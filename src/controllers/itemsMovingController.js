@@ -22,6 +22,7 @@ const { DatabaseService } = require('../services/DatabaseService');
 const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../models/ItemMovingActions/BuyFromTraderAction');
 const { ContainerService } = require('../services/ContainerService');
 const { QuestService } = require('../services/QuestService');
+const { ActionCommandsService } = require('../services/ActionCommandsService');
 
 /**
  * @swagger
@@ -65,32 +66,34 @@ router.post('/moving', function(req, res, next) {
 
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
 
-    const result = {
-        warnings: [],
-        profileChanges: {
+    const result = ActionCommandsService.createActionCommandOutput(account, accountProfile);
+
+    // const result = {
+    //     warnings: [],
+    //     profileChanges: {
             
-        }
-    }
-    result.profileChanges[account.accountId] = {
-        _id: account.accountId,
-        experience: accountProfile.characters.pmc.Info.Experience,
-        quests: [],
-        ragFairOffers: [],
-        weaponBuilds: [],
-        equipmentBuilds: [],
-        items: { new: [], change: [], del: [] },
-        production: {},
-        improvements: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Hideout.Improvements)),
-        skills: { 
-            Common: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Common))
-            , Mastering: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Mastering))
-            , Points: 0 
-        },
-        health: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Health)),
-        traderRelations: updateTraderRelations(account),
-        recipeUnlocked: {},
-        questsStatus: []
-    }
+    //     }
+    // }
+    // result.profileChanges[account.accountId] = {
+    //     _id: account.accountId,
+    //     experience: accountProfile.characters.pmc.Info.Experience,
+    //     quests: [],
+    //     ragFairOffers: [],
+    //     weaponBuilds: [],
+    //     equipmentBuilds: [],
+    //     items: { new: [], change: [], del: [] },
+    //     production: {},
+    //     improvements: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Hideout.Improvements)),
+    //     skills: { 
+    //         Common: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Common))
+    //         , Mastering: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Mastering))
+    //         , Points: 0 
+    //     },
+    //     health: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Health)),
+    //     traderRelations: updateTraderRelations(account),
+    //     recipeUnlocked: {},
+    //     questsStatus: []
+    // }
  
     /**
      * Example of data
@@ -104,6 +107,9 @@ router.post('/moving', function(req, res, next) {
         switch(action.Action) {
             case 'Examine':
                 processExamine(account, action, result);
+                break;
+            case 'Eat':
+                processEatAction(account, action, result);
                 break;
             case 'Heal':
                 processHealAction(account, action, result);
@@ -155,6 +161,26 @@ router.post('/moving', function(req, res, next) {
     bsgHelper.getBody(res, result);
     next();
 });
+
+function processEatAction(account, action, outputChanges) {
+    const result = { success: true, error: undefined };
+    logger.logDebug("processEat");
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    const pmcProfile = accountProfile.characters.pmc;
+
+    const itemToEat = InventoryService.findItemInInventory(pmcProfile, action.item);
+    if (!itemToEat) {
+        result.success = false;
+        result.error = "Item to eat not found in inventory";
+        return result;
+    }
+    logger.logDebug(`Eating ${itemToEat._id}`);
+    if (!itemToEat.upd) {
+        InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemToEat._id);
+    }
+
+    return result;
+}
 
 function processExamine(account, action, outputChanges) {
 
@@ -459,6 +485,13 @@ function processTraderRepair(account, action, outputChanges) {
 }
 
 
+
+/**
+ * Processes the Trading Confirm action
+ * @param {Account} account
+ * @param {TradingConfirmAction} action
+ * @param {Object} outputChanges
+*/
 function processTradingConfirm(account, action, outputChanges) {
 
     let result = { success: true, error: undefined };
@@ -486,7 +519,7 @@ function processTradingConfirm(account, action, outputChanges) {
 
     switch(action.type) {
         case 'buy_from_trader':
-            result = buyFromTrader(account, action, outputChanges);
+            result = TraderService.buyFromTrader(account, action, outputChanges);
             break;
         case 'sell_to_trader':
             result = sellToTrader(account, action, outputChanges);
@@ -496,91 +529,6 @@ function processTradingConfirm(account, action, outputChanges) {
     return result;
 }
 
-/**
- * 
- * @param {Account} account 
- * @param {BuyFromTraderAction} action 
- * @returns 
- */
-function buyFromTrader(account, action, outputChanges) {
-    const result = { success: true, error: undefined };
-
-    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    const pmcProfile = accountProfile.characters.pmc;
-    const inventoryEquipmentId = pmcProfile.Inventory.equipment;
-    const inventoryItems = pmcProfile.Inventory.items;
-
-    const traderId = action.tid;
-    const trader = TraderService.getTrader(traderId);
-    const templatePrices = Database.getData(Database.templates.prices);
-
-    const userItemsToUse = action.scheme_items;
-    const buyingItemId = action.item_id;
-    const template = Database.getTemplateItems()[buyingItemId];
-
-    let moneySalesSum = 0;
-
-    const itemsToRemoveFromInventory = [];
-    for(const userItemToUse of userItemsToUse) {
-
-        const invItem = inventoryItems.find(x => userItemToUse.id == x._id);
-        // console.log(invItem);
-        // A stack of something, likely money in this case
-        if (invItem.upd && invItem.upd.StackObjectsCount) {
-            invItem.StackObjectsCount -= userItemToUse.count;
-            if (invItem.upd.StackObjectsCount <= 0)
-                itemsToRemoveFromInventory.push(invItem);
-
-            moneySalesSum += userItemToUse.count;
-
-        } else {
-            itemsToRemoveFromInventory.push(invItem);
-        }
-
-    }
-
-    // Remove the items from the Inventory
-    for(const item of itemsToRemoveFromInventory) {
-        const indexToRemove = inventoryItems.findIndex(x => x._id === item._id);
-        if (indexToRemove !== -1)
-            inventoryItems.splice(indexToRemove, 1);
-    }
-
-    const clonedParentItem = JSON.parse(JSON.stringify(trader.assort.items.find(x => x._id == action.item_id)));
-    clonedParentItem._id = bsgHelper.generateMongoId();
-    clonedParentItem.parentId = undefined;
-    const newParentItemId = clonedParentItem._id;
-
-    const childItems = InventoryService.findChildItemsOfItemId(trader.assort.items, action.item_id, false);
-    if (childItems && childItems.length > 0) {
-        // Buy and Transfer the item from Trader to Player
-        for(const item of childItems) {
-            
-            const clonedItem = JSON.parse(JSON.stringify(item));
-            clonedItem.parentId = newParentItemId;
-            clonedItem._id = bsgHelper.generateMongoId();
-            InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedItem);
-
-            console.log(clonedItem);
-
-            inventoryItems.push(indexToRemove, 1);
-        }
-    }
-    else {
-        if(InventoryService.placeItemIntoPlayerStash(accountProfile.characters.pmc, clonedParentItem)) {
-
-            if (!outputChanges.profileChanges[pmcProfile._id].items.new)
-                outputChanges.profileChanges[pmcProfile._id].items.new = [];
-
-            outputChanges.profileChanges[pmcProfile._id].items.new.push(clonedParentItem);
-        }
-    }
-
-    if (moneySalesSum)
-        pmcProfile.TradersInfo[traderId].salesSum += moneySalesSum;
-
-    return result;
-}
 
 function sellToTrader(account, action, outputChanges) {
     const result = { success: true, error: undefined };
@@ -689,6 +637,14 @@ function processQuestHandover(account, action, outputChanges) {
 function updateTraderRelations(account) {
 
    const accountMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+   for( const traderId in accountMode.characters.pmc.TradersInfo) {
+        const traderInfo = accountMode.characters.pmc.TradersInfo[traderId];
+        
+        if (traderInfo.salesSum < 0) {
+            traderInfo.salesSum = 0;
+        }
+        traderInfo.salesSum = Math.round(traderInfo.salesSum);
+    }
 
     const result = {};
     for (const traderId in accountMode.characters.pmc.TradersInfo) {

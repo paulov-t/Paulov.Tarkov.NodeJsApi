@@ -99,7 +99,7 @@ class BotGenerationService {
         const templateItemList = DatabaseService.getDatabase().getTemplateItems();
         
         // Remove the Pocket 1
-        // InventoryService.removeItemFromSlot(bot, "pocket1");
+        InventoryService.removeItemFromSlot(bot, "pocket1");
         
         // Remove the Pocket 2
         InventoryService.removeItemFromSlot(bot, "pocket2");
@@ -157,12 +157,28 @@ class BotGenerationService {
             this.addRandomItemToSlot(bot, "ArmorVest", Object.keys(botDatabaseData.inventory.equipment.ArmorVest));
         }
 
+        // Remove the TacticalVest
+        InventoryService.removeItemFromSlot(bot, "TacticalVest");
+        if (Object.keys(botDatabaseData.inventory.equipment.TacticalVest).length > 0) {
+            this.addRandomItemToSlot(bot, "TacticalVest", Object.keys(botDatabaseData.inventory.equipment.TacticalVest));
+        }
+
         InventoryService.removeItemFromSlot(bot, "FirstPrimaryWeapon");
         if (Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon).length > 0) {
             let newItem = this.addRandomItemToSlot(
                 bot
                 , "FirstPrimaryWeapon"
                 , Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon)
+                , botDatabaseData
+            );
+        }
+
+        InventoryService.removeItemFromSlot(bot, "SecondPrimaryWeapon");
+        if (Object.keys(botDatabaseData.inventory.equipment.SecondPrimaryWeapon).length > 0) {
+            let newItem = this.addRandomItemToSlot(
+                bot
+                , "SecondPrimaryWeapon"
+                , Object.keys(botDatabaseData.inventory.equipment.SecondPrimaryWeapon)
                 , botDatabaseData
             );
         }
@@ -324,6 +340,14 @@ class BotGenerationService {
                 InventoryService.addItemToInventory(bot, randomAmmo);
             }
 
+            for(let i = 0; i < 3; i++) {
+                const magazineAndBullets = this.createCopyOfMagazineWithBullets(magazine);
+
+                InventoryService.addItemToInventoryWithinSlotContainer(bot, magazineAndBullets.magazine, "TacticalVest");
+                InventoryService.addItemToInventory(bot, magazineAndBullets.ammo);
+            }
+            
+
             return weaponItem;
 
         }
@@ -331,6 +355,31 @@ class BotGenerationService {
 
     }
 
+
+    createCopyOfMagazineWithBullets(magazine) {
+        const templateItem = DatabaseService.getDatabase().getTemplateItemById(magazine._tpl);
+
+        const cartridges = templateItem._props.Cartridges;
+        const newMagazine = JSON.parse(JSON.stringify(magazine));
+        newMagazine._id = generateMongoId();
+        newMagazine.parentId = undefined;
+        newMagazine.slotId = undefined;
+
+        const selectedCartridge = cartridges[this.randomInteger(0, cartridges.length-1)]
+        const selectedAmmoTpl = selectedCartridge._props.filters[0].Filter[selectedCartridge._props.filters[0].Filter.length-1];
+        const randomAmmo = 
+        {
+            _tpl: selectedAmmoTpl,
+            _id: generateMongoId(),
+            parentId: newMagazine._id,
+            slotId: "cartridges",
+            upd: {
+                "StackObjectsCount": templateItem._props.Cartridges[0]._max_count,
+                "SpawnedInSession": false
+            }
+        }
+        return { magazine: newMagazine, ammo:randomAmmo };
+    }
 
     /**
      * 
@@ -358,11 +407,11 @@ class BotGenerationService {
 
         const lowestPrice = this.availableBackpacks[0].p;
         const highestPrice = this.availableBackpacks[this.availableBackpacks.length-1].p;
-        let randomPrice = this.randomInteger(lowestPrice * 0.7, highestPrice * 0.75);
+        let randomPrice = this.randomInteger(lowestPrice * 0.4, highestPrice * 0.6);
         switch(condition.Role) {
             case "pmcUSEC":
             case "pmcBEAR":
-                randomPrice *= 1.15;
+                randomPrice *= 1.4;
                 break;
         }
         const filteredBackpacks = this.availableBackpacks.filter(x => x.p <= randomPrice);

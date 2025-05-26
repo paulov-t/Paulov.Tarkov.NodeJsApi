@@ -3,7 +3,9 @@ const { Database } = require('./../classes/database');
 class DatabaseService {
 
     getDatabase() {
-        return Database;
+        const db = Database;
+        db.loadCompressedDatabase();
+        return db;
     }
 
     getTemplateQuestsAsList() {

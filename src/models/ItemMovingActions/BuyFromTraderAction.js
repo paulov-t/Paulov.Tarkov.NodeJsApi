@@ -1,33 +1,45 @@
 class BuyFromTraderAction {
-    constructor() {
+    /**
+     * 
+     * @param {Number} count 
+     * @param {String} itemId 
+     * @param {String} tid 
+     * @param {BuyFromTraderActionSchemeItem[]} schemeItems 
+     */
+    constructor(count = 0, itemId = '', tid = '', schemeItems = []) {
 
-        this.count = 0;
+        this.count = count;
 
         /**
          * This is the Item Id
          * @type {String}
          */
-        this.item_id = '';
+        this.item_id = itemId;
 
         /**
          * This is the Trader Id
          * @type {String}
          */
-        this.tid = '';
+        this.tid = tid;
 
         /**
          * This is the item Ids from the player
          * @type {BuyFromTraderActionSchemeItem[]}
          */
-        this.scheme_items = [];
+        this.scheme_items = schemeItems;
     }
 }
 
 class BuyFromTraderActionSchemeItem {
-    constructor() {
+     /**
+     * 
+     * @param {Number} count 
+     * @param {String} id 
+     */
+    constructor(id = '', count = 0) {
 
-        this.id = '';
-        this.count = 0;
+        this.id = id;
+        this.count = count;
 
     }
 }

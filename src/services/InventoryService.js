@@ -4,6 +4,7 @@ const { logger } = require('../classes/logger');
 const { Database } = require('../classes/database');
 const { ContainerService } = require('./ContainerService');
 const { DatabaseService } = require('./DatabaseService');
+const Vector2d = require('../models/Vector2d');
 
 class InventoryService {
     constructor() {
@@ -291,7 +292,7 @@ class InventoryService {
     /**
      * 
      * @param {AccountProfileCharacter} accountProfileCharacter 
-     * @returns 
+     * @returns {Vector2d} { x, y } Stash Size X and Y
      */
     getPlayerStashSizeXAndY(accountProfileCharacter) {
         let stashId = this.getPlayerStashId(accountProfileCharacter);
@@ -320,7 +321,7 @@ class InventoryService {
         // TODO: Find a way to make this a much more performant 2D UInt8Array instead
         const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
         console.log(array2d);
-        const templatesItemData = _database.getData(DatabaseService.getDatabase()["templates"]["items"]);
+        const templatesItemData = DatabaseService.getDatabase().getData(DatabaseService.getDatabase()["templates"]["items"]);
 
         // Fill 2D Array with current Items
         for(const item of currentItems) {
@@ -365,42 +366,105 @@ class InventoryService {
      */
     getStashContainerMap(pmcProfile) {
         const stashXY = this.getPlayerStashSizeXAndY(pmcProfile);
-        const stash2d = this.create2DArray(stashXY.y, stashXY.x);
-        const templatesItemData = Database.getData(DatabaseService.getDatabase()["templates"]["items"]);
-        const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
-        if(pmcProfileStashItems.length > 0) {
-            for(const item of pmcProfileStashItems) {
 
-                if(item._tpl === '59984ab886f7743e98271174') {
-                    console.log(item);
-                }
 
-                const itemTemplate = templatesItemData[item._tpl];
-                let itemWidth = itemTemplate._props.Width;
-                let itemHeight = itemTemplate._props.Height;
-                let itemPositionUp = 0;
-                let itemPositionLeft = 0;
-                for(const childItem of this.findChildItemsOfItemId(pmcProfile.Inventory.items, item._id)) {
-                    const childItemTemplate = templatesItemData[childItem._tpl];
+        const map = this.getContainerMap(pmcProfile.Inventory.stash, stashXY, pmcProfile.Inventory.items.filter(x => x.slotId == 'hideout'));
+        // console.log(map);
+return map;
+        // const stash2d = this.create2DArray(stashXY.y, stashXY.x);
+        // const templatesItemData = Database.getData(DatabaseService.getDatabase()["templates"]["items"]);
+        // const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
+        // if(pmcProfileStashItems.length > 0) {
+        //     for(const item of pmcProfileStashItems) {
 
-                    if(childItemTemplate && childItemTemplate._props) {
-                        itemPositionUp -= childItemTemplate._props.ExtraSizeUp ?? 0;
-                        itemPositionLeft -= childItemTemplate._props.ExtraSizeLeft ?? 0;
-                        itemWidth = Math.max(itemWidth, itemWidth + childItemTemplate._props.ExtraSizeLeft + childItemTemplate._props.ExtraSizeRight);
-                        itemHeight = Math.max(itemHeight, itemHeight + childItemTemplate._props.ExtraSizeUp + childItemTemplate._props.ExtraSizeDown);
-                    }
-                }
-                for (let iWidth = item.location.x - itemPositionLeft; iWidth < item.location.x + itemWidth; iWidth++) {
-                    for (let iHeight = item.location.y - itemPositionUp; iHeight < item.location.y + itemHeight; iHeight++) {
-                        stash2d[iHeight][iWidth] = 1
-                    }
-                }
-            }
-        }
+        //         const itemTemplate = templatesItemData[item._tpl];
+        //         let itemWidth = itemTemplate._props.Width;
+        //         let itemHeight = itemTemplate._props.Height;
+        //         let itemPositionUp = 0;
+        //         let itemPositionLeft = 0;
+        //         for(const childItem of this.findChildItemsOfItemId(pmcProfile.Inventory.items, item._id)) {
+        //             const childItemTemplate = templatesItemData[childItem._tpl];
+
+        //             if(childItemTemplate && childItemTemplate._props) {
+        //                 itemPositionUp -= childItemTemplate._props.ExtraSizeUp ?? 0;
+        //                 itemPositionLeft -= childItemTemplate._props.ExtraSizeLeft ?? 0;
+        //                 itemWidth = Math.max(itemWidth, itemWidth + childItemTemplate._props.ExtraSizeLeft + childItemTemplate._props.ExtraSizeRight);
+        //                 itemHeight = Math.max(itemHeight, itemHeight + childItemTemplate._props.ExtraSizeUp + childItemTemplate._props.ExtraSizeDown);
+        //             }
+        //         }
+
+        //         for (let iWidth = item.location.x - itemPositionLeft; iWidth < item.location.x + itemWidth; iWidth++) {
+        //             for (let iHeight = item.location.y - itemPositionUp; iHeight < item.location.y + itemHeight; iHeight++) {
+        //                 stash2d[iHeight][iWidth] = 1
+        //             }
+        //         }
+        //     }
+        // }
 
         // Note: handy if you want to debug the stash
         // console.log(stash2d);
         return stash2d;
+    }
+
+    /**
+     * 
+     * @param {*} containerId 
+     * @param {Vector2d} containerSizeXandY 
+     * @param {*} currentItems 
+     * @returns 
+     */
+    getContainerMap(containerId, containerSizeXandY, currentItems) {
+        // Create the array as designated by the container size X and Y variables
+        // 0 means nothing is in that spot, 1 means there is
+        const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
+        const templatesItemData = DatabaseService.getDatabase().getData(DatabaseService.getDatabase()["templates"]["items"]);
+
+        // Fill 2D Array with current Items
+        for(const item of currentItems) {
+            const itemLocation = item.location;
+            if (!itemLocation)
+                continue;
+
+            if (!item.parentId)
+                continue;
+
+            if (item.parentId !== containerId) {
+                // Check if child item of another item here
+                continue;
+            }
+
+            // The specified spot is filled. This has not handled size yet...
+            array2d[itemLocation.y][itemLocation.x] = 1;
+
+            const itemTemplate = templatesItemData[item._tpl];
+            let itemWidth = itemTemplate._props.Width;
+            let itemHeight = itemTemplate._props.Height;
+            let itemPositionUp = 0;
+            let itemPositionLeft = 0;
+            for(const childItem of this.findChildItemsOfItemId(currentItems, item._id)) {
+                const childItemTemplate = templatesItemData[childItem._tpl];
+
+                if(childItemTemplate && childItemTemplate._props) {
+                    itemPositionUp -= childItemTemplate._props.ExtraSizeUp ?? 0;
+                    itemPositionLeft -= childItemTemplate._props.ExtraSizeLeft ?? 0;
+                    itemWidth = Math.max(itemWidth, itemWidth + childItemTemplate._props.ExtraSizeLeft + childItemTemplate._props.ExtraSizeRight);
+                    itemHeight = Math.max(itemHeight, itemHeight + childItemTemplate._props.ExtraSizeUp + childItemTemplate._props.ExtraSizeDown);
+                }
+            }
+            
+            for (let iWidth = item.location.x - itemPositionLeft; iWidth < item.location.x + itemWidth; iWidth++) {
+                for (let iHeight = item.location.y - itemPositionUp; iHeight < item.location.y + itemHeight; iHeight++) {
+                    array2d[iHeight][iWidth] = 1
+                }
+            }
+
+        
+        }
+
+        console.log(array2d);
+
+        return array2d;
+
     }
 
     /**
@@ -472,6 +536,31 @@ class InventoryService {
         } else {
             logger.logWarning(`Item ${item._id} already exists in inventory`);
         }
+    }
+
+    addItemToInventoryWithinSlotContainer(bot, item, slotId) {
+        if (!bot.Inventory.items) {
+            bot.Inventory.items = [];
+        }
+
+        // Check if the item already exists in the inventory
+        const existingItem = bot.Inventory.items.find(x => x._id === item._id);
+        if (existingItem) {
+            logger.logWarning(`Item ${item._id} already exists in inventory`);
+            return;
+        }
+
+        const parentId = bot.Inventory.items.find(x => x.slotId === slotId)?._id;
+        // If the parentId is not found, set it to the equipment slot
+        if (!parentId) {
+            parentId = bot.Inventory.equipment;
+        }
+
+        this.getStashContainerMap
+
+
+        // Add the item to the inventory
+        bot.Inventory.items.push(item);
     }
 
 }
