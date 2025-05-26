@@ -162,6 +162,13 @@ router.post('/moving', function(req, res, next) {
     next();
 });
 
+/**
+ * TODO: This is not complete, it needs to be able to handle eating items partially
+ * @param {*} account 
+ * @param {*} action 
+ * @param {*} outputChanges 
+ * @returns 
+ */
 function processEatAction(account, action, outputChanges) {
     const result = { success: true, error: undefined };
     logger.logDebug("processEat");
