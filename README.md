@@ -59,6 +59,7 @@ For development you will need to:
 
 - This project is licensed under the Attribution-NonCommercial-NoDerivatives 4.0 International License. See [LICENSE](LICENSE.md)
 - This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
+- This project uses snippets SP-Tarkov's TypeScript code. If I missed credit of your code contributed to SP-Tarkov, please raise an issue to let me know. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
 
 ## Environment Variables
 You can set the following environment variables for quick changes to the server (use a .env file if testing locally):
