@@ -1,9 +1,21 @@
-﻿<div align="center">
-<h1 align="center">Paulov's Tarkov NodeJs Api</h1>
+﻿<div>
+<h1 align="center">Paulov's Tarkov NodeJs Api Server</h1>
 
   <p align="center">
 	A personal project to learn NodeJs Express Api against a real-world game example.
   </p>
+
+<hr />
+  <strong>
+	  This is a personal project and is not affiliated with Battlestate Games, Escape from Tarkov, SP-Tarkov or any other emulator in any way.
+	  <br />
+Use at your own risk!
+	  <br />
+	  
+This is not feature complete. See [Issues](https://github.com/paulov-t/Paulov.Tarkov.NodeJsApi/issues)
+	  <br />
+
+  </strong>
 
 </div>
 
@@ -11,12 +23,12 @@
 This is a personal project to learn NodeJs Express Api & Website against a real-world game example. In this case Escape from Tarkov server side endpoints.
 
 ## The project ruleset
-- I have gone against the new normal of using TypeScript and stuck with simple JavaScript throughout
+- Go against the new normal of using TypeScript and used JavaScript throughout
 - Learn and use Express
-- Attempt to use the Model-View-Controller design within NodeJs
+- Use the Model-View-Controller design within NodeJs
 - Use Swagger Open Api
 - Use username & hashed password authorization
-- Use web token authorization - NOT YET IMPLEMENTED
+- Use web token authorization - **NOT YET IMPLEMENTED**
 - Create a NodeJs that will work in the free Azure Web Service. 
   - The free tier of the Azure Web Service has a very low memory size threshold and very low hard disk space threshold. If you exceed the threshold, the app will not start or crash. 
   - The main aim is to keep the footprint very low 
@@ -59,7 +71,7 @@ For development you will need to:
 
 - This project is licensed under the Attribution-NonCommercial-NoDerivatives 4.0 International License. See [LICENSE](LICENSE.md)
 - This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
-- This project uses snippets of SP-Tarkov's TypeScript code. If I missed credit of your code contributed to SP-Tarkov, please raise an issue to let me know. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
+- This project uses small snippets of SP-Tarkov's TypeScript code in very few places. This is designed to be replaced with own code. If I missed credit of your code contributed to SP-Tarkov, please raise an issue to let me know. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
 
 ## Environment Variables
 You can set the following environment variables for quick changes to the server (use a .env file if testing locally):
