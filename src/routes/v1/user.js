@@ -46,4 +46,32 @@ router.get('/details/:id/:mode', function(req, res, next) {
     next();
 });
 
+/**
+ * @swagger
+ * /v1/user/live:
+ *   get:
+ *     tags:
+ *     - User
+ *     summary: Gets the users that are currently online
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.get('/live', function(req, res, next) {
+
+    const users = [];
+    for (const account of AccountService.getAllAccounts()) {
+        if (AccountService.activeAccounts.includes(account.accountId)) {
+            users.push({
+                username: account.username,
+                mode:  AccountService.getAccountProfileByCurrentModeFromAccount(account).name.toUpperCase(),
+                level: AccountService.getAccountProfileByCurrentModeFromAccount(account).characters.pmc.Info.Level
+            });
+        }
+    }
+
+    getBody(res, users)
+    next();
+});
+
 module.exports = router;

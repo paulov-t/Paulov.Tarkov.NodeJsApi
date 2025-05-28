@@ -50,6 +50,15 @@ router.get('/traders', function(req, res, next) {
   res.render('traders', vm);
 });
 
+
+router.get('/live-players', function(req, res, next) {
+
+  const vm = getRenderViewModel(req);
+  vm.title = "Live Players Table";
+
+  res.render('livePlayers', vm);
+});
+
 router.get('/login', function(req, res, next) {
 
   res.render('login', getRenderViewModel(req));

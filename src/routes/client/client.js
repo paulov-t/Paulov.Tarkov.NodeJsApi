@@ -98,6 +98,21 @@ router.post('/game/start', function(req, res, next) {
  */
   router.post('/game/version/validate', function(req, res, next) {
     bsgHelper.nullResponse(res);
+
+    if (req.SessionId) {
+        // If the SessionId is set, we can load the account
+        // and set it in the request object for later use
+        const account = AccountService.getAccount(req.SessionId);
+        if (account) {
+
+            const index = AccountService.activeAccounts.findIndex(x => x == req.SessionId)
+            if (index === -1)
+                AccountService.activeAccounts.push(req.SessionId)
+        }
+    }
+
+
+
     next();
   
   });
@@ -816,6 +831,18 @@ router.post('/repeatalbeQuests/activityPeriods', function(req, res, next) {
 router.post('/game/logout', function(req, res, next) {
 
     bsgHelper.addBSGBodyInResponseWithData(res, {});
+
+    if (req.SessionId) {
+        // If the SessionId is set, we can load the account
+        // and set it in the request object for later use
+        const account = AccountService.getAccount(req.SessionId);
+        if (account) {
+
+        const index = AccountService.activeAccounts.findIndex(x => x == req.SessionId)
+        if (index !== -1)
+            AccountService.activeAccounts.splice(index, 1)
+        }
+    }
 
     next();
 });

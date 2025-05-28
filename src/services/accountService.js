@@ -14,7 +14,6 @@ const { Database } = require('../classes/database');
 
 class AccountService {
     constructor() {
-    //    this.saveDirectoryPath = path.join(process.cwd(), "data", "accounts");
        this.saveDirectoryPath = path.join(__dirname, "../", "data", "accounts");
        if (!fs.existsSync(this.saveDirectoryPath))
         fs.mkdir(this.saveDirectoryPath, { recursive: true }, (err) => {
@@ -22,6 +21,11 @@ class AccountService {
             if(err)
                 console.error(err);
         });
+
+        /**
+         * @type {string[]}
+         */
+        this.activeAccounts = [];
     }
 
     /**
