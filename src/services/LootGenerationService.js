@@ -4,6 +4,7 @@ const bsgHelper = require('./../bsgHelper');
 const { DatabaseService } = require('./DatabaseService');
 const { ContainerService } = require('./ContainerService');
 const { InventoryService } = require('./InventoryService');
+const { EnvironmentVariableService } = require('./EnvironmentVariableService');
 
 /**
  * A service to generate loot for the given map. Use the Generate method with location instance.
@@ -42,26 +43,35 @@ class LootGenerationService
      */
     static PreviouslyGeneratedContainers = [];
 
+    static GeneratedLootModifiers = false;
+
     /**
      * 
      * @returns {object} Loot Modifiers
      */
     static GetLootModifiers() 
     {
-        if(LootGenerationService.LootModifiers.modifierSuperRare !== 0) {
-            return LootGenerationService.LootModifiers;
-        }
-        
-        modifierSuperRare *= (0.02 * LootGenerationService.LocationLootChanceModifierFromFile);
-        modifierRare *= (0.05 * LootGenerationService.LocationLootChanceModifierFromFile);
-        modifierUnCommon *= (0.15 * LootGenerationService.LocationLootChanceModifierFromFile);
-        modifierCommon *= (0.5 * LootGenerationService.LocationLootChanceModifierFromFile);
-        
-        LootGenerationService.LootModifiers.modifierSuperRare = modifierSuperRare;
-        LootGenerationService.LootModifiers.modifierRare = modifierRare;
-        LootGenerationService.LootModifiers.modifierUnCommon = modifierUnCommon;
-        LootGenerationService.LootModifiers.modifierCommon = modifierCommon;
+      if(LootGenerationService.GeneratedLootModifiers)
         return LootGenerationService.LootModifiers;
+
+      /**
+       * 
+       */
+      const envVars = EnvironmentVariableService.getEnvironmentVariables();
+      
+      const modifierSuperRare = (0.02 * envVars.LOOT_MODIFIER_SUPERRARE);
+      const modifierRare = (0.05 * envVars.LOOT_MODIFIER_RARE);
+      const modifierUnCommon = (0.15 * envVars.LOOT_MODIFIER_UNCOMMON);
+      const modifierCommon = (0.5 * envVars.LOOT_MODIFIER_COMMON);
+      
+      LootGenerationService.LootModifiers.modifierSuperRare = modifierSuperRare;
+      LootGenerationService.LootModifiers.modifierRare = modifierRare;
+      LootGenerationService.LootModifiers.modifierUnCommon = modifierUnCommon;
+      LootGenerationService.LootModifiers.modifierCommon = modifierCommon;
+
+      LootGenerationService.GeneratedLootModifiers = true;
+
+      return LootGenerationService.LootModifiers;
     }
 
     /**
@@ -87,7 +97,11 @@ class LootGenerationService
       
           let itemRarityType = "COMMON";
       
-          let item_price = Database.getTemplatePrice(itemTemplate._id);
+          let item_price = DatabaseService.getTemplatePrice(itemTemplate._id);
+          if (item_price === undefined || item_price === null || item_price <= 0) {
+            item_price = 1; // Default price if not found
+          }
+
           if(itemTemplate._props.ammoType !== undefined) {
             item_price = item_price * 310 * itemTemplate._props.StackMaxSize;
           }
@@ -109,23 +123,20 @@ class LootGenerationService
           }
           
           itemCalculation = Math.round(itemCalculation / 10000);
-          itemCalculation -= 2;
 
-          itemCalculation = Math.min(10, itemCalculation);
+          itemCalculation = Math.min(15, itemCalculation);
           itemCalculation = Math.max(1, itemCalculation);
-          // console.log(itemTemplate._props.Name);
-          // console.log(itemCalculation);
 
           try {
             if(unlootable) {
               itemRarityType = "NOT_EXIST";
             }
             else {
-              if (itemCalculation >= 9) {
+              if (itemCalculation >= 12) {
                   itemRarityType = "SUPERRARE";
-              } else if (itemCalculation >= 5) {
+              } else if (itemCalculation >= 8) {
                   itemRarityType = "RARE";
-              } else if (itemCalculation >= 3) {
+              } else if (itemCalculation >= 4) {
                   itemRarityType = "UNCOMMON";
               }
             }
@@ -258,7 +269,7 @@ class LootGenerationService
         .fill()
         .map(() => Array(containerTemplate._props.Grids[0]._props.cellsH).fill(0));
 
-        let LootListItems = this.GenerateLootList(parentId, loot, templateItemList, containerLootAttempt);
+        let LootListItems = this.GenerateLootListForContainer(parentId, loot, templateItemList, containerLootAttempt);
         if (isAirdrop && LootListItems.length == 0) {
           LoggingService.logDebug(`Airdrop Container: ${parentId} ${containerTemplate._name}`);
           LootListItems = LootGenerationService.GenerateAirdropLootList(parentId, in_mapName, container2D);
@@ -451,7 +462,7 @@ class LootGenerationService
        * @param {String} containerId 
        * @returns {Array} an array of loot item ids
        */
-      GenerateLootList(containerId, expectedItemDistribution, templateItemList, containerLootAttempt) {
+      GenerateLootListForContainer(containerId, expectedItemDistribution, templateItemList, containerLootAttempt) {
         let lootList = [];
         let UniqueLootList = [];
         const itemCountDistList = expectedItemDistribution.itemcountDistribution;
