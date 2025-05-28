@@ -273,8 +273,13 @@ class Database {
      * @returns {Number}
      */
   getTemplatePrice(templateId) {
-    return this.getTemplateItemPrice(templateId);
-}
+    const price = this.getTemplateItemPrice(templateId);
+    if (price === undefined || price === null || isNaN(price)) {
+      return 0;
+    }
+
+    return price;
+  }
 
   /**
      * 
