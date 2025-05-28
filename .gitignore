@@ -43,3 +43,5 @@ Build/
 
 # database.zip
 src/data/accounts*
+# random dumps
+src/data/dumps*
