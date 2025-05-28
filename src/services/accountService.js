@@ -1,14 +1,13 @@
 const fs =  require('fs');
 const path =  require('path');
 const bsgHelper = require('../bsgHelper');
-// var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 const { Account, AccountProfileMode, AccountProfileCharacter, AccountProfileCharacterSet } = require('./../models/Account');
 const { BotGenerationService } = require('./BotGenerationService');
 const { SocialNetwork } = require('./../models/SocialNetwork');
 const { UpdatableChatMember } = require('./../models/UpdatableChatMember');
 const { UpdatableChatMemberInfo } = require('./../models/UpdatableChatMemberInfo');
-const { logger } = require('./../classes/logger');
+const LoggingService = require('./LoggingService');
 const { InventoryService } = require('./InventoryService');
 const { DatabaseService } = require('./DatabaseService');
 const { Database } = require('../classes/database');
@@ -490,7 +489,7 @@ class AccountService {
 
         fs.writeFileSync(accountFilePath, JSON.stringify(account, null, "\t"));
     
-        logger.logSuccess(`Saved Account ${account.accountId}!`);
+        LoggingService.logSuccess(`Saved Account ${account.accountId}!`);
     }
 
     /**
@@ -616,7 +615,7 @@ class AccountService {
         const rnd2 = Math.floor(Math.random() * 10);
         const rnd3 = Math.floor(Math.random() * 10);
         const newSeed = `${rnd1}a${rnd3}0${rnd2}bcbaa1${rnd2}14${rnd1}c5153a75f3f${rnd3}882ec`;
-        logger.logDebug(`Updating Hideout Seed from ${pmcProfile.Hideout.Seed} to ${newSeed}`)
+        LoggingService.logDebug(`Updating Hideout Seed from ${pmcProfile.Hideout.Seed} to ${newSeed}`)
         pmcProfile.Hideout.Seed = newSeed
     }
 

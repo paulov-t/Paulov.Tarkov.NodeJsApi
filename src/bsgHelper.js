@@ -1,7 +1,5 @@
 var zlib = require('zlib');
 var Http = require('http');
-const { logger } = require('./classes/logger');
-const { randomBytes } = require('crypto');
 var { mongoid } = require('mongoid-js');
 
 /**

@@ -46,6 +46,51 @@ class LoggingService {
     clearHistory() {
         this.logHistory = [];
     }
+
+    logError(text) {
+        if(text.message) {
+        this.log("!", text.message, "white", "red");
+        }
+        else
+        this.log("!", text, "white", "red");
+    }
+
+    logWarning(text) {
+        this.log("!", text, "black", "yellow");
+    }
+
+    logSuccess(text) {
+        this.log(".", text, "white", "green");
+    }
+
+    logDebug(text, isStructData = false) {
+        if (isStructData) {
+        this.log("[DEBUG]", "Data Output:", "black", "white");
+        this.log("LogData", text);
+        return;
+        }
+        this.log("[DEBUG]", text, "black", "white");
+    }
+
+    logInfo(text) {
+        this.log(".", text, "white", "blue");
+    }
+    logDebug(text) {
+        this.log(".", text, "white");
+    }
+    logRequest(text, data = "") {
+        if (data == "") this.log("", text, "cyan", "black");
+        else this.log(data, text, "cyan", "black");
+    }
+
+    logData(data, deep = false) {
+        if (deep) data = internal.util.inspect(data, { showHidden: false, depth: null });
+        this.log("LogData", data);
+    }
+
+    throwErr(message, where, additional = "") {
+        throw message + "\r\n" + where + (additional != "" ? `\r\n${additional}` : "");
+    }
 }
 
 const instance = new LoggingService();

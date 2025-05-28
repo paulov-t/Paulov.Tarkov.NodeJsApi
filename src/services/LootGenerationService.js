@@ -1,4 +1,4 @@
-const { logger } = require('./../classes/logger');
+const LoggingService = require('./LoggingService');
 const { Database } = require('./../classes/database');
 const bsgHelper = require('./../bsgHelper');
 const { DatabaseService } = require('./DatabaseService');
@@ -51,27 +51,6 @@ class LootGenerationService
         if(LootGenerationService.LootModifiers.modifierSuperRare !== 0) {
             return LootGenerationService.LootModifiers;
         }
-
-        // let modifierSuperRare = ConfigController.Configs["gameplay"].locationloot.RarityMultipliers.Superrare;
-        // if(modifierSuperRare == undefined){
-        //     modifierSuperRare = 0.5;
-        //     logger.logWarning("Loot Modifier: Superrare: Couldn't find the config. Reset to 0.5.")
-        // }
-        // let modifierRare = ConfigController.Configs["gameplay"].locationloot.RarityMultipliers.Rare;
-        // if(modifierRare == undefined){
-        //     modifierRare = 0.6;
-        //     logger.logWarning("Loot Modifier: Rare: Couldn't find the config. Reset to 0.9.")
-        // }
-        // let modifierUnCommon = ConfigController.Configs["gameplay"].locationloot.RarityMultipliers.Uncommon;
-        // if(modifierUnCommon == undefined){
-        //     modifierUnCommon = 0.85;
-        //     logger.logWarning("Loot Modifier: Uncommon: Couldn't find the config. Reset to 0.95.")
-        // }
-        // let modifierCommon = ConfigController.Configs["gameplay"].locationloot.RarityMultipliers.Common;
-        // if(modifierCommon == undefined){
-        //     modifierCommon = 0.95;
-        //     logger.logWarning("Loot Modifier: Common: Couldn't find the config. Reset to 0.95.")
-        // }
         
         modifierSuperRare *= (0.02 * LootGenerationService.LocationLootChanceModifierFromFile);
         modifierRare *= (0.05 * LootGenerationService.LocationLootChanceModifierFromFile);
@@ -213,7 +192,7 @@ class LootGenerationService
       
           const itemRarityType = LootGenerationService.GetItemRarityType(itemTemplate);
       
-          // logger.logInfo(itemRarityType + " - " + itemTemplate._props.Name);
+          // LoggingService.logInfo(itemRarityType + " - " + itemTemplate._props.Name);
       
             if (itemRarityType == "SUPERRARE") {
               if (Math.random() > (modifierSuperRare * in_additionalLootModifier)) {
@@ -281,12 +260,12 @@ class LootGenerationService
 
         let LootListItems = this.GenerateLootList(parentId, loot, templateItemList, containerLootAttempt);
         if (isAirdrop && LootListItems.length == 0) {
-          logger.logDebug(`Airdrop Container: ${parentId} ${containerTemplate._name}`);
+          LoggingService.logDebug(`Airdrop Container: ${parentId} ${containerTemplate._name}`);
           LootListItems = LootGenerationService.GenerateAirdropLootList(parentId, in_mapName, container2D);
         }
 
         if(LootListItems.length == 0 ) {
-          logger.logWarning(`EmptyContainer: ${parentId} ${containerTemplate._name}`);
+          LoggingService.logWarning(`EmptyContainer: ${parentId} ${containerTemplate._name}`);
           return false;
         }
 
@@ -328,7 +307,7 @@ class LootGenerationService
                 const rolledRandomItemToPlace = templateItemList[rolledLootListItem._tpl];
                 
                 if (rolledRandomItemToPlace === undefined) {
-                  logger.logWarning(`Undefined in container: ${ContainerId}  ${LootListItems.length} ${RollIndex}`);
+                  LoggingService.logWarning(`Undefined in container: ${ContainerId}  ${LootListItems.length} ${RollIndex}`);
                   continue;
                 }
                 let result = { success: false };
@@ -485,7 +464,7 @@ class LootGenerationService
           && x.tpl !== undefined 
           && LootGenerationService.FilterItemByRarity(templateItemList[x.tpl], itemsRemoved, (x.relativeProbability * 0.1 + ((containerLootAttempt + 1) * 0.1))));
         if (lootList.length === 0) {
-          logger.logWarning(`lootList for ${containerId} ${templateItemList[containerId]} is empty`);
+          LoggingService.logWarning(`lootList for ${containerId} ${templateItemList[containerId]} is empty`);
           return [];
         }
 
@@ -551,7 +530,7 @@ class LootGenerationService
               for (const item of selectedLoot) {
                 const itemTemplate = DatabaseService.getDatabase().items[item];
                 if (itemTemplate._props.LootExperience === undefined) {
-                  logger.logWarning(`itemTemplate._props.LootExperience == "undefined" for ${itemTemplate._id}`);
+                  LoggingService.logWarning(`itemTemplate._props.LootExperience == "undefined" for ${itemTemplate._id}`);
                   continue;
                 }
                 if(!LootGenerationService.FilterItemByRarity(itemTemplate, itemsRemoved, 5))
@@ -592,7 +571,7 @@ class LootGenerationService
         // Check if static weapon.
         
         if (ContainerId != "5cdeb229d7f00c000e7ce174" && ContainerId != "5d52cc5ba4b9367408500062") {
-          logger.logWarning("GetLootContainerData is null something goes wrong please check if container template: " + _items[0]._tpl + " exists");
+          LoggingService.logWarning("GetLootContainerData is null something goes wrong please check if container template: " + _items[0]._tpl + " exists");
           return;
         } else {
           _items[0].upd = { FireMode: { FireMode: "fullauto" } };
@@ -659,7 +638,7 @@ class LootGenerationService
         // ------------------------------------------------------
         // Handle any Forced Static Loot - i.e. Unknown Key
         // 
-        logger.logInfo(`Forced Loot Count: ${forced.length}`);
+        LoggingService.logInfo(`Forced Loot Count: ${forced.length}`);
         let numberOfForcedStaticLootAdded = 0;
         for(let iForced in forced) {
           let thisForcedItem = utility.DeepCopy(forced[iForced]);
@@ -713,7 +692,7 @@ class LootGenerationService
           }
         }
         if(numberOfForcedStaticLootAdded > 0) {
-          logger.logSuccess(`Added ${numberOfForcedStaticLootAdded} Forced Static Loot`);
+          LoggingService.logSuccess(`Added ${numberOfForcedStaticLootAdded} Forced Static Loot`);
         }
         return count;
       }
@@ -923,7 +902,7 @@ class LootGenerationService
           if(this.GenerateContainerLoot(data, locationLootChanceModifier, MapName))
             count++;
     
-          if (Date.now() - dateStarted > 50) logger.logInfo(`Slow Container ${data.Id} [${Date.now() - dateStarted}ms]`);
+          if (Date.now() - dateStarted > 50) LoggingService.logInfo(`Slow Container ${data.Id} [${Date.now() - dateStarted}ms]`);
           dateStarted = Date.now();
           data.Root = data.Items[0]._id;
           output.Loot.push(data);

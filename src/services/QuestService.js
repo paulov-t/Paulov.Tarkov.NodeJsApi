@@ -4,7 +4,7 @@ const { getBody } = require('../bsgHelper');
 const { getRenderViewModel, getRenderViewModelWithUsername } = require('../classes/shared');
 const { Database } = require('../classes/database');
 var bsgHelper =  require('../bsgHelper');
-const { logger } = require('./../classes/logger');
+const LoggingService = require('./LoggingService');
 const { SocialNetworkService } = require('./SocialNetworkService');
 const { Message } = require("../models/Message");
 const { EMessageType } = require("../models/Enums/EMessageType");
@@ -94,7 +94,7 @@ class QuestService {
                             profileQuest.status = EQuestStatus.AvailableForStart;
                     }
                     else {
-                        logger.logError(`profileQuest ${quest.QuestName} doesn't exist.`);
+                        LoggingService.logError(`profileQuest ${quest.QuestName} doesn't exist.`);
 
                     }
                     playerQuests.push(quest);
@@ -143,10 +143,10 @@ class QuestService {
         const allQuests = Database.getTemplateQuests();
         const questToAccept = allQuests[questId];
         if (questToAccept) {
-            logger.logInfo(`Accepting ${questToAccept._id}`);
+            LoggingService.logInfo(`Accepting ${questToAccept._id}`);
             const index = pmcProfile.Quests.findIndex(x => x.qid === questToAccept._id);
             if (index === -1) {
-                logger.logWarning(`Could not find ${questToAccept._id}. Adding the item.`);
+                LoggingService.logWarning(`Could not find ${questToAccept._id}. Adding the item.`);
                 let profileQuestItem = new AccountProfileCharacterQuestItem();
                 profileQuestItem.qid = questToAccept._id;
                 profileQuestItem.startTime = Math.round(Date.now() / 1000);
@@ -156,7 +156,7 @@ class QuestService {
             }
             else {
                 let profileQuestItem = pmcProfile.Quests[index];
-                logger.logDebug(`Found ${questToAccept._id} at index ${index}`);
+                LoggingService.logDebug(`Found ${questToAccept._id} at index ${index}`);
                 if (profileQuestItem) {
                     profileQuestItem.status = "Started";
                 }

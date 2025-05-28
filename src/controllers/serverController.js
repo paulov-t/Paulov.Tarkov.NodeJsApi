@@ -19,7 +19,7 @@ const { MatchGroup } = require('../models/MatchGroup');
 const { ClientRequestDataDumpService } = require('./../services/ClientRequestDataDumpService');
 const { InventoryService } = require('./../services/InventoryService');
 
-const { logger } = require('./../classes/logger');
+const { LoggingService } = require('./../services/LoggingService');
 
 const { ENotificationType } = require('../models/ENotificationType');
 

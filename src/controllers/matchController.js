@@ -19,7 +19,7 @@ const { MatchGroup } = require('../models/MatchGroup');
 const { ClientRequestDataDumpService } = require('./../services/ClientRequestDataDumpService');
 const { InventoryService } = require('./../services/InventoryService');
 
-const { logger } = require('./../classes/logger');
+const { LoggingService } = require('./../services/LoggingService');
 
 const { ENotificationType } = require('../models/ENotificationType');
 
@@ -394,7 +394,7 @@ router.post('/local/end', function(req, res, next) {
         for (const achievementId in newProfileToSave.Achievements) {
             if (!myAccountByMode.characters.pmc.Achievements[achievementId]) {
                 myAccountByMode.characters.pmc.Achievements[achievementId] = newProfileToSave.Achievements[achievementId];
-                logger.logSuccess(`Added achievement ${achievementId}!`)
+                LoggingService.logSuccess(`Added achievement ${achievementId}!`)
             }
         }
     }
@@ -523,7 +523,7 @@ router.post('/local/end', function(req, res, next) {
 
     // Save the Account
     AccountService.saveAccount(myAccount);
-    logger.logSuccess(`Saved account ${myAccount.accountId}!`)
+    LoggingService.logSuccess(`Saved account ${myAccount.accountId}!`)
     
     bsgHelper.getBody(res, result);
 

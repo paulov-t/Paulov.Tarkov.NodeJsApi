@@ -7,7 +7,7 @@ const { InventoryService } = require("./InventoryService");
 const { DatabaseService } = require("./DatabaseService");
 const { BuyFromTraderAction } = require("../models/ItemMovingActions/BuyFromTraderAction");
 const bsgHelper = require("./../bsgHelper");
-const { logger } = require("../classes/logger");
+const LoggingService = require("./LoggingService");
 
 /**
  * A service for anything trader or "ragfair" (flea market) related
@@ -145,7 +145,7 @@ class TraderService {
             }
             const invItem = inventoryItems.find(x => userItemToUse.id == x._id || userItemToUse.id == x._tpl);
             if (!invItem) {
-                logger.logError(`TraderService.buyFromTrader: Item with id ${userItemToUse.id} not found in inventory`);
+                LoggingService.logError(`TraderService.buyFromTrader: Item with id ${userItemToUse.id} not found in inventory`);
                 // If the item is not found in the inventory, we return an error
                 result.success = false;
                 result.error = `Item with id ${userItemToUse.id} not found in inventory`;

@@ -1,9 +1,9 @@
 const bsgHelper = require('./../bsgHelper');
 const { AccountProfileCharacter, Account, AccountProfileMode } = require("../models/Account");
-const { logger } = require('../classes/logger');
 const { Database } = require('../classes/database');
 const { ContainerService } = require('./ContainerService');
 const { DatabaseService } = require('./DatabaseService');
+const LoggingService = require('./LoggingService');
 const Vector2d = require('../models/Vector2d');
 const { Item } = require('../models/Item');
 
@@ -276,7 +276,6 @@ class InventoryService {
                 item._id = profile.Inventory.equipment;
             }
         }
-        // logger.logInfo("Updated equipment Id!");
     }
 
     getTemplateItem(templateId) {
@@ -539,7 +538,7 @@ return map;
         if (!bot.Inventory.items.find(x => x._id === item._id)) {
             bot.Inventory.items.push(item);
         } else {
-            logger.logWarning(`Item ${item._id} already exists in inventory`);
+            LoggingService.logWarning(`Item ${item._id} already exists in inventory`);
         }
     }
 
@@ -551,7 +550,7 @@ return map;
         // Check if the item already exists in the inventory
         const existingItem = bot.Inventory.items.find(x => x._id === item._id);
         if (existingItem) {
-            logger.logWarning(`Item ${item._id} already exists in inventory`);
+            LoggingService.logWarning(`Item ${item._id} already exists in inventory`);
             return;
         }
 

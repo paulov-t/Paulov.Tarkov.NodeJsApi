@@ -18,7 +18,7 @@ var zlib = require('zlib');
 var fs = require('fs');
 var bsgHelper =  require('./bsgHelper');
 const database = require('./classes/database');
-const ownLogger = require('./classes/logger');
+const LoggingService = require('./services/LoggingService');
 const { AccountService } = require('./services/AccountService');
 
 
@@ -140,16 +140,6 @@ app.use((req, res, next) => {
   next();
 });
 
-/** Middleware: Detects and store Uri calls for metrics */
-// app.use(function(req, res, next) {
-
-//   // let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.headers["host"] + req.url}`;
-//   let responseText = (req.SessionId ? `[${req.SessionId}]:` : "") + `${req.url}`;
-//   ownLogger.logger.logInfo(responseText);
-//   next();
-// });
-
-
 app.use(function(req, res, next) {
 
   if(req.url.includes("files/")) {
@@ -168,7 +158,7 @@ app.use(function(req, res, next) {
       res.end(fs.readFileSync(filePath.replace(".jpg", ".png")));
     }
     else {
-      ownLogger.logger.logError(`${filePath} doesn't exist`);
+      LoggingService.logError(`${filePath} doesn't exist`);
       res.end(fs.readFileSync(path.join(__dirname, 'public', 'files', 'achievement', 'Standard_35.png')));
     }
 
@@ -232,7 +222,7 @@ app.use(function(req, res, next) {
     next(createError(404));
   else {
 
-    ownLogger.logger.logError("Unhandled Request/Response");
+    LoggingService.logError("Unhandled Request/Response");
     if(typeof(res.body) === 'object')
       res.end(Buffer.from(JSON.stringify(res.body)));
   }
@@ -246,7 +236,7 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  ownLogger.logger.logError(res.locals.error);
+  LoggingService.logError(res.locals.error);
 
   const start = Date.now();
 

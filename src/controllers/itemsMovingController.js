@@ -13,7 +13,7 @@ const express = require('express');
 const router = express.Router();
 const bsgHelper =  require('./../bsgHelper');
 const { AccountService } = require('./../services/AccountService');
-const { logger } = require('./../classes/logger');
+const { LoggingService } = require('./../services/LoggingService');
 const { TraderService } = require('../services/TraderService');
 const { Database } = require('../classes/database');
 const { InventoryService } = require('../services/InventoryService');
@@ -171,7 +171,7 @@ router.post('/moving', function(req, res, next) {
  */
 function processEatAction(account, action, outputChanges) {
     const result = { success: true, error: undefined };
-    logger.logDebug("processEat");
+    LoggingService.logDebug("processEat");
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     const pmcProfile = accountProfile.characters.pmc;
 
@@ -181,7 +181,7 @@ function processEatAction(account, action, outputChanges) {
         result.error = "Item to eat not found in inventory";
         return result;
     }
-    logger.logDebug(`Eating ${itemToEat._id}`);
+    LoggingService.logDebug(`Eating ${itemToEat._id}`);
     if (!itemToEat.upd) {
         InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemToEat._id);
     }
@@ -192,10 +192,10 @@ function processEatAction(account, action, outputChanges) {
 function processExamine(account, action, outputChanges) {
 
     const result = { success: true, error: undefined };
-    logger.logDebug("processExamine");
+    LoggingService.logDebug("processExamine");
 
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    logger.logDebug(`Examining item for ${account.accountId}`);
+    LoggingService.logDebug(`Examining item for ${account.accountId}`);
 
     const pmcProfile = accountProfile.characters.pmc;
     const pmcProfileEncyclopedia = accountProfile.characters.pmc.Encyclopedia;
@@ -223,7 +223,7 @@ function processExamine(account, action, outputChanges) {
     }
 
     if (itemTpl !== "") {
-        logger.logDebug(` ${account.accountId} examined item ${itemTpl}`);
+        LoggingService.logDebug(` ${account.accountId} examined item ${itemTpl}`);
         pmcProfileEncyclopedia[itemTpl] = true;
     }
 
@@ -235,14 +235,14 @@ function processExamine(account, action, outputChanges) {
 function processHealAction(account, action, outputChanges) {
 
     const result = { success: true, error: undefined };
-    logger.logDebug("processHealAction");
+    LoggingService.logDebug("processHealAction");
 
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    logger.logDebug(`Healing ${account.accountId}`);
+    LoggingService.logDebug(`Healing ${account.accountId}`);
 
     const pmcProfile = accountProfile.characters.pmc;
     const healingItemToUse = pmcProfile.Inventory.items.find((item) => item._id === action.item);
-    logger.logDebug(`Using ${healingItemToUse._id}`);
+    LoggingService.logDebug(`Using ${healingItemToUse._id}`);
 
     const profilePart = accountProfile.characters.pmc.Health.BodyParts[action.part];
     profilePart.Health.Current = profilePart.Health.Current + action.count > profilePart.Health.Maximum ? profilePart.Health.Maximum : profilePart.Health.Current + account.count;
@@ -254,7 +254,7 @@ function processHealAction(account, action, outputChanges) {
 
 function processHideoutUpgradeAction(account, action, outputChanges) {
     const result = { success: false, error: undefined };
-    logger.logDebug("processHideoutUpgradeAction");
+    LoggingService.logDebug("processHideoutUpgradeAction");
 
     const accountProfileMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     if (!accountProfileMode)
@@ -285,7 +285,7 @@ function processHideoutUpgradeAction(account, action, outputChanges) {
 
 function processHideoutUpgradeCompleteAction(account, action, outputChanges) {
     const result = { success: true, error: undefined };
-    logger.logDebug("processHideoutUpgradeCompleteAction");
+    LoggingService.logDebug("processHideoutUpgradeCompleteAction");
 
     const accountProfileMode = AccountService.getAccountProfileByCurrentModeFromAccount(account);
     if (!accountProfileMode)
@@ -424,7 +424,7 @@ function processQuestComplete(account, action, outputChanges) {
     let profileQuestItem = pmcProfile.Quests[index];
     profileQuestItem.status = "Success";
 
-    logger.logInfo(`Completed ${profileQuestItem._id}`);
+    LoggingService.logInfo(`Completed ${profileQuestItem._id}`);
 
     return result;
 }
@@ -432,7 +432,7 @@ function processQuestComplete(account, action, outputChanges) {
 function processTraderRepair(account, action, outputChanges) {
 
     let result = { success: true, error: undefined };
-    logger.logDebug("processTraderRepair");
+    LoggingService.logDebug("processTraderRepair");
 
     /**
      * @type {String}
@@ -461,7 +461,7 @@ function processTraderRepair(account, action, outputChanges) {
     for(const itemToRepairAction of action.repairItems) {
         const itemToRepair = inventoryItems.find(x => x._id === itemToRepairAction._id);
         if(!itemToRepair) {
-            logger.logError("could not find item to repair");
+            LoggingService.logError("could not find item to repair");
             return { success: false, error: "could not find item to repair" };
         }
 
@@ -502,7 +502,7 @@ function processTraderRepair(account, action, outputChanges) {
 function processTradingConfirm(account, action, outputChanges) {
 
     let result = { success: true, error: undefined };
-    logger.logDebug("processTradingConfirm");
+    LoggingService.logDebug("processTradingConfirm");
 
     /**
      * @type {String}

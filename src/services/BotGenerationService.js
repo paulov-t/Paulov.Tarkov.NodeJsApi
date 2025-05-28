@@ -1,5 +1,5 @@
 const { generateMongoId } = require("../bsgHelper");
-const { logger } = require("../classes/logger");
+const LoggingService = require("./LoggingService");
 const { AccountProfileCharacter } = require("../models/Account");
 const { BotGenerationCondition } = require("../models/BotGenerationCondition");
 const fs = require("fs");
@@ -204,7 +204,7 @@ class BotGenerationService {
         bot.Inventory.items = InventoryService.replaceIDs(bot.Inventory.items, bot, undefined, undefined);
         
         const endTime = Date.now()
-        logger.logDebug(`Bot generation for ${condition.Role} on ${bot.Info.Side} took: ${endTime - startTime}ms`);
+        LoggingService.logDebug(`Bot generation for ${condition.Role} on ${bot.Info.Side} took: ${endTime - startTime}ms`);
 
         return bot;
     }
@@ -296,7 +296,7 @@ class BotGenerationService {
 
             if (!weaponItem) {
                 // throw new Error("Weapon not found in preset");
-                logger.logError(`Weapon not found in presets for ${randomId} in slot ${slotId}`);
+                LoggingService.logError(`Weapon not found in presets for ${randomId} in slot ${slotId}`);
                 return;
             }
 

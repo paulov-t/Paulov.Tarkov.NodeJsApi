@@ -18,7 +18,7 @@ const { Inventory } = require('../../models/Inventory');
 const { ClientRequestDataDumpService } = require('../../services/ClientRequestDataDumpService');
 const { LocationWeatherTime } = require('../../models/LocationWeatherTime');
 const { Weather } = require('../../models/Weather');
-const { logger } = require('../../classes/logger');
+const LoggingService = require('../../services/LoggingService');
 const { LootGenerationService } = require('../../services/LootGenerationService');
 const { LocationService } = require('../../services/LocationService');
 const { EQuestStatus } = require('../../models/Enums/EQuestStatus');
@@ -40,7 +40,7 @@ router.post('/game/mode', function(req, res, next) {
 
     const sessionId = req.SessionId;
     if (!sessionId) {
-        logger.logError(`sessionId has not been set`);
+        LoggingService.logError(`sessionId has not been set`);
 
         res.render('unauthorized');
         return;
@@ -48,7 +48,7 @@ router.post('/game/mode', function(req, res, next) {
 
     const account = AccountService.getAccount(sessionId);
     if (!account) {
-        logger.logError(`account with sessionId ${sessionId} not found`);
+        LoggingService.logError(`account with sessionId ${sessionId} not found`);
 
         res.render('unauthorized');
         return;

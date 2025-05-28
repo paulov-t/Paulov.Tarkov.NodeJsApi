@@ -1,7 +1,4 @@
-const { logger } = require('./../classes/logger');
 const { Database } = require('./../classes/database');
-const bsgHelper = require('./../bsgHelper');
-const { DatabaseService } = require('./DatabaseService');
 const { EnvironmentVariableService } = require('./EnvironmentVariableService');
 
 /**
