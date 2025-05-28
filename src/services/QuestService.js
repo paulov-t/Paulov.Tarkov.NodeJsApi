@@ -197,7 +197,7 @@ class QuestService {
             message.type = EMessageType.QuestStart;
             message.text = messageText;
             message.items = new MessageItemsModel(quest.traderId, items);
-            message.hasRewards = message.items.length > 0;
+            message.hasRewards = message.items.data.length > 0;
             message.uid = quest.traderId
             SocialNetworkService.sendMessageToAccount(quest.traderId, account.accountId, account.currentMode, message, items);
         }

@@ -98,7 +98,7 @@ class SocialNetworkService {
         // Ensure dialogue exists
         let dialogue = targetAccountByMode.socialNetwork.dialogues.find((d) => d._id === fromId);
         if (!dialogue) {
-            const dialogue = new Dialogue(fromId);
+            dialogue = new Dialogue(fromId);
             dialogue.message = message;
             dialogue.attachmentsNew = 0;
             dialogue.new = 1;
@@ -110,7 +110,8 @@ class SocialNetworkService {
             targetAccountByMode.socialNetwork.dialogues.push(dialogue);
         }
 
-       
+        dialogue.messages.push(message);
+        dialogue.new = 1;
 
         AccountService.saveAccount(targetAccount);
         return true;
