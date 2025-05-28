@@ -163,11 +163,11 @@ router.post('/game/config', function(req, res, next) {
 
     // Main needs the https:// ... i think?
     const backend = {
-        Main: `${protocol}://${req.host}/`,
-        Messaging: `${protocol}://${req.host}/`,
-        Trading: `${protocol}://${req.host}/`,
-        RagFair: `${protocol}://${req.host}/`,
-        Lobby: `${protocol}://${req.host}/`,
+        Main: `${protocol}://${req.hostname}/`,
+        Messaging: `${protocol}://${req.hostname}/`,
+        Trading: `${protocol}://${req.hostname}/`,
+        RagFair: `${protocol}://${req.hostname}/`,
+        Lobby: `${protocol}://${req.hostname}/`,
     }
 
     const result = 
