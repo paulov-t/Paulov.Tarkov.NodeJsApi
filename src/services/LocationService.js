@@ -1,4 +1,5 @@
 const { Database } = require('./../classes/database');
+const { DatabaseService } = require('./DatabaseService');
 const { EnvironmentVariableService } = require('./EnvironmentVariableService');
 
 /**
@@ -21,8 +22,8 @@ class LocationService
         /**
          * @type {Database}
          */
-        const db = Database;
-        const locationEntries = db["locations"];
+        // const db = Database;
+        const locationEntries = DatabaseService.getDatabase()["locations"];
         for(const locationId in locationEntries) {
     
             const entry = locationEntries[locationId];
@@ -32,7 +33,7 @@ class LocationService
             if (!entry.base)
                 continue;
     
-            const mapBase = db.getData(entry.base);
+            const mapBase = DatabaseService.getDatabase().getData(entry.base);
             if (!mapBase) {
                 continue;
             }
@@ -63,7 +64,9 @@ class LocationService
             locations[mapBase._Id] = mapBase;
         }
     
-        return { locations: locations, paths: db.getData(db.locations.base).paths };
+        const paths = DatabaseService.getDatabase().getData(DatabaseService.getDatabase().locations.base).paths;
+
+        return { locations: locations, paths: paths };
     }
 
     /**
