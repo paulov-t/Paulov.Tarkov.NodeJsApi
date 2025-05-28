@@ -14,22 +14,6 @@ const { ENotificationType } = require('../models/ENotificationType');
 const { SocialNetworkService } = require('../services/SocialNetworkService');
 
 /**
- * Creates a simple Bug Report "friend" to send messages to using the Client
- * @returns 
- */
-function generateBugReportFriend() {
-  const testFriend = new UpdatableChatMember();
-  testFriend._id = bsgHelper.generateMongoId();
-  testFriend.aid = testFriend._id;
-  testFriend.AccountId = testFriend._id;
-  testFriend.Info.Side = "Bear";
-  testFriend.Info.Nickname = "Bug Report";
-  testFriend.Info.MemberCategory = 16; // System
-  testFriend.Info.Level = 99;
-  return testFriend;
-}
-
-/**
  * @swagger
  * /client/friend/list:
  *   post:
@@ -43,7 +27,7 @@ function generateBugReportFriend() {
 router.post('/list', function(req, res, next) {
 
   const friends = [];
-  friends.push(generateBugReportFriend());
+  friends.push();
 
   const sessionId = req.SessionId;
   const myAccount = AccountService.getAccount(sessionId);
@@ -93,6 +77,13 @@ router.post('/request/send', function(req, res, next) {
   console.log(requestBody);
 
   const sessionId = req.SessionId;
+
+  if (!sessionId || !requestBody.to) {
+    bsgHelper.getBody(res, { error: "SessionId or 'to' field is missing." });
+    next();
+    return;
+  }
+
   const myAccount = AccountService.getAccount(sessionId);
   const otherAccount = AccountService.getAccount(requestBody.to);
 
@@ -101,8 +92,8 @@ router.post('/request/send', function(req, res, next) {
   friendRequest.to = otherAccount.accountId;
   friendRequest.date = new Date().getTime();
   const senderAccountCurrentMode = myAccount.currentMode;
-  
-  myAccount.modes[senderAccountCurrentMode].socialNetwork.friendRequestOutbox.push(friendRequest);
+  const myAccountByCurrentMode = AccountService.getAccountProfileByCurrentModeFromAccount(myAccount);
+  myAccountByCurrentMode.socialNetwork.friendRequestOutbox.push(friendRequest);
   AccountService.saveAccount(myAccount);
   otherAccount.modes[senderAccountCurrentMode].socialNetwork.friendRequestInbox.push(friendRequest);
   AccountService.saveAccount(otherAccount);
