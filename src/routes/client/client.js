@@ -13,6 +13,7 @@ const { Weather } = require('../../models/Weather');
 const LoggingService = require('../../services/LoggingService');
 const { ECurrencyTemplates } = require('../../models/Enums/ECurrencyTemplates');
 const { TraderService } = require('../../services/TraderService');
+const { EnvironmentVariableService } = require('../../services/EnvironmentVariableService');
 
 
 /**
@@ -280,12 +281,26 @@ router.post('/customization/storage', function(req, res, next) {
  */
 router.post('/globals', function(req, res, next) {
 
-     /**
+    /**
      * @type {Database}
      */
-     const db = DatabaseService.getDatabase();
-     const dbResult = db.getData(db["globals"]);
-     dbResult.time = Date.now() / 1000;
+    const db = DatabaseService.getDatabase();
+    const dbResult = db.getData(db["globals"]);
+    dbResult.time = Date.now() / 1000;
+
+    const envVars = EnvironmentVariableService.getEnvironmentVariables();
+    if(envVars.ZOMBIES_ONLY == 'true') {
+        const infection = dbResult.config.SeasonActivity.InfectionHalloween;
+        infection.DisplayUIEnabled = true;
+        infection.Enabled = true;
+
+        for (const key of Object.keys(dbResult.LocationInfection)) {
+            dbResult.LocationInfection[key] = 100;
+        }
+    }
+    else {
+
+    }
 
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
