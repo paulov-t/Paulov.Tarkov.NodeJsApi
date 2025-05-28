@@ -13,7 +13,7 @@ const express = require('express');
 const router = express.Router();
 const bsgHelper =  require('./../bsgHelper');
 const { AccountService } = require('./../services/AccountService');
-const { LoggingService } = require('./../services/LoggingService');
+const LoggingService = require('./../services/LoggingService');
 const { TraderService } = require('../services/TraderService');
 const { Database } = require('../classes/database');
 const { InventoryService } = require('../services/InventoryService');
@@ -67,33 +67,6 @@ router.post('/moving', function(req, res, next) {
     const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
 
     const result = ActionCommandsService.createActionCommandOutput(account, accountProfile);
-
-    // const result = {
-    //     warnings: [],
-    //     profileChanges: {
-            
-    //     }
-    // }
-    // result.profileChanges[account.accountId] = {
-    //     _id: account.accountId,
-    //     experience: accountProfile.characters.pmc.Info.Experience,
-    //     quests: [],
-    //     ragFairOffers: [],
-    //     weaponBuilds: [],
-    //     equipmentBuilds: [],
-    //     items: { new: [], change: [], del: [] },
-    //     production: {},
-    //     improvements: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Hideout.Improvements)),
-    //     skills: { 
-    //         Common: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Common))
-    //         , Mastering: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Skills.Mastering))
-    //         , Points: 0 
-    //     },
-    //     health: JSON.parse(JSON.stringify(accountProfile.characters.pmc.Health)),
-    //     traderRelations: updateTraderRelations(account),
-    //     recipeUnlocked: {},
-    //     questsStatus: []
-    // }
  
     /**
      * Example of data
