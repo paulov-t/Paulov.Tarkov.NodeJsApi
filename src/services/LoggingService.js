@@ -48,15 +48,11 @@ class LoggingService {
     }
 
     logError(text) {
-        if(text.message) {
-        this.log("!", text.message, "white", "red");
-        }
-        else
-        this.log("!", text, "white", "red");
+        this.log(`[ERROR]:${text}`);
     }
 
     logWarning(text) {
-        this.log("!", text, "black", "yellow");
+        this.log(`[WARNING]:${text}`);
     }
 
     logSuccess(text) {
