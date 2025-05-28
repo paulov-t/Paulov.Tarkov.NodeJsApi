@@ -12,6 +12,7 @@ const { LocationWeatherTime } = require('../../models/LocationWeatherTime');
 const { Weather } = require('../../models/Weather');
 const LoggingService = require('../../services/LoggingService');
 const { ECurrencyTemplates } = require('../../models/Enums/ECurrencyTemplates');
+const { TraderService } = require('../../services/TraderService');
 
 
 /**
@@ -616,24 +617,6 @@ router.post('/weather', function(req, res, next) {
 
 /**
  * @swagger
- * /client/locations:
- *   post:
- *     tags:
- *     - Client
- *     summary: Tarkov Call 22
- *     responses:
- *       200:
- *         description: A successful response
- */
-// router.post('/locations', function(req, res, next) {
-
-//     bsgHelper.addBSGBodyInResponseWithData(res, new LocationService().getAllLocationData());
-
-//     next();
-// });
-
-/**
- * @swagger
  * /client/handbook/templates:
  *   post:
  *     tags:
@@ -871,7 +854,7 @@ router.post('/checkVersion', function(req, res, next) {
  *   post:
  *     tags:
  *     - Client
- *     summary: 
+ *     summary: Gets the prices for all items when viewing trader screens
  *     parameters:
  *      - name: id
  *        in: path
@@ -887,46 +870,8 @@ router.post('/items/prices/:id', function(req, res, next) {
     if(id === undefined)
         throw "Expected parameter id";
 
-    /**
-     * @type {Database}
-     */
-    const db = DatabaseService.getDatabase();
-    const itemsTemplates = db.getData(db.templates.items);
-    const pricesTemplates = db.getData(db.templates.prices);
+    const prices = TraderService.getTraderPrices(id);
 
-    let listOfTemplates = Object.values(itemsTemplates).filter((x) => x._type === "Item")
-    const prices = {};
-    for (const item of listOfTemplates) {
-
-        let price = pricesTemplates[item._id];
-        if (!price) {
-            price = -1;
-        }
-
-        prices[item._id] = Math.round(price);
-    }
-
-    // TODO: This is a hack. For some reason template prices are not set for all items. We need to figure out why and provide a price.
-    for (const id in prices) {
-
-        if (prices[id] === -1) {
-            // console.log(id);
-            // const template = listOfTemplates.find(x => x._id === id);
-            // const siblingTemplates = listOfTemplates.filter(x => x._parent === template._parent);
-            // let avgPrice = 1;
-            // for(const sibling of siblingTemplates) {
-            //     avgPrice += prices[sibling._id];
-            // }
-            // if (siblingTemplates > 0)
-            //     avgPrice /= siblingTemplates.length;
-
-            // prices[id] = Math.round(avgPrice);
-            prices[id] = 1;
-
-        }
-
-    }
-    
     bsgHelper.addBSGBodyInResponseWithData(res, {
         supplyNextTime: Math.floor(new Date().getTime() / 1000) + 1000,
         prices: prices,

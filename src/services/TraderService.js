@@ -251,6 +251,58 @@ class TraderService {
         return result;
     }
 
+    getTraderPrices(traderId) {
+
+        const db = DatabaseService.getDatabase();
+        const itemsTemplates = db.getData(db.templates.items);
+        const pricesTemplates = db.getData(db.templates.prices);
+    
+        let listOfTemplates = Object.values(itemsTemplates).filter((x) => x._type === "Item")
+        const prices = {};
+        for (const item of listOfTemplates) {
+    
+            let price = pricesTemplates[item._id];
+            if (!price) {
+                price = 1;
+            }
+    
+            prices[item._id] = Math.ceil(price);
+        }
+    
+        const trader = this.getTrader(traderId);
+        if (trader.base.currency === 'USD') {
+            for (const priceId in prices) {
+                prices[priceId] *= 0.013;
+                prices[priceId] = Math.ceil(prices[priceId]);
+            }
+        }
+        else if (trader.base.currency === 'EUR') {
+            for (const priceId in prices) {
+                prices[priceId] *= 0.011;
+                prices[priceId] = Math.ceil(prices[priceId]);
+            }
+        }
+        else if (trader.base.currency === 'GP') {
+            for (const priceId in prices) {
+                prices[priceId] *= 0.001;
+                prices[priceId] = Math.ceil(prices[priceId]);
+            }
+        }
+    
+        const coef = (100 - trader.base.loyaltyLevels[0].buy_price_coef) * 0.01;
+        for (const priceId in prices) {
+            prices[priceId] *= coef;
+            prices[priceId] = Math.ceil(prices[priceId]);
+        }
+    
+        for (const priceId in prices) {
+            if (prices[priceId] === 0) {
+                prices[priceId] = 1;
+            }
+        }
+        return prices;
+    }
+
 }
 
 module.exports.TraderService = new TraderService();
