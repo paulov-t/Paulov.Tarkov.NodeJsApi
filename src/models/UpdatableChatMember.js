@@ -1,11 +1,11 @@
 const { UpdatableChatMemberInfo } = require("./UpdatableChatMemberInfo");
 
 class UpdatableChatMember {
-    constructor() {
-        this._id = "";
-        this.aid = "";
-        this.AccountId = "";
-        this.Info = new UpdatableChatMemberInfo()
+    constructor(id, aid, info) {
+        this._id = id ||  "";
+        this.aid = aid || "";
+        this.AccountId = aid || "";
+        this.Info = info || new UpdatableChatMemberInfo()
     }
 }
 

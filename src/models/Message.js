@@ -4,10 +4,11 @@ const { ProfileChangeEvent } = require("./ProfileChangeEvent");
 const { SystemData } = require("./SystemData");
 const { UpdatableChatMember } = require("./UpdatableChatMember");
 const { EMessageType } = require("./Enums/EMessageType");
+const { MessageItemsModel } = require("./MessageItemsModel");
 
 
 class Message {
-    constructor() {
+    constructor(idOfTraderOrPlayer) {
         /**
          * @type {string}
          */
@@ -15,7 +16,7 @@ class Message {
         /**
          * @type {string}
          */
-        this.uid = "";
+        this.uid = idOfTraderOrPlayer;
         /**
          * @type {EMessageType}
          */
@@ -53,9 +54,9 @@ class Message {
          */
         this.rewardCollected = false;
         /**
-         * @type {Array}
+         * @type {MessageItemsModel}
          */
-        this.items = [];
+        this.items = new MessageItemsModel(idOfTraderOrPlayer, []);
         /**
          * @type {Number}
          */

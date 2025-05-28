@@ -1,12 +1,28 @@
+const { EChatMemberSide } = require("./Enums/EChatMemberSide");
+
 class UpdatableChatMemberInfo {
-    constructor() {
-        this.Id = "";
-        this.Nickname = "";
-        this.Side = "";
-        this.Level = 1;
-        this.MemberCategory = 1;
-        this.Ignored = false;
-        this.Banned = false;
+
+    /**
+     * 
+     * @param {*} id 
+     * @param {*} nickname 
+     * @param {EChatMemberSide} side 
+     * @param {*} level 
+     * @param {*} memberCategory 
+     * @param {*} ignored 
+     * @param {*} banned 
+     */
+    constructor(id = "", nickname = "", side = EChatMemberSide.Trader, level = 1, memberCategory = 1, ignored = false, banned = false) {
+        this.Id = id;
+        this.Nickname = nickname
+        /**
+         * @type {EChatMemberSide}
+         */
+        this.Side = side;
+        this.Level = level;
+        this.MemberCategory = memberCategory;
+        this.Ignored = ignored;
+        this.Banned = banned;
     }
 }
 

@@ -9,15 +9,15 @@ class SocialNetwork {
          * @type {FriendRequest[]}
          */
         this.friendRequestInbox = [];
-         /**
+        /**
          * @type {FriendRequest[]}
          */
         this.friendRequestOutbox = [];
 
-         /**
+        /**
          * @type {String[]}
          */
-         this.friends = [];
+        this.friends = [];
 
          /**
           * @type {MatchGroup}

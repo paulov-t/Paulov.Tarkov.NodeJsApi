@@ -3,7 +3,7 @@ const { MessageType, EMessageType } = require('./Enums/EMessageType');
 const { Message } = require('./Message');
 
 class Dialogue {
-    constructor() {
+    constructor(idOfTraderOrPlayer) {
 
         /**
          * 
@@ -15,7 +15,7 @@ class Dialogue {
          */
         this.type = EMessageType.UserMessage;
         /**
-         * @type {Array}
+         * @type {Array<UpdatableChatMember>}
          */
         this.Users = [];
         /**
@@ -29,8 +29,9 @@ class Dialogue {
 
         /**
          * @type {String}   
+         * @description Unique identifier of player or trader for the dialogue 
          */
-        this._id = mongoid();
+        this._id = idOfTraderOrPlayer;
     }
 }
 

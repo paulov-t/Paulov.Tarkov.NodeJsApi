@@ -23,6 +23,9 @@ class TraderService {
      */
     getTrader(traderId) {
 
+        if (!traderId)
+            throw "parameter traderId is undefined";
+
          /**
          * @type {Database}
          */
@@ -36,6 +39,10 @@ class TraderService {
          * @type {TraderAssort}
          */
         const traderDataAssortResult = db.getData(assortEntry);
+
+        if (!traderDataBaseResult || !traderDataAssortResult) {
+            return undefined;
+        }
 
         return {
             base: traderDataBaseResult,

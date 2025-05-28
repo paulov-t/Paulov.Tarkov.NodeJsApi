@@ -33,10 +33,21 @@ router.post('/dialog/view', function(req, res, next) {
   const account = AccountService.getAccount(req.SessionId);
   const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
 
+  const dialogId = requestBody.dialogId;
+  if (!dialogId) {
+    bsgHelper.getBody(res, { error: 'Dialog ID is required' });
+    return next();
+  }
+  const dialogue = accountProfile.socialNetwork.dialogues.find(d => d._id === dialogId);
+  if (!dialogue) {
+    bsgHelper.getBody(res, { error: 'Dialogue not found' });
+    return next();
+  }
+
   bsgHelper.getBody(res,  {
-    messages: accountProfile.socialNetwork.dialogues,
+    messages: dialogue.messages,
     profiles: [],
-    hasMessagesWithRewards: false,
+    hasMessagesWithRewards: true,
   });
   
   next();
@@ -64,6 +75,28 @@ router.post('/msg/send', function(req, res, next) {
     
     next();
   });
+
+
+ /**
+ * @swagger
+ * /client/mail/dialog/getAllAttachments:
+ *   post:
+ *     tags:
+ *     - Mail
+ *     summary: 
+ *     responses:
+ *       200:
+ *         description: A successful response
+ */
+router.post('/dialog/getAllAttachments', function(req, res, next) {
+
+  const requestBody = req.body;
+  console.log(requestBody);
+
+  bsgHelper.nullResponse(res);
+
+  next();
+});
 
 
 module.exports = router;

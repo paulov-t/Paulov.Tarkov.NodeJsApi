@@ -10,6 +10,7 @@ const { Message } = require("../models/Message");
 const { EMessageType } = require("../models/Enums/EMessageType");
 const { mongoid } = require("mongoid-js");
 const { DatabaseService } = require('./DatabaseService');
+const { MessageItemsModel } = require("../models/MessageItemsModel");
 
 class QuestService {
     constructor() {
@@ -192,12 +193,12 @@ class QuestService {
                     items.push(item);
                 }
             }
-            const message = new Message();
+            const message = new Message(quest.traderId);
             message.type = EMessageType.QuestStart;
             message.text = messageText;
-            message.items = items;
+            message.items = new MessageItemsModel(quest.traderId, items);
             message.hasRewards = message.items.length > 0;
-            message.uid = mongoid()
+            message.uid = quest.traderId
             SocialNetworkService.sendMessageToAccount(quest.traderId, account.accountId, account.currentMode, message, items);
         }
 

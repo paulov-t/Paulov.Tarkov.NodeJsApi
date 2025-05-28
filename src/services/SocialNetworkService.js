@@ -3,6 +3,10 @@ const { AccountProfileMode, Account } = require("../models/Account");
 const { Message } = require("../models/Message");
 const { Dialogue } = require("../models/Dialogue");
 const { EMessageType } = require("../models/Enums/EMessageType");
+const { UpdatableChatMember } = require("../models/UpdatableChatMember");
+const { UpdatableChatMemberInfo } = require("../models/UpdatableChatMemberInfo");
+const { EChatMemberSide } = require("../models/Enums/EChatMemberSide");
+const { TraderService } = require("./TraderService");
 
 /**
  * A service to manage friendship, grouping and messages in the app
@@ -82,21 +86,31 @@ class SocialNetworkService {
             return false;
         }
 
-        // Ensure messages exists
+        // Ensure dialogues array exists
         if (!targetAccountByMode.socialNetwork.dialogues)
             targetAccountByMode.socialNetwork.dialogues = [];
 
-        const dialogue = new Dialogue();
-        dialogue.message = message;
-        dialogue.attachmentsNew = 0;
-        dialogue.new = 1;
-        // dialogue.messages = [message];
-        dialogue.type = EMessageType.NpcTraderMessage;
-        dialogue.Users = [fromId];
-        targetAccountByMode.socialNetwork.dialogues.push(dialogue);
+        let chatMemberSide = EChatMemberSide.Usec;
+        if (TraderService.getTrader(fromId)) {
+            chatMemberSide = EChatMemberSide.Trader;
+        }
 
-        // if (targetAccountByMode.socialNetwork.dialogues.findIndex((v) => { return v.uid == message.uid; }) === -1) 
-        //     targetAccountByMode.socialNetwork.dialogues.push(message);
+        // Ensure dialogue exists
+        let dialogue = targetAccountByMode.socialNetwork.dialogues.find((d) => d._id === fromId);
+        if (!dialogue) {
+            const dialogue = new Dialogue(fromId);
+            dialogue.message = message;
+            dialogue.attachmentsNew = 0;
+            dialogue.new = 1;
+            dialogue.type = EMessageType.NpcTraderMessage;
+            dialogue.Users = [new UpdatableChatMember(
+                fromId
+                , fromId
+                , new UpdatableChatMemberInfo(fromId, fromId, chatMemberSide))];
+            targetAccountByMode.socialNetwork.dialogues.push(dialogue);
+        }
+
+       
 
         AccountService.saveAccount(targetAccount);
         return true;

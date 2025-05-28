@@ -1,5 +1,5 @@
-const { AccountService } = require(__dirname + '/../services/AccountService');
-const { QuestService } = require(__dirname + '/../services/QuestService');
+const { AccountService } = require('./../services/AccountService');
+const { QuestService } = require('./../services/QuestService');
 
 test('Accepting quest and sending message', () => {
     
