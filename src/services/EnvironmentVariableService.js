@@ -22,6 +22,8 @@ class EnvironmentVariableService {
             HARDCORE_MODE: process.env.HARDCORE_MODE || false,
             HARDCORE_MODE_LOOT_MODIFIER: process.env.HARDCORE_MODE_LOOT_MODIFIER || 0.5,
 
+            SHOW_HALLOWEEN_TRADERS: process.env.SHOW_HALLOWEEN_TRADERS || true,
+
         };
 
         let envVarsModel = new EnvironmentVariableModel();
@@ -41,7 +43,9 @@ class EnvironmentVariableModel {
         this.LABS_REQUIRES_KEYCARD = true;
         this.BOTS_ENABLED = true;
         this.BOTS_DIFFICULTY = 'normal';
+
         this.ZOMBIES_ONLY = false;
+        this.SHOW_HALLOWEEN_TRADERS = true;
 
         this.LOOT_MODIFIER_SUPERRARE = 0.5;
         this.LOOT_MODIFIER_RARE = 0.6;
