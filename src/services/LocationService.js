@@ -1,6 +1,8 @@
 const { Database } = require('./../classes/database');
 const { DatabaseService } = require('./DatabaseService');
 const { EnvironmentVariableService } = require('./EnvironmentVariableService');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * A service to get and process all Location's in Tarkov database.
@@ -19,6 +21,10 @@ class LocationService
     getAllLocationData() {
 
         const locations = {};
+
+        const zombiesJson = fs.readFileSync(path.join(process.cwd(), "data", "zombies.json")).toString();
+        const allZombies = JSON.parse(zombiesJson);
+
         /**
          * @type {Database}
          */
@@ -52,6 +58,19 @@ class LocationService
                 mapBase.BotMaxPvE = 0;
                 for (const spawnPointParam of mapBase.SpawnPointParams) {
                     spawnPointParam.Sides = [];
+                }
+            } else if (envVars.ZOMBIES_ONLY == 'true') {
+                const zombies = allZombies.halloweenzombies[locationId];
+                if (zombies && zombies.length) {
+                    for (const z of zombies) {
+                        z.BossChance = 100;
+                        z.ForceSpawn = true;
+                        //
+                        z.TriggerId = '';
+                        z.TriggerName = '';
+                        z.Time = 0;
+                    }
+                    mapBase.BossLocationSpawn.push(...zombies);
                 }
             }
 
