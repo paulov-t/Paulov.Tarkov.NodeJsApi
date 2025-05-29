@@ -47,8 +47,15 @@ class BotGenerationService {
 
         const startTime = Date.now();
 
-        if(condition.Role === 'playerscav') {
+        const isPlayerScav = condition.Role === 'playerscav';
+
+        if (isPlayerScav) {
             condition.Role = 'assault';
+        }
+
+        let isInfected = false;
+        if (condition.Role.includes('infected')) {
+            isInfected = true;
         }
 
         /**
@@ -68,8 +75,24 @@ class BotGenerationService {
         if (condition.playerProfileName)
             bot.Info.MainProfileNickname = condition.playerProfileName;
 
+        // Remove Encyclopedia
+        if (!isPlayerScav)
+            bot.Encyclopedia = [];
+
+        // Remove Hideout
+        if (!isPlayerScav)
+            bot.Hideout = undefined;
+
+      
+
         const lowerRole = condition.Role.toLowerCase();
         const botDatabaseData = Database.getData(Database.bots.types[lowerRole]);
+        if (!botDatabaseData) {
+            return bot;
+        }
+
+        if (isInfected)
+            bot.Info.Settings.UseSimpleAnimator = botDatabaseData.experience.useSimpleAnimator ?? false;
 
         // Setup the bot's Face, Body, Hands, Feet
         const headKeys = Object.keys(botDatabaseData.appearance.head);
@@ -96,8 +119,7 @@ class BotGenerationService {
         this.generateBotLevel(bot);
 
         // Generate the bot's inventory
-        const templateItemList = DatabaseService.getDatabase().getTemplateItems();
-        
+
         // Remove the Pocket 1
         InventoryService.removeItemFromSlot(bot, "pocket1");
         
@@ -117,7 +139,8 @@ class BotGenerationService {
         InventoryService.removeItemFromSlot(bot, "Backpack");
 
         // Add a new backpack based on chance
-        this.addBackpack(condition, bot);
+        if (!isInfected)
+            this.addBackpack(condition, bot);
         
         // Remove the Headwear
         InventoryService.removeItemFromSlot(bot, "Headwear");
@@ -203,6 +226,8 @@ class BotGenerationService {
         InventoryService.updateInventoryEquipmentId(bot);
         bot.Inventory.items = InventoryService.replaceIDs(bot.Inventory.items, bot, undefined, undefined);
         
+        // bot.Inventory.items = InventoryService.removeDormantIds(bot);
+
         const endTime = Date.now()
         LoggingService.logDebug(`Bot generation for ${condition.Role} on ${bot.Info.Side} took: ${endTime - startTime}ms`);
 

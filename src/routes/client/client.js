@@ -298,10 +298,10 @@ router.post('/globals', function(req, res, next) {
             dbResult.LocationInfection[key] = 100;
         }
     }
-    else {
-
+    else if (envVars.HARDCORE_MODE == 'true') {
+        // do something for hardcore_mode here
     }
-
+  
     bsgHelper.addBSGBodyInResponseWithData(res, dbResult);
     next();
 });

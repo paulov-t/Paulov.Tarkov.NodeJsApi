@@ -63,14 +63,15 @@ class LocationService
                 const zombies = allZombies.halloweenzombies[locationId];
                 if (zombies && zombies.length) {
                     for (const z of zombies) {
-                        z.BossChance = 100;
-                        z.ForceSpawn = true;
+                        z.BossChance = 999999;
+                        // z.ForceSpawn = true;
                         //
-                        z.TriggerId = '';
-                        z.TriggerName = '';
-                        z.Time = 0;
+                        // z.TriggerId = '';
+                        // z.TriggerName = '';
+                        z.Time = 1;
                     }
                     mapBase.BossLocationSpawn.push(...zombies);
+                    mapBase.Events.Halloween2024.InfectionPercentage = 100;
                 }
             }
 
