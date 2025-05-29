@@ -49,6 +49,7 @@ class BotGenerationService {
 
         const isPlayerScav = condition.Role === 'playerscav';
 
+
         if (isPlayerScav) {
             condition.Role = 'assault';
         }
@@ -66,6 +67,8 @@ class BotGenerationService {
         bot.aid = generateMongoId();
         bot.Info.Side = condition.Role.includes("pmcBEAR") ? "Bear" : condition.Role.includes("pmcUSEC") ? "Usec" : "Savage";
 
+        const isPMC = bot.Info.Side !== "Savage";
+
         // Determine bot difficulty from condition
         if (condition.Difficulty)
             bot.Info.Settings.BotDifficulty = condition.Difficulty;
@@ -82,8 +85,6 @@ class BotGenerationService {
         // Remove Hideout
         if (!isPlayerScav)
             bot.Hideout = undefined;
-
-      
 
         const lowerRole = condition.Role.toLowerCase();
         const botDatabaseData = Database.getData(Database.bots.types[lowerRole]);
@@ -176,14 +177,33 @@ class BotGenerationService {
 
         // Remove the ArmorVest
         InventoryService.removeItemFromSlot(bot, "ArmorVest");
-        if (Object.keys(botDatabaseData.inventory.equipment.ArmorVest).length > 0) {
+        // Add the ArmorVest
+        const shouldUseArmorVest = Math.random() > (isPMC ? 0.2 : 0.5);
+        if (shouldUseArmorVest && Object.keys(botDatabaseData.inventory.equipment.ArmorVest).length > 0) {
             this.addRandomItemToSlot(bot, "ArmorVest", Object.keys(botDatabaseData.inventory.equipment.ArmorVest));
         }
 
         // Remove the TacticalVest
         InventoryService.removeItemFromSlot(bot, "TacticalVest");
         if (Object.keys(botDatabaseData.inventory.equipment.TacticalVest).length > 0) {
-            this.addRandomItemToSlot(bot, "TacticalVest", Object.keys(botDatabaseData.inventory.equipment.TacticalVest));
+
+            const allTacticalVestKeys = Object.keys(botDatabaseData.inventory.equipment.TacticalVest);
+            /**
+             * @type {string[]}
+             */
+            let tacticalVestKeys = JSON.parse(JSON.stringify(allTacticalVestKeys));
+            // If we are using an Armored Vest. Remove the armored Tactical Vests
+            if (shouldUseArmorVest) {
+                let templateItems = DatabaseService
+                                .getDatabase()
+                                .getTemplateItemsAsArray()
+                                .filter(x => allTacticalVestKeys.includes(x._id));
+                templateItems = templateItems.filter(x => x._props.ArmorType === 'None');
+                tacticalVestKeys = tacticalVestKeys.filter(x => templateItems.find(y => y._id == x))
+            }
+
+            if (tacticalVestKeys.length > 0)
+                this.addRandomItemToSlot(bot, "TacticalVest", tacticalVestKeys);
         }
 
         InventoryService.removeItemFromSlot(bot, "FirstPrimaryWeapon");
