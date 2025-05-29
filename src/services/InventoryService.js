@@ -554,17 +554,45 @@ return map;
             return;
         }
 
-        const parentId = bot.Inventory.items.find(x => x.slotId === slotId)?._id;
+        let parentId = bot.Inventory.items.find(x => x.slotId === slotId)?._id;
         // If the parentId is not found, set it to the equipment slot
         if (!parentId) {
             parentId = bot.Inventory.equipment;
         }
 
-        this.getStashContainerMap
+        // this.getStashContainerMap
 
 
         // Add the item to the inventory
         bot.Inventory.items.push(item);
+    }
+
+    /**
+     * 
+     * @param {AccountProfileCharacter} bot 
+     */
+    removeDormantIds(bot) {
+        const requestParentIds = [];
+        for (const item of bot.Inventory.items) {
+            if (typeof(item.parentId) != 'undefined' && !requestParentIds.find(x => x == item.parentId))
+                requestParentIds.push(item.parentId);
+        }
+
+        for (const item of bot.Inventory.items) {
+            if (requestParentIds.includes(item._id)) {
+                const findIndex = requestParentIds.findIndex(x => x == item._id);
+                requestParentIds.splice(findIndex, 1);
+            }
+        }
+
+        for (const id of requestParentIds) {
+            const findIndex = bot.Inventory.items.findIndex(x => x.parentId == id);
+            if (findIndex !== -1)
+                bot.Inventory.items.splice(findIndex, 1);
+        }
+        
+
+        return bot.Inventory.items;
     }
 
 }
