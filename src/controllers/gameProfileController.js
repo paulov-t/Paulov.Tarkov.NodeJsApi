@@ -77,6 +77,10 @@ router.post('/list', function(req, res, next) {
      */
     const accountProfileByMode = sessionId !== undefined ? AccountService.getAccountProfileByCurrentMode(sessionId) : new Account();
     if (accountProfileByMode.characters.pmc !== undefined) {
+
+        const account = AccountService.getAccount(sessionId);
+        AccountService.fixHealth(account, accountProfileByMode.characters.pmc);
+
         output.push(accountProfileByMode.characters.pmc);
         output.push(accountProfileByMode.characters.scav);
 
