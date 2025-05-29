@@ -576,6 +576,10 @@ class AccountService {
             }
         }
 
+        if (result == true) {
+            LoggingService.log(`Fixed Health for ${account.accountId}`);
+        }
+
         return result;
     }
 
