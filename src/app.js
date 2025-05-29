@@ -25,6 +25,7 @@ const { AccountService } = require('./services/AccountService');
 // Import the `useAzureMonitor()` function from the `@azure/monitor-opentelemetry` package.
 const { useAzureMonitor, AzureMonitorOpenTelemetryOptions } = require("@azure/monitor-opentelemetry");
 const opentelemetryapi = require("@opentelemetry/api");
+const { EnvironmentVariableService } = require('./services/EnvironmentVariableService');
 let usingAppInsights = false;
 
 // Check if the Application Insights connection string is set in the environment variables
@@ -150,6 +151,11 @@ app.use(function(req, res, next) {
     if(filePath.endsWith(".png")) {
       res.setHeader("content-type", "image/png");
     }
+
+    const envVars = EnvironmentVariableService.getEnvironmentVariables();
+    if (envVars.SHOW_HALLOWEEN_TRADERS && filePath.includes('avatar')) {
+      filePath = filePath.replace('avatar', 'halloween');
+    } 
 
     if(fs.existsSync(filePath)) {
       res.end(fs.readFileSync(filePath));
