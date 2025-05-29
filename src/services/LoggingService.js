@@ -23,12 +23,13 @@ class LoggingService {
             message = message.substring(0, 1000) + '...';
         }
 
+        console.log(message);
+
         const dateOnly = new Date().toISOString().split('T')[0];
         const timeOnly = new Date().toISOString().split('T')[1].split('.')[0];
 
         const logHistoryEntry = new LoggingHistoryEntry(dateOnly, timeOnly, message); 
         this.logHistory.push(logHistoryEntry);
-        // console.log(logHistoryEntry);
     }
 
     getHistoryAll() {
@@ -56,27 +57,21 @@ class LoggingService {
     }
 
     logSuccess(text) {
-        this.log(".", text, "white", "green");
+        this.log(`[SUCCESS]:${text}`);
     }
 
     logDebug(text, isStructData = false) {
-        if (isStructData) {
-        this.log("[DEBUG]", "Data Output:", "black", "white");
-        this.log("LogData", text);
-        return;
-        }
-        this.log("[DEBUG]", text, "black", "white");
+      
     }
 
     logInfo(text) {
-        this.log(".", text, "white", "blue");
+        this.log(`[INFO]:${text}`);
     }
     logDebug(text) {
-        this.log(".", text, "white");
+        this.log(`[DEBUG]:${text}`);
     }
+
     logRequest(text, data = "") {
-        if (data == "") this.log("", text, "cyan", "black");
-        else this.log(data, text, "cyan", "black");
     }
 
     logData(data, deep = false) {
