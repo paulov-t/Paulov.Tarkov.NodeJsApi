@@ -120,9 +120,15 @@ class InventoryService {
             if (!it.parentId)
                 continue;
 
-            if (it.parentId === itemId) {
+            if (it.parentId === itemId && !childItems.find(x => x._id == it._id)) {
                 childItems.push(it);
             }
+
+        }
+
+        for(const it of childItems) {
+            for (const childOfChildItem of this.findChildItemsOfItemId(items, it._id, false))
+                childItems.push(childOfChildItem);
         }
 
         return childItems;
@@ -371,9 +377,14 @@ class InventoryService {
         const stashXY = this.getPlayerStashSizeXAndY(pmcProfile);
 
 
-        const map = this.getContainerArray(pmcProfile.Inventory.stash, stashXY, pmcProfile.Inventory.items.filter(x => x.slotId == 'hideout'));
+        const map = this.getContainerArray(
+            pmcProfile.Inventory.stash
+            , stashXY
+            , pmcProfile.Inventory.items.filter(x => x.slotId == 'hideout') // items to look at to fill the container
+            , pmcProfile.Inventory.items // all items
+        );
         // console.log(map);
-return map;
+        return map;
         // const stash2d = this.create2DArray(stashXY.y, stashXY.x);
         // const templatesItemData = Database.getData(DatabaseService.getDatabase()["templates"]["items"]);
         // const pmcProfileStashItems = pmcProfile.Inventory.items.filter(x=>x.slotId == 'hideout');
@@ -413,17 +424,31 @@ return map;
      * TODO: This does not work in the current state, needs to be fixed
      * @param {*} containerId 
      * @param {Vector2d} containerSizeXandY 
-     * @param {*} currentItems 
+     * @param {*} rootItems rootItems are the items filtered
+     * @param {*} allItems allItmes are all the items in the container
      * @returns 
      */
-    getContainerArray(containerId, containerSizeXandY, currentItems) {
+    getContainerArray(containerId, containerSizeXandY, rootItems, allItems) {
+
+        if (!containerId)
+            throw 'containerId must be provided';
+
+        if (!containerSizeXandY)
+            throw 'containerSizeXandY must be provided';
+
+        if (!rootItems)
+            throw 'rootItems must be provided';
+
+        if (!allItems)
+            throw 'allItems must be provided';
+
         // Create the array as designated by the container size X and Y variables
         // 0 means nothing is in that spot, 1 means there is
         const array2d = this.create2DArray(containerSizeXandY.y, containerSizeXandY.x);
         const templatesItemData = DatabaseService.getDatabase().getData(DatabaseService.getDatabase()["templates"]["items"]);
 
         // Fill 2D Array with current Items
-        for(const item of currentItems) {
+        for(const item of rootItems) {
             const itemLocation = item.location;
             if (!itemLocation)
                 continue;
@@ -439,12 +464,18 @@ return map;
             // The specified spot is filled. This has not handled size yet...
             array2d[itemLocation.y][itemLocation.x] = 1;
 
+            
+
             const itemTemplate = templatesItemData[item._tpl];
+
+           
+
             let itemWidth = itemTemplate._props.Width;
             let itemHeight = itemTemplate._props.Height;
             let itemPositionUp = 0;
             let itemPositionLeft = 0;
-            for(const childItem of this.findChildItemsOfItemId(currentItems, item._id)) {
+            const childItems = this.findChildItemsOfItemId(allItems, item._id);
+            for(const childItem of childItems) {
                 const childItemTemplate = templatesItemData[childItem._tpl];
 
                 if(childItemTemplate && childItemTemplate._props) {
@@ -454,9 +485,19 @@ return map;
                     itemHeight = Math.max(itemHeight, itemHeight + childItemTemplate._props.ExtraSizeUp + childItemTemplate._props.ExtraSizeDown);
                 }
             }
+
+            if (itemLocation.y == 6 && itemTemplate._name == 'weapon_hk_mp5_navy3_9x19') {
+                console.log(item);
+            }
             
-            for (let iWidth = item.location.x - itemPositionLeft; iWidth < item.location.x + itemWidth; iWidth++) {
-                for (let iHeight = item.location.y - itemPositionUp; iHeight < item.location.y + itemHeight; iHeight++) {
+            for (let iWidth = item.location.x; iWidth < item.location.x + (itemWidth); iWidth++) {
+                for (let iHeight = item.location.y; iHeight < item.location.y + (itemHeight); iHeight++) {
+
+                    if (iWidth > containerSizeXandY.x - 1) {
+                        LoggingService.logWarning(`Width Index of ${iWidth} cannot be larger than ${containerSizeXandY.x}`);
+                        continue;
+                    }
+
                     array2d[iHeight][iWidth] = 1
                 }
             }

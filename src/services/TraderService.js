@@ -218,10 +218,71 @@ class TraderService {
         }
     
         if (moneySalesSum) {
-            pmcProfile.TradersInfo[traderId].salesSum += moneySalesSum;
+            pmcProfile.TradersInfo[traderId].salesSum += this.convertToCurrencyMoney(moneySalesSum, 'RUB', trader.base.currency)
             pmcProfile.TradersInfo[traderId].salesSum = Math.round(pmcProfile.TradersInfo[traderId].salesSum);
         }
     
+        return result;
+    }
+
+    
+    sellToTrader(account, action, outputChanges) {
+        const result = { success: true, error: undefined };
+
+        const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+        const pmcProfile = accountProfile.characters.pmc;
+        const inventoryEquipmentId = pmcProfile.Inventory.equipment;
+        const inventory = pmcProfile.Inventory.items;
+
+        const traderId = action.tid;
+        const trader = this.getTrader(traderId);
+        const Database = DatabaseService.getDatabase();
+        const templatePrices = DatabaseService.getDatabase().getData(Database.templates.prices);
+        // console.log(templatePrices);
+
+        let money = 0;
+        for (const sellItem of action.items) {
+
+            const itemsInInventory = inventory.filter(x => x._id == sellItem.id || x.parentId == sellItem.id);
+            for(const itemInInventory of itemsInInventory) {
+                if (!itemInInventory)
+                    continue;
+
+                if (itemInInventory._id === inventoryEquipmentId)
+                    continue;
+
+                // This will remove the item from the Client.
+                if (itemInInventory.slotId == 'hideout') {
+                    if (typeof outputChanges.profileChanges[pmcProfile._id].items.del === "undefined") 
+                        outputChanges.profileChanges[pmcProfile._id].items.del = [];
+
+                    outputChanges.profileChanges[pmcProfile._id].items.del.push(itemInInventory);
+                }
+
+                if (!templatePrices[itemInInventory._tpl])
+                    continue;
+
+                const templatePrice = templatePrices[itemInInventory._tpl];
+                let priceCoef = (trader.base.loyaltyLevels[0].buy_price_coef) / 100;
+                let price = templatePrice >= 1 ? templatePrice : 1;
+                let count =
+                    "upd" in itemInInventory && "StackObjectsCount" in itemInInventory.upd
+                    ? itemInInventory.upd.StackObjectsCount
+                    : 1;
+                price = ((price - (price * priceCoef)) * count);
+                price = this.convertToCurrencyMoney(price, 'RUB', trader.base.currency)
+
+                money += price;
+
+                // This will remove the item from the Server.
+                InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemInInventory._id);
+            }
+
+        }
+
+        this.givePlayerMoneyFromTrader(traderId, money, pmcProfile, outputChanges.profileChanges[pmcProfile._id]);
+        pmcProfile.TradersInfo[traderId].salesSum += money;
+
         return result;
     }
 
@@ -301,6 +362,27 @@ class TraderService {
             }
         }
         return prices;
+    }
+
+    convertToCurrencyMoney(money, fromCurrency, toCurrency) {
+        let amount = money;
+        switch (fromCurrency) {
+            case 'RUB':
+                switch (toCurrency) {
+                    case 'USD':
+                        amount *= 0.013;
+                        break;
+                    case 'EUR':
+                        amount *= 0.011;
+                        break;
+                    case 'GP':
+                        amount *= 0.001;
+                        break;
+                }
+                break;
+        }
+        amount = Math.ceil(amount);
+        return amount;
     }
 
 }

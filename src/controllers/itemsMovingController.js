@@ -502,7 +502,7 @@ function processTradingConfirm(account, action, outputChanges) {
             result = TraderService.buyFromTrader(account, action, outputChanges);
             break;
         case 'sell_to_trader':
-            result = sellToTrader(account, action, outputChanges);
+            result = TraderService.sellToTrader(account, action, outputChanges);
             break;
     }
 
@@ -510,63 +510,6 @@ function processTradingConfirm(account, action, outputChanges) {
 }
 
 
-function sellToTrader(account, action, outputChanges) {
-    const result = { success: true, error: undefined };
-
-    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
-    const pmcProfile = accountProfile.characters.pmc;
-    const inventoryEquipmentId = pmcProfile.Inventory.equipment;
-    const inventory = pmcProfile.Inventory.items;
-
-    const traderId = action.tid;
-    const trader = TraderService.getTrader(traderId);
-    const templatePrices = Database.getData(Database.templates.prices);
-    // console.log(templatePrices);
-
-    let money = 0;
-    for (const sellItem of action.items) {
-
-        const itemsInInventory = inventory.filter(x => x._id == sellItem.id || x.parentId == sellItem.id);
-        for(const itemInInventory of itemsInInventory) {
-            if (!itemInInventory)
-                continue;
-
-            if (itemInInventory._id === inventoryEquipmentId)
-                continue;
-
-            // This will remove the item from the Client.
-            if (itemInInventory.slotId == 'hideout') {
-                if (typeof outputChanges.profileChanges[pmcProfile._id].items.del === "undefined") 
-                    outputChanges.profileChanges[pmcProfile._id].items.del = [];
-
-                outputChanges.profileChanges[pmcProfile._id].items.del.push(itemInInventory);
-            }
-
-            if (!templatePrices[itemInInventory._tpl])
-                continue;
-
-            const templatePrice = templatePrices[itemInInventory._tpl];
-            let priceCoef = (trader.base.loyaltyLevels[0].buy_price_coef) / 100;
-            let price = templatePrice >= 1 ? templatePrice : 1;
-            let count =
-                "upd" in itemInInventory && "StackObjectsCount" in itemInInventory.upd
-                ? itemInInventory.upd.StackObjectsCount
-                : 1;
-            price = ((price - (price * priceCoef)) * count);
-
-            money += price;
-
-            // This will remove the item from the Server.
-            InventoryService.removeItemAndChildItemsFromProfile(pmcProfile, itemInInventory._id);
-        }
-
-    }
-
-    TraderService.givePlayerMoneyFromTrader(traderId, money, pmcProfile, outputChanges.profileChanges[pmcProfile._id]);
-    pmcProfile.TradersInfo[traderId].salesSum += money;
-
-    return result;
-}
 
 function processQuestHandover(account, action, outputChanges) {
     const result = { success: true, error: undefined };
