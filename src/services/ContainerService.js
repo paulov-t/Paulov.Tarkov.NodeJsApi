@@ -121,7 +121,7 @@ class ContainerService {
     }
 
     /**
-     * Find a free spot for an item to be placed at
+     * Places the item in the given spot
      * @param {Number[][]} container Container to place item in
      * @param {Number} posX Container Position x
      * @param {Number} posY Container Position y
@@ -142,7 +142,9 @@ class ContainerService {
 
         for (let y = posY; y < posY + itemHeight; y++) {
             for (let x = posX; x < posX + itemWidth; x++) {
-                container[y][x] = 1;
+
+                if (container[y] && container[y][x])
+                    container[y][x] = 1;
             }
         }
         return container;
