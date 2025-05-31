@@ -23,6 +23,7 @@ const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../model
 const { ContainerService } = require('../services/ContainerService');
 const { QuestService } = require('../services/QuestService');
 const { ActionCommandsService } = require('../services/ActionCommandsService');
+const { Item } = require('../models/Item');
 
 /**
  * @swagger
@@ -104,9 +105,12 @@ router.post('/moving', function(req, res, next) {
                 break;
             case 'QuestComplete':
                 processQuestComplete(account, action, result);
-                    break;
+                break;
             case 'RestoreHealth':
                 processRestoreHealth(account, action, result);
+                break;
+             case 'Split':
+                processSplit(account, action, result);
                 break;
             case 'TraderRepair':
                 processTraderRepair(account, action, result);
@@ -323,6 +327,14 @@ function processMergeAction(account, action, outputChanges) {
         return result;
     }
 
+    // Check the upd exists
+    if (!matchingInventoryItem.upd)
+        matchingInventoryItem.upd = {};
+
+    // Check the StackObjectsCount exists
+    if (!matchingInventoryItem.upd.StackObjectsCount)
+        matchingInventoryItem.upd.StackObjectsCount = 1;
+
     const amountFrom = matchingInventoryItem.upd.StackObjectsCount;
 
     // To
@@ -333,6 +345,16 @@ function processMergeAction(account, action, outputChanges) {
         return result;
     }
 
+    // TODO: Fix the fact that these split, merge and transfer requests are not working correctly
+    // Check the upd exists
+    if (!matchingInventoryItemTo.upd)
+        return result;
+
+    // Check the StackObjectsCount exists
+    if (!matchingInventoryItemTo.upd.StackObjectsCount)
+        return result;
+
+    // Adding the amounts together to create the merge
     const amountTo = matchingInventoryItemTo.upd.StackObjectsCount;
     const newAmount = Math.ceil(amountFrom + amountTo);
 
@@ -604,6 +626,13 @@ function processTransfer(account, action, outputChanges) {
     }
 
     const amountFrom = action.count;
+
+    if (!matchingInventoryItem.upd)
+        matchingInventoryItem.upd = {};
+
+    if (!matchingInventoryItem.upd.StackObjectsCount)
+        matchingInventoryItem.upd.StackObjectsCount = 1;
+
     matchingInventoryItem.upd.StackObjectsCount = Math.ceil(matchingInventoryItem.upd.StackObjectsCount - action.count);
 
     // To
@@ -614,10 +643,68 @@ function processTransfer(account, action, outputChanges) {
         return result;
     }
 
+    if (!matchingInventoryItemTo.upd){
+        result.success = false;
+        result.error = "Matching item doesn't have an upd?";
+        return result;
+    }
+
+    if (!matchingInventoryItemTo.upd.StackObjectsCount)
+        matchingInventoryItemTo.upd.StackObjectsCount = 0;
+
     const amountTo = matchingInventoryItemTo.upd.StackObjectsCount;
     const newAmount = Math.ceil(amountFrom + amountTo);
 
     matchingInventoryItemTo.upd.StackObjectsCount = newAmount;
+
+    // finally, if the amount of the merged item is now 0 or less, remove the from item from the player's inventory
+    if (matchingInventoryItem.upd.StackObjectsCount < 1) 
+        inventoryItems.splice(matchingInventoryItemIndex, 1);
+
+    return result;
+}
+
+function processSplit(account, action, outputChanges) {
+
+    outputChanges.profileChanges[account.accountId].items = {};
+    const result = { success: true, error: undefined };
+    // console.log(action);
+
+    const accountProfile = AccountService.getAccountProfileByCurrentModeFromAccount(account);
+    // const accountInventory = accountProfile.characters.pmc.Inventory;
+    // console.log(accountInventory);
+    const inventoryItems = accountProfile.characters.pmc.Inventory.items;
+
+    // From
+    const matchingInventoryItemIndex = inventoryItems.findIndex((item) => item._id === action.splitItem);
+    const matchingInventoryItem = inventoryItems[matchingInventoryItemIndex];
+    if (!matchingInventoryItem) {
+        result.success = false;
+        result.error = "Couldn't find item in player";
+        return result;
+    }
+
+    const amountFrom = action.count;
+    matchingInventoryItem.upd.StackObjectsCount = Math.ceil(matchingInventoryItem.upd.StackObjectsCount - action.count);
+
+    const templateNewItem = InventoryService.getTemplateItem(action.newItem);
+    if (!templateNewItem)
+        return result;
+
+    let newItem = new Item({ _id: bsgHelper.generateMongoId(), _tpl: action.newItem });
+
+    // // To
+    // const matchingInventoryItemTo = inventoryItems.find((item) => item._id === action.with);
+    // if (!matchingInventoryItemTo) {
+    //     result.success = false;
+    //     result.error = "Couldn't find item in player";
+    //     return result;
+    // }
+
+    // const amountTo = matchingInventoryItemTo.upd.StackObjectsCount;
+    // const newAmount = Math.ceil(amountFrom + amountTo);
+
+    // matchingInventoryItemTo.upd.StackObjectsCount = newAmount;
 
     // finally, if the amount of the merged item is now 0 or less, remove the from item from the player's inventory
     if (matchingInventoryItem.upd.StackObjectsCount < 1) 
