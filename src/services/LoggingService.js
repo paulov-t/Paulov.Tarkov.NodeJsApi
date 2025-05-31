@@ -49,7 +49,7 @@ class LoggingService {
     }
 
     logError(text) {
-        this.log(`[ERROR]:${text}`);
+        console.trace(`[ERROR]:${text}`);
     }
 
     logWarning(text) {
