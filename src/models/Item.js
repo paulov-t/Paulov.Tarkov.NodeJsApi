@@ -1,4 +1,8 @@
 module.exports.Item = class Item {
+    /**
+     * 
+     * @param {Item} item 
+     */
     constructor(item) {
         /**
          * @type {string}
@@ -21,10 +25,14 @@ module.exports.Item = class Item {
          */
         this.parentId = item.parentId || item.parent;
         /**
-         * @type {string}
-         * @property {string} upd - Unique identifier for the item.
+         * @type {object}
+         * @property {object} upd - Object of information for location etc.
          */
         this.upd = item.upd || {};
+          /**
+         * @type {Vector2d}
+         * @property {Vector2d} upd - Object of information for location etc.
+         */
         this.location = item.location || {};
         this.slotType = item.slotType || "hideout";
         this.isActive = item.isActive || false;

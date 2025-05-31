@@ -1,3 +1,5 @@
+const { Item } = require("./Item");
+
 class Inventory {
     constructor() {
         /**
@@ -5,7 +7,7 @@ class Inventory {
          */
         this.equipment = "";
         /**
-         * @type {Object[]}
+         * @type {Item[]}
          */
         this.items = [];
          /**
