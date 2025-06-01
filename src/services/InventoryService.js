@@ -422,10 +422,10 @@ class InventoryService {
 
     /**
      * TODO: This does not work in the current state, needs to be fixed
-     * @param {*} containerId 
+     * @param {string} containerId 
      * @param {Vector2d} containerSizeXandY 
-     * @param {*} rootItems rootItems are the items filtered
-     * @param {*} allItems allItmes are all the items in the container
+     * @param {Item[]} rootItems rootItems are the items filtered
+     * @param {Item[]} allItems allItmes are all the items in the container
      * @returns 
      */
     getContainerArray(containerId, containerSizeXandY, rootItems, allItems) {
@@ -464,11 +464,7 @@ class InventoryService {
             // The specified spot is filled. This has not handled size yet...
             array2d[itemLocation.y][itemLocation.x] = 1;
 
-            
-
             const itemTemplate = templatesItemData[item._tpl];
-
-           
 
             let itemWidth = itemTemplate._props.Width;
             let itemHeight = itemTemplate._props.Height;
@@ -498,6 +494,11 @@ class InventoryService {
                         continue;
                     }
 
+                    if (iHeight > containerSizeXandY.y - 1) {
+                        LoggingService.logWarning(`Height Index of ${iHeight} cannot be larger than ${containerSizeXandY.y}`);
+                        continue;
+                    }
+
                     array2d[iHeight][iWidth] = 1
                 }
             }
@@ -505,7 +506,7 @@ class InventoryService {
         
         }
 
-        console.log(array2d);
+        // console.log(array2d);
 
         return array2d;
 
@@ -583,6 +584,13 @@ class InventoryService {
         }
     }
 
+    /**
+     * 
+     * @param {AccountProfileCharacter} bot 
+     * @param {Item} item 
+     * @param {string} slotId 
+     * @returns 
+     */
     addItemToInventoryWithinSlotContainer(bot, item, slotId) {
         if (!bot.Inventory.items) {
             bot.Inventory.items = [];
@@ -595,14 +603,42 @@ class InventoryService {
             return;
         }
 
-        let parentId = bot.Inventory.items.find(x => x.slotId === slotId)?._id;
+        let itemAtSlotId = bot.Inventory.items.find(x => x.slotId === slotId);
+        if (!itemAtSlotId)
+            return;
+
+        let parentId = itemAtSlotId?._id;
+        let parentTemplateId = itemAtSlotId?._tpl;
         // If the parentId is not found, set it to the equipment slot
         if (!parentId) {
             parentId = bot.Inventory.equipment;
         }
 
-        // this.getStashContainerMap
+        // const templateItem = this.getTemplateItem(item._tpl);
+        // if (!templateItem)
+        //     return;
+        
+        // const parentTemplateItem = this.getTemplateItem(parentTemplateId);
+        // if (!parentTemplateItem)
+        //     return;
 
+        // for (const grid of parentTemplateItem._props.Grids) {
+        //     let container = this.getContainerArray(parentId, new Vector2d(grid._props.cellsV, grid._props.cellsH), bot.Inventory.items.filter(x => x.parentId == parentId), bot.Inventory.items);
+        //     const spot = ContainerService.findSpotForItem(container, templateItem._props.Width, templateItem._props.Height);
+        //     if (spot.success) {
+        //         ContainerService.addItemToContainerMap(container, spot.x, spot.y, templateItem._props.Width, templateItem._props.Height);
+        //         // if (!item.upd)
+        //         //     item.upd = {};
+
+        //         // item.location = { x: spot.x, y: spot.y };
+        //         // item.upd.location = { x: spot.x, y: spot.y };
+        //         // item.parentId = parentId;
+        //         break;
+        //     }
+        // }
+
+        if (!item.parentId && !item.location)
+            return;
 
         // Add the item to the inventory
         bot.Inventory.items.push(item);
