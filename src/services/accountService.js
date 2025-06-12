@@ -334,7 +334,21 @@ class AccountService {
         if (account === undefined) {
             const accountFilePath = path.join(this.saveDirectoryPath, `${sessionId}.json`);
             account = new Account();
-            account = JSON.parse(fs.readFileSync(accountFilePath).toString());
+            const fileData = fs.readFileSync(accountFilePath);
+            const fileDataString = fileData.toString();
+            if (fileDataString.length == 0) {
+                fs.rmSync(accountFilePath);
+                return undefined;
+            }
+            else {
+                try {
+                    account = JSON.parse(fileData);
+                }
+                catch {
+                    fs.rmSync(accountFilePath);
+                    return undefined;
+                }
+            }
         }
 
         return account;
