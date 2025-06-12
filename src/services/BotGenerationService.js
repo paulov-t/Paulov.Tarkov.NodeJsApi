@@ -92,8 +92,7 @@ class BotGenerationService {
             return bot;
         }
 
-        if (isInfected)
-            bot.Info.Settings.UseSimpleAnimator = botDatabaseData.experience.useSimpleAnimator ?? false;
+        bot.Info.Settings.UseSimpleAnimator = botDatabaseData.experience.useSimpleAnimator ?? false;
 
         // Setup the bot's Face, Body, Hands, Feet
         const headKeys = Object.keys(botDatabaseData.appearance.head);
@@ -109,6 +108,7 @@ class BotGenerationService {
         const voiceKeys = Object.keys(botDatabaseData.appearance.voice);
         bot.Info.Voice = voiceKeys[this.randomInteger(0, voiceKeys.length-1)];
 
+        // Generate the bot's Nickname
         bot.Info.Nickname = botDatabaseData.firstName[this.randomInteger(0, botDatabaseData.firstName.length-1)];
         if (botDatabaseData.lastName && botDatabaseData.lastName.length > 0) {
             const lastName =  botDatabaseData.lastName[this.randomInteger(0, botDatabaseData.lastName.length-1)];
@@ -139,8 +139,13 @@ class BotGenerationService {
         // Remove the Backpack (and all its items within it)
         InventoryService.removeItemFromSlot(bot, "Backpack");
 
+        if (condition.Role === 'bossTagilla') {
+            InventoryService.removeItemFromSlot(bot, 'Pockets');
+            InventoryService.addTemplatedItemToSlot(bot, '627a4e6b255f7527fb05a0f6', 'Pockets', bot.Inventory.equipment)
+        }
+
         // Add a new backpack based on chance
-        if (!isInfected)
+        if (!isInfected && Object.keys(botDatabaseData.inventory.equipment.Backpack).length > 0)
             this.addBackpack(condition, bot);
         
         // Remove the Headwear
@@ -206,9 +211,10 @@ class BotGenerationService {
                 this.addRandomItemToSlot(bot, "TacticalVest", tacticalVestKeys);
         }
 
+        let firstPrimaryWeapon = undefined;
         InventoryService.removeItemFromSlot(bot, "FirstPrimaryWeapon");
         if (Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon).length > 0) {
-            let newItem = this.addRandomItemToSlot(
+            firstPrimaryWeapon = this.addRandomItemToSlot(
                 bot
                 , "FirstPrimaryWeapon"
                 , Object.keys(botDatabaseData.inventory.equipment.FirstPrimaryWeapon)
@@ -216,9 +222,10 @@ class BotGenerationService {
             );
         }
 
+        let secondPrimaryWeapon = undefined;
         InventoryService.removeItemFromSlot(bot, "SecondPrimaryWeapon");
         if (Object.keys(botDatabaseData.inventory.equipment.SecondPrimaryWeapon).length > 0) {
-            let newItem = this.addRandomItemToSlot(
+            secondPrimaryWeapon = this.addRandomItemToSlot(
                 bot
                 , "SecondPrimaryWeapon"
                 , Object.keys(botDatabaseData.inventory.equipment.SecondPrimaryWeapon)
@@ -226,10 +233,10 @@ class BotGenerationService {
             );
         }
 
-        // Remove the Holster
+        let holsterWeapon = undefined;
         InventoryService.removeItemFromSlot(bot, "Holster");
         if (Object.keys(botDatabaseData.inventory.equipment.Holster).length > 0) {
-            let newItem = this.addRandomItemToSlot(
+            holsterWeapon = this.addRandomItemToSlot(
                 bot
                 , "Holster"
                 , Object.keys(botDatabaseData.inventory.equipment.Holster)
