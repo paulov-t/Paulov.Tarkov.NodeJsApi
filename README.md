@@ -79,8 +79,9 @@ CI/CD is found in the [GitHub workflows directory](.github/workflows)
 
 | Workflow | Description |
 |--------------|--------------|
-| [CI](https://github.com/paulov-t/Paulov.Tarkov.DotNetApi/blob/master/.github/workflows/CI.yml) | Continuously builds and run tests |
-| [Deploy-To-Azure-Dev](https://github.com/paulov-t/Paulov.Tarkov.DotNetApi/blob/master/.github/workflows/Deploy-To-Azure-Dev.yml) | Continuously builds, run tests and deploys to Azure Web App (Dev) |
+| [CI](.github/workflows/CI.yml) | Continuously builds and run tests |
+| [CD-To-Dev](.github/workflows/CD-To-Dev.yml) | Continuously builds, run tests and deploys to Azure Web App (Dev) |
+| [CD-To-Prod](.github/workflows/CD-To-Prod.yml) | Continuously builds, run tests and deploys to Azure Web App (Production) |
 
 ## Contribution
 
