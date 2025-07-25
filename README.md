@@ -73,11 +73,23 @@ For development you will need to:
 - This project uses SP-Tarkov's Database. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
 - This project uses small snippets of SP-Tarkov's TypeScript code in very few places. This is designed to be replaced with own code. If I missed credit of your code contributed to SP-Tarkov, please raise an issue to let me know. SP-Tarkov is licensed under NCSA Open Source. [LICENSE](https://github.com/sp-tarkov/server/blob/master/LICENSE.md)
 
+## Continuous Integration & Continuous Delivery
+
+CI/CD is found in the [GitHub workflows directory](.github/workflows)
+
+| Workflow | Description |
+|--------------|--------------|
+| [CI](https://github.com/paulov-t/Paulov.Tarkov.DotNetApi/blob/master/.github/workflows/CI.yml) | Continuously builds and run tests |
+| [Deploy-To-Azure-Dev](https://github.com/paulov-t/Paulov.Tarkov.DotNetApi/blob/master/.github/workflows/Deploy-To-Azure-Dev.yml) | Continuously builds, run tests and deploys to Azure Web App (Dev) |
+
+## Contribution
+
+Although contribution is welcome, please be aware of the [LICENSE](LICENSE.md) you are contributing in to. Any code provided to this project cannot be reused elsewhere for the same or similar purpose unless express permission has been provided. 
+
 ## Environment Variables
 You can set the following environment variables for quick changes to the server (use a .env file if testing locally):
 - LABS_REQUIRES_KEYCARD=false - turns off the keycard requirement for a Labs keycard
 - BOTS_ENABLED=false - turns off the bots in all maps
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [contributors-shield]: https://img.shields.io/github/contributors/paulov-t/Paulov.Tarkov.NodeJsApi.svg?style=for-the-badge
