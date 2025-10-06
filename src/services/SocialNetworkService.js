@@ -1,4 +1,4 @@
-const { AccountService } = require("./AccountService");
+const { AccountService } = require("./accountService");
 const { AccountProfileMode, Account } = require("../models/Account");
 const { Message } = require("../models/Message");
 const { Dialogue } = require("../models/Dialogue");

@@ -5,7 +5,7 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../bsgHelper');
-const { AccountService } = require('../services/AccountService');
+const { AccountService } = require('../services/accountService');
 const { ProfileStatus } = require('../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../models/ProfileStatusResponse');
 const { Account, AccountProfileMode } = require('../models/Account');

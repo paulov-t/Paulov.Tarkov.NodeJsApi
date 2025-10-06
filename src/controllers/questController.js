@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var { AccountService } = require('../services/AccountService');
+var { AccountService } = require('../services/accountService');
 const { getBody } = require('../bsgHelper');
 const { getRenderViewModel, getRenderViewModelWithUsername } = require('../classes/shared');
 const { Database } = require('../classes/database');
