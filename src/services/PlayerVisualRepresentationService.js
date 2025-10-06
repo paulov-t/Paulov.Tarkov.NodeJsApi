@@ -1,4 +1,4 @@
-const { AccountProfileCharacter } = require('../models/Account');
+const { AccountProfileCharacter } = require('../models/account');
 const { Inventory } = require('../models/Inventory');
 const { PlayerVisualRepresentation, PlayerVisualRepresentationEquipment } = require('./../models/PlayerVisualRepresentation');
 
