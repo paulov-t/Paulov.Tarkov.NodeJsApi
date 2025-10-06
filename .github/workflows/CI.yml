@@ -30,7 +30,4 @@ jobs:
           npm install
           npm run build --if-present
           npm test
-<<<<<<< HEAD
-=======
 
->>>>>>> 00417d96c30c813485ec31700d421d9134ce47a2
