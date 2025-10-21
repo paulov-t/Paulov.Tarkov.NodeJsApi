@@ -1,5 +1,5 @@
 const bsgHelper = require('./../bsgHelper');
-const { AccountProfileCharacter, Account, AccountProfileMode } = require("../models/Account");
+const { AccountProfileCharacter, Account, AccountProfileMode } = require("../models/account");
 const { Database } = require('../classes/database');
 const { ContainerService } = require('./ContainerService');
 const { DatabaseService } = require('./DatabaseService');

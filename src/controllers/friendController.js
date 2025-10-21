@@ -1,14 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../bsgHelper');
-const { AccountService } = require('../services/AccountService');
+const { AccountService } = require('../services/accountService');
 const { BotGenerationService } = require('../services/BotGenerationService');
-const { Account, AccountProfileMode } = require('../models/Account');
+const { Account, AccountProfileMode } = require('../models/account');
 const { Database } = require('../classes/database');
 const { FriendRequest } = require('../models/FriendRequest');
 const { UpdatableChatMember } = require('../models/UpdatableChatMember');
 const { UpdatableChatMemberInfo } = require('../models/UpdatableChatMemberInfo');
-const { ProfileStatus } = require('../models/ProfileStatus');
+const { ProfileStatus } = require('../models/profileStatus');
 const { WebSocketService } = require('../services/WebSocketService');
 const { ENotificationType } = require('../models/ENotificationType');
 const { SocialNetworkService } = require('../services/SocialNetworkService');

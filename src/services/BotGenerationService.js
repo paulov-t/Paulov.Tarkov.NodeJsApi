@@ -1,6 +1,6 @@
 const { generateMongoId } = require("../bsgHelper");
 const LoggingService = require("./LoggingService");
-const { AccountProfileCharacter } = require("../models/Account");
+const { AccountProfileCharacter } = require("../models/account");
 const { BotGenerationCondition } = require("../models/BotGenerationCondition");
 const fs = require("fs");
 const path = require("path");

@@ -12,12 +12,12 @@
 const express = require('express');
 const router = express.Router();
 const bsgHelper =  require('./../bsgHelper');
-const { AccountService } = require('./../services/AccountService');
+const { AccountService } = require('./../services/accountService');
 const LoggingService = require('./../services/LoggingService');
 const { TraderService } = require('../services/TraderService');
 const { Database } = require('../classes/database');
 const { InventoryService } = require('../services/InventoryService');
-const { AccountProfileCharacterQuestItem, Account } = require('../models/Account');
+const { AccountProfileCharacterQuestItem, Account } = require('../models/account');
 const { DatabaseService } = require('../services/DatabaseService');
 const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../models/ItemMovingActions/BuyFromTraderAction');
 const { ContainerService } = require('../services/ContainerService');

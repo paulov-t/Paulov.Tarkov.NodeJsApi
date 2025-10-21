@@ -1,4 +1,4 @@
-const { AccountService } = require('./../services/AccountService');
+const { AccountService } = require('./../services/accountService');
 const { QuestService } = require('./../services/QuestService');
 
 test('Accepting quest and sending message', () => {

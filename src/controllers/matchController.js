@@ -5,10 +5,10 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../bsgHelper');
-const { AccountService } = require('../services/AccountService');
-const { ProfileStatus } = require('../models/ProfileStatus');
-const { ProfileStatusResponse } = require('../models/ProfileStatusResponse');
-const { Account, AccountProfileMode } = require('../models/Account');
+const { AccountService } = require('../services/accountService');
+const { ProfileStatus } = require('../models/profileStatus');
+const { ProfileStatusResponse } = require('../models/profileStatusResponse');
+const { Account, AccountProfileMode } = require('../models/account');
 const { Database } = require('../classes/database');
 
 const { LocalMatchStartResponse } = require('../models/Responses/LocalMatchStartResponse');
