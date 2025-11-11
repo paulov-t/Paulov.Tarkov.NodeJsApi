@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../bsgHelper');
-const { AccountService } = require('../services/accountService');
+const { AccountService } = require('../services/AccountService');
 const { BotGenerationService } = require('../services/BotGenerationService');
-const { Account, AccountProfileMode } = require('../models/account');
+const { Account, AccountProfileMode } = require('../models/Account');
 const { Database } = require('../classes/database');
 const { FriendRequest } = require('../models/FriendRequest');
 const { UpdatableChatMember } = require('../models/UpdatableChatMember');

@@ -1,5 +1,5 @@
 const { generateMongoId } = require("../bsgHelper");
-const { AccountProfileCharacter } = require("../models/account");
+const { AccountProfileCharacter } = require("../models/Account");
 const { ECurrencyTemplates } = require("../models/Enums/ECurrencyTemplates");
 const { AccountService } = require("./AccountService");
 const { ContainerService } = require("./ContainerService");

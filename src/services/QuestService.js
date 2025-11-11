@@ -1,4 +1,4 @@
-const { Account, AccountProfileCharacterQuestItem } = require("../models/account");
+const { Account, AccountProfileCharacterQuestItem } = require("../models/Account");
 var { AccountService } = require('./AccountService');
 const { getBody } = require('../bsgHelper');
 const { getRenderViewModel, getRenderViewModelWithUsername } = require('../classes/shared');
