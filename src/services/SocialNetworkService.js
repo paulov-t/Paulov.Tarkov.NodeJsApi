@@ -1,5 +1,5 @@
 const { AccountService } = require("./AccountService");
-const { AccountProfileMode, Account } = require("../models/account");
+const { AccountProfileMode, Account } = require("../models/Account");
 const { Message } = require("../models/Message");
 const { Dialogue } = require("../models/Dialogue");
 const { EMessageType } = require("../models/Enums/EMessageType");
