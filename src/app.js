@@ -33,39 +33,54 @@ try {
   if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
       console.log("Initializing Azure Application Insights...");
 
-      
+      const appInsights = require("applicationinsights");
 
-    const { Resource } = require('@opentelemetry/resources');
-    const { SEMATTRS_ENDUSER_ID, SEMATTRS_HTTP_CLIENT_IP, SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_NAMESPACE, SemanticAttributes, SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
-    const customResource =  Resource.EMPTY;
-    // ----------------------------------------
-    // Setting role name and role instance
-    // ----------------------------------------
-    customResource.attributes[SEMRESATTRS_SERVICE_NAME] = "my-helloworld-service";
-    customResource.attributes[SEMRESATTRS_SERVICE_NAMESPACE] = "my-namespace";
-    customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = "my-instance";
-    if (process.env.OPEN_TELEMETRY_INSTANCE_NAME)
-      customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = process.env.OPEN_TELEMETRY_INSTANCE_NAME;
+// Use the instrumentation key or connection string from Application Insights
+appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
+  .setAutoDependencyCorrelation(true)
+  .setAutoCollectRequests(true)
+  .setAutoCollectPerformance(true)
+  .setAutoCollectExceptions(true)
+  .setAutoCollectDependencies(true)
+  .setAutoCollectConsole(true)
+  .setSendLiveMetrics(true)
+  .start();
+
+console.log("Application Insights initialized");
+
+
+
+    // const { Resource } = require('@opentelemetry/resources');
+    // const { SEMATTRS_ENDUSER_ID, SEMATTRS_HTTP_CLIENT_IP, SEMRESATTRS_SERVICE_INSTANCE_ID, SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_NAMESPACE, SemanticAttributes, SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
+    // const customResource =  Resource.EMPTY;
+    // // ----------------------------------------
+    // // Setting role name and role instance
+    // // ----------------------------------------
+    // customResource.attributes[SEMRESATTRS_SERVICE_NAME] = "my-helloworld-service";
+    // customResource.attributes[SEMRESATTRS_SERVICE_NAMESPACE] = "my-namespace";
+    // customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = "my-instance";
+    // if (process.env.OPEN_TELEMETRY_INSTANCE_NAME)
+    //   customResource.attributes[SEMRESATTRS_SERVICE_INSTANCE_ID] = process.env.OPEN_TELEMETRY_INSTANCE_NAME;
 
     
-      // Create a new AzureMonitorOpenTelemetryOptions object.
-      /**
-       * @type {AzureMonitorOpenTelemetryOptions}
-       */
-      const options = {
-        azureMonitorExporterOptions: {
-          connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING
-        }
-        , resource: customResource // Set the custom resource
-        , samplingRatio: 1 // Set the sampling ratio to 1 (100%)
-        , liveMetrics: true // Enable live metrics
-        , instrumentationOptions: {
-          azureSdk: { enabled: false },   // Disable Azure SDK instrumentation
-          http: { enabled: false },      // Disable HTTP instrumentation
-        }
-      };
-      // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
-      useAzureMonitor(options);
+    //   // Create a new AzureMonitorOpenTelemetryOptions object.
+    //   /**
+    //    * @type {AzureMonitorOpenTelemetryOptions}
+    //    */
+    //   const options = {
+    //     azureMonitorExporterOptions: {
+    //       connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING
+    //     }
+    //     , resource: customResource // Set the custom resource
+    //     , samplingRatio: 1 // Set the sampling ratio to 1 (100%)
+    //     , liveMetrics: true // Enable live metrics
+    //     , instrumentationOptions: {
+    //       azureSdk: { enabled: false },   // Disable Azure SDK instrumentation
+    //       http: { enabled: false },      // Disable HTTP instrumentation
+    //     }
+    //   };
+    //   // Call the `useAzureMonitor()` function to configure OpenTelemetry to use Azure Monitor.
+    //   useAzureMonitor(options);
       usingAppInsights = true;
       console.log("Azure Application Insights initialized successfully.");
 
