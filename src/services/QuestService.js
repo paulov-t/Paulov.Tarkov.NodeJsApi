@@ -1,5 +1,5 @@
 const { Account, AccountProfileCharacterQuestItem } = require("../models/account");
-var { AccountService } = require('./accountService');
+var { AccountService } = require('./AccountService');
 const { getBody } = require('../bsgHelper');
 const { getRenderViewModel, getRenderViewModelWithUsername } = require('../classes/shared');
 const { Database } = require('../classes/database');

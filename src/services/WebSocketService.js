@@ -1,4 +1,4 @@
-const { AccountService } = require('./accountService');
+const { AccountService } = require('./AccountService');
 const { ENotificationType } = require('../models/ENotificationType');
 const { generateMongoId } = require('./../bsgHelper');
 const { PlayerVisualRepresentation } = require('../models/PlayerVisualRepresentation');
