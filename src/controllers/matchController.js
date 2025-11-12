@@ -5,10 +5,10 @@
 var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('../bsgHelper');
-const { AccountService } = require('../services/accountService');
-const { ProfileStatus } = require('../models/profileStatus');
+const { AccountService } = require('../services/AccountService');
+const { ProfileStatus } = require('../models/ProfileStatus');
 const { ProfileStatusResponse } = require('../models/profileStatusResponse');
-const { Account, AccountProfileMode } = require('../models/account');
+const { Account, AccountProfileMode } = require('../models/Account');
 const { Database } = require('../classes/database');
 
 const { LocalMatchStartResponse } = require('../models/Responses/LocalMatchStartResponse');
@@ -573,7 +573,7 @@ router.post('/local/start', async function(req, res, next) {
     // Add Loot
     result.locationLoot.Loot = lootGenService.Generate(result.locationLoot);
     // Release the instance
-    delete lootGenService;
+    // delete lootGenService;
 
     // Add Insured Items
     if (req.SessionId) {

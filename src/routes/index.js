@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 var bsgHelper =  require('./../bsgHelper');
 const { getRenderViewModel } = require('../classes/shared');
-const { AccountService } = require('../services/accountService');
+const { AccountService } = require('../services/AccountService');
 
 
 
