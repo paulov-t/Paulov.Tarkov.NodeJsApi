@@ -23,13 +23,13 @@ const { AccountService } = require('./services/AccountService');
 const { EnvironmentVariableService } = require('./services/EnvironmentVariableService');
 
 let usingAppInsights = false;
+const appInsights = require("applicationinsights");
 
 try {
   // Check if the Application Insights connection string is set in the environment variables
   if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     console.log("Initializing Azure Application Insights...");
 
-    const appInsights = require("applicationinsights");
 
     // Use the instrumentation key or connection string from Application Insights
     appInsights.setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
@@ -84,37 +84,60 @@ app.use(function(req, res, next) {
 app.use((req, res, next) => {
   const start = Date.now();
 
+  // if (usingAppInsights) {
+  //     appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.userId] = req.user?.id || 'anonymous';
+  //       appInsights.defaultClient.trackPageView({
+  //         name: `Page View: ${req.path}`,
+  //         url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+  //         properties: {
+  //           userAgent: req.get('User-Agent'),
+  //           routeName: req.route?.path,
+  //           customData: 'whatever you like'
+  //         }
+  //       });
+  // }
+
   res.on('finish', () => {
       const duration = Date.now() - start;
 
       if (usingAppInsights) {
      
-        const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
-        if (currentSpan) {
-          // display traceid in the terminal
-          console.log(`traceid: ${currentSpan.spanContext().traceId}`);
-        }
-        
-        const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(
-          `${req.method} ${req.url}`,
-            {
-              kind: opentelemetryapi.SpanKind.SERVER, // server
-              attributes: { Duration: duration, responseCode: res.statusCode },
-            });
+      
 
-        // Annotate our span to capture metadata about the operation
-        span.addEvent(`trackRequest`
-          , {
+        appInsights.defaultClient.trackRequest({
+
+          name: `Page View: ${req.path}`,
+          url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+          duration: duration,
+          responseCode: res.statusCode,
             statusCode: res.statusCode,
-            message: res.statusMessage,
-            duration: duration,
-            method: req.method,
-            url: req.url,
-            sessionId: req.SessionId,
-            responseCode: res.statusCode
-          }
-          , start);
-        span.end(Date.now());
+        });
+        // const currentSpan = opentelemetryapi.trace.getSpan(opentelemetryapi.context.active());
+        // if (currentSpan) {
+        //   // display traceid in the terminal
+        //   console.log(`traceid: ${currentSpan.spanContext().traceId}`);
+        // }
+        
+        // const span = opentelemetryapi.trace.getTracer("apitrack").startSpan(
+        //   `${req.method} ${req.url}`,
+        //     {
+        //       kind: opentelemetryapi.SpanKind.SERVER, // server
+        //       attributes: { Duration: duration, responseCode: res.statusCode },
+        //     });
+
+        // // Annotate our span to capture metadata about the operation
+        // span.addEvent(`trackRequest`
+        //   , {
+        //     statusCode: res.statusCode,
+        //     message: res.statusMessage,
+        //     duration: duration,
+        //     method: req.method,
+        //     url: req.url,
+        //     sessionId: req.SessionId,
+        //     responseCode: res.statusCode
+        //   }
+        //   , start);
+        // span.end(Date.now());
         console.log(`Tracked request: ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       }
   });
