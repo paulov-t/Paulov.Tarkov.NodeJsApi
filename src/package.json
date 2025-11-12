@@ -1,8 +1,8 @@
 {
   "name": "paulovtarkovapi",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
-    "node": ">=20.19.1"
+    "node": ">=24.11.1"
   },
   "scripts": {
     "start": "node ./bin/www",
@@ -10,8 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.11.0",
-    "@opentelemetry/api": "^1.9.0",
     "adm-zip": "^0.5.16",
     "applicationinsights": "^3.0.0",
     "bcryptjs": "^2.4.3",
