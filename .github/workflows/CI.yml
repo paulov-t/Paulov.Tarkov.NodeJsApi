@@ -5,8 +5,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
     paths-ignore:
       - '**/README.md'
       - '**/.github/workflows/*.yml'
@@ -28,6 +26,7 @@ jobs:
         working-directory: ./src
         run: |
           npm install
+          npx eslint . --ext .js
           npm run build --if-present
           npm test
 

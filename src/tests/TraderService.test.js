@@ -1,4 +1,4 @@
-const { AccountService } = require('./../services/accountService');
+const { AccountService } = require('./../services/AccountService');
 const { BuyFromTraderAction, BuyFromTraderActionSchemeItem } = require('../models/ItemMovingActions/BuyFromTraderAction');
 const { ActionCommandsService } = require('../services/ActionCommandsService');
 const { TraderService } = require('./../services/TraderService');

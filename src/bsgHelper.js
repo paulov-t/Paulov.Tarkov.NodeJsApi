@@ -192,13 +192,13 @@ function getInRaidTime(timestamp) {
   );
 }
 
-exports.addBSGBodyInResponseWithData = addBSGBodyInResponseWithData;
-exports.getBody = getBody;
-exports.inflateRequest = inflateRequest;
-exports.deflateRequest = deflateResponse;
-exports.extractSessionId = extractSessionId;
-exports.generateMongoId = generateMongoId;
-exports.errorResponse = errorResponse;
-exports.nullResponse = nullResponse;
-exports.getUnclearedBody = getUnclearedBody;
-exports.getInRaidTime = getInRaidTime;
+module.exports.addBSGBodyInResponseWithData = addBSGBodyInResponseWithData;
+module.exports.getBody = getBody;
+module.exports.inflateRequest = inflateRequest;
+module.exports.deflateRequest = deflateResponse;
+module.exports.extractSessionId = extractSessionId;
+module.exports.generateMongoId = generateMongoId;
+module.exports.errorResponse = errorResponse;
+module.exports.nullResponse = nullResponse;
+module.exports.getUnclearedBody = getUnclearedBody;
+module.exports.getInRaidTime = getInRaidTime;

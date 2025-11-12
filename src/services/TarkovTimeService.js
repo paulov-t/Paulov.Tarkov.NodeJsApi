@@ -1,4 +1,4 @@
-export function getTarkovTime() {
+module.exports.getTarkovTime = function() {
     const tomorrow = 1000 * 60 * 60 * 24;
     const stpetersbergtime = 1000 * 60 * 60 * 3;
     const tarkovTime = new Date((stpetersbergtime + (date.getTime() * 7)) % tomorrow);
@@ -13,12 +13,12 @@ export function getTarkovTime() {
     return `${hoursText}:${minText}:${secondText}`; 
 }
 
-export function getTarkovDate() {
+module.exports.getTarkovDate = function() {
     const dt = new Date();
     const dateOnlyString = dt.toISOString().slice(0, 10);
     return `${dateOnlyString}`; 
 }
 
-export function getTarkovDateTime() {
+module.exports.getTarkovDateTime = function() {
     return `${getTarkovDate()} ${getTarkovTime()}`;
 }
